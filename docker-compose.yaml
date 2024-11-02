@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  api:
+    image: api
+    build: ./api
+    ports:
+      - 8000:8000
+    environment:
+      - DB_URL=${DB_URL}
+    volumes:
+      - ./api/database:/app/database

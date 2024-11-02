@@ -117,3 +117,14 @@ The purpose of this tool is to simplify the process of web scraping for users, p
 
 ### Conclusion
 This PRD serves as a foundational document for the development of the Web Scraping Tool, detailing features, user stories, and requirements tailored to provide a seamless experience for users. The aim is to provide a comprehensive and intuitive application that empowers users to extract data efficiently and effectively.
+
+
+# Tech Stack
+- UI
+  - Vite + React + Chakra UI
+- API
+  - UV + FastAPI
+- DB
+  - SQLlite
+- TaskExecutor
+  - Celery

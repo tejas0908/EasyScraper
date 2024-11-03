@@ -23,6 +23,8 @@ def verify_password(password_hash, password_plain):
         return False
 
 
-def generate_access_token(username):
+def generate_access_token(id, username):
     dt = datetime.now(tz=timezone.utc) + timedelta(hours=1)
-    return jwt.encode({"username": username, "exp": dt}, jwt_secret, algorithm="HS256")
+    return jwt.encode(
+        {"id": id, "username": username, "exp": dt}, jwt_secret, algorithm="HS256"
+    )

@@ -1,6 +1,7 @@
 from sqlmodel import create_engine, SQLModel, Session
 import os
 import app.models.auth
+import app.models.project
 from typing import Annotated
 from fastapi import Depends
 

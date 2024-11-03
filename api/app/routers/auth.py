@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, HTTPException
 from fastapi.responses import JSONResponse
 from app.models.auth import UserSignup, User, UserOut, UserAccessToken, UserLogin
 from app.db.engine import SessionDep
@@ -26,16 +26,17 @@ async def login(
     statement = select(User).where(User.username == user_login.username)
     user = session.exec(statement).first()
     if user is None:
-        return JSONResponse(
-            content={"error": "wrong username"},
+        raise HTTPException(
+            detail="wrong username",
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
     elif verify_password(user.password, user_login.password):
         return UserAccessToken(
-            username=user_login.username, token=generate_access_token(user.username)
+            username=user_login.username,
+            token=generate_access_token(user.id, user.username),
         )
     else:
-        return JSONResponse(
-            content={"error": "wrong password"},
+        raise HTTPException(
+            detail="wrong password",
             status_code=status.HTTP_401_UNAUTHORIZED,
         )

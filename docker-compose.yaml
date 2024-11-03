@@ -9,5 +9,47 @@ services:
     environment:
       - DB_URL=${DB_URL}
       - JWT_SECRET=${JWT_SECRET}
+      - BROKER_URL=${BROKER_URL}
+      - RESULT_BACKEND=${RESULT_BACKEND}
     volumes:
       - ./api/database:/app/database
+    depends_on:
+      - rabbitmq
+      - celery-worker-1
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    hostname: "rabbit1"
+    environment:
+      - RABBITMQ_DEFAULT_USER:${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS:${RABBITMQ_PASS}"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    labels:
+      NAME: "rabbitmq1"
+
+  redis:
+    image: redis/redis-stack:latest
+    ports:
+      - 6379:6379
+      - 8001:8001
+    volumes:
+      - redis_volume:/data
+
+  celery-worker-1:
+    image: api
+    build: ./api
+    command: uv run celery -b ${BROKER_URL} -A app.celery.celery worker -l INFO -c 4
+    environment:
+      - DB_URL=${DB_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - BROKER_URL=${BROKER_URL}
+      - RESULT_BACKEND=${RESULT_BACKEND}
+    volumes:
+      - ./api/database:/app/database
+    depends_on:
+      - rabbitmq
+
+volumes:
+  redis_volume:

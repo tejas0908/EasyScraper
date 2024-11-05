@@ -1,0 +1,86 @@
+@startuml
+entity User {
+    {static} id : ULID : PK
+    username: String
+    password: Hashed
+}
+entity Project {
+    {static} id: ULID : PK
+    name: String
+    sleep_seconds_between_page_scrape: Integer
+    {static} user_id: ULID : FK
+}
+entity PageTemplate {
+    {static} id: ULID : PK
+    name: String
+    output_type: Enum[PAGE_SOURCE, LEAF]
+    scraper: [XPATH_SELECTOR, CSS_SELECTOR, AUTO_SCRAPER, AI_SCRAPER]
+    {static} output_page_template_id: ULID : FK
+    {static} project_id: ULID : FK
+}
+entity ScrapeRule {
+    {static} id: ULID : PK
+    alias: String
+    type: Enum[SINGLE, MULTI]
+    value: String
+    {static} page_template_id: ULID : FK
+}
+entity AIPrompt {
+    {static} id: ULID : PK
+    prompt: String
+    {static} page_template_id: ULID : FK
+}
+entity SeedPage {
+    {static} id: ULID : PK
+    url: String
+    {static} page_template_id: ULID : FK
+}
+entity ScrapeRun {
+    {static} id: ULID : PK
+    started_on: Epoch
+    ended_on: Epoch
+    {static} project_id: ULID : FK
+}
+entity ScrapeRunPage {
+    {static} id: ULID : PK
+    url: String
+    scrape_output: JSON
+    {static} page_template_id: ULID : FK
+    {static} scrape_run_id: ULID : FK
+}
+entity ScrapeRunOutput {
+    {static} id: ULID : PK
+    format: Enum[JSONL, CSV, XLSX]
+    file: blob
+    {static} scrape_run_id: ULID : FK
+}
+
+User "1" -right-> "N" Project
+Project "1" -down-> "N" PageTemplate
+Project "1" -right-> "N" SeedPage
+SeedPage "1" -down-> "1" PageTemplate
+PageTemplate "1" --> "N" ScrapeRule
+PageTemplate "1" --> "1" AIPrompt
+Project "1" --> "N" ScrapeRun
+ScrapeRun "1" --> "N" ScrapeRunPage
+ScrapeRun "1" --> "N" ScrapeRunOutput
+
+hide User methods
+hide Project methods
+hide PageTemplate methods
+hide SeedPage methods
+hide ScrapeRule methods
+hide AIPrompt methods
+hide ScrapeRun methods
+hide ScrapeRunPage methods
+hide ScrapeRunOutput methods
+
+note as N1
+    ULID = Universally unique 
+    lexicographically sortable identifier
+    PK = Primary key
+    FK = Foreign key
+    Hashed = Argon2 hashing
+end note
+
+@enduml

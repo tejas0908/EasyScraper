@@ -23,6 +23,7 @@
 - [ ] Scrape Runs can be resumed if they are interrupted by failures
 - [ ] User can set scrape settings
     - Sleep time between page scrapes
+- [ ] User can perform a scrape test by providing URL and Page Template
 
 # Architecture
 
@@ -33,3 +34,7 @@
 ## Use Case Diagram
 
 ![Use case diagram](plantuml/use-case-diagram.png)
+
+## Database Design
+
+![Database design](plantuml/db-schema.png)

@@ -24,18 +24,11 @@
 - [ ] User can set scrape settings
     - Sleep time between page scrapes
 
+# Architecture
 
 # Tech Stack
-- UI
-  - Vite + React + Chakra UI
-- API
-  - UV + FastAPI
-- DB
-  - SQLlite
-- TaskExecutor
-  - Celery + RabbitMQ
 
-# Architecture
+![Tech Stack](plantuml/tech-stack.png)
 
 ## Use Case Diagram
 

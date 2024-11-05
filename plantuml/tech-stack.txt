@@ -1,0 +1,16 @@
+@startmindmap
+* Tech Stack
+** UI
+***_ Vite
+***_ React
+***_ Chakra UI
+** API
+***_ UV
+***_ FastAPI
+***_ Python
+** DB
+***_ SQLite
+** Scraper
+***_ Celery
+***_ RabbitMQ
+@endmindmap

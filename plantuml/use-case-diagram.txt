@@ -1,4 +1,5 @@
 @startuml
+skinparam ActorStyle awesome
 left to right direction
 actor User as user
 

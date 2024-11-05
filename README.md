@@ -4,7 +4,7 @@
 - [x] User can signup for a new account
 - [x] User can login to account
 - [x] User can create Scraping Projects
-- [ ] User can define Page Templates
+- [x] User can define Page Templates
     - Page Template
         - Output Type (Page Generator / Leaf)
         - Name (e.g. Category Page)

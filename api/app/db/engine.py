@@ -2,6 +2,7 @@ from sqlmodel import create_engine, SQLModel, Session
 import os
 import app.models.auth
 import app.models.project
+import app.models.page_template
 from typing import Annotated
 from fastapi import Depends
 

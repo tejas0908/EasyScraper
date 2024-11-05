@@ -37,25 +37,6 @@
 
 # Architecture
 
-## Use Cases
+## Use Case Diagram
 
-```mermaid
-flowchart LR
-    subgraph 'EasyScraper'
-    uc1((Signup))
-    uc2((Login))
-    uc3((Create / Manage Projects))
-    uc4((Create / Manage Page Templates))
-    uc5((Create / Manage Seed Pages))
-    uc6((Trigger Scrape Run))
-    uc6((Download Scrape Results))
-
-    end
-    user[User 👤]
-    user--->uc1
-    user--->uc2
-    user--->uc3
-    user--->uc4
-    user--->uc5
-    user--->uc6
-```
+![Use case diagram](plantuml/use-case-diagram.png)

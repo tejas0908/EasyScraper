@@ -40,13 +40,22 @@
 ## Use Cases
 
 ```mermaid
-journey
-    title My working day
-    section Go to work
-      Make tea: 5: Me
-      Go upstairs: 3: Me
-      Do work: 1: Me, Cat
-    section Go home
-      Go downstairs: 5: Me
-      Sit down: 5: Me
+flowchart LR
+    subgraph 'EasyScraper'
+    uc1((Signup))
+    uc2((Login))
+    uc3((Create / Manage Projects))
+    uc4((Create / Manage Page Templates))
+    uc5((Create / Manage Seed Pages))
+    uc6((Trigger Scrape Run))
+    uc6((Download Scrape Results))
+
+    end
+    user[User 👤]
+    user--->uc1
+    user--->uc2
+    user--->uc3
+    user--->uc4
+    user--->uc5
+    user--->uc6
 ```

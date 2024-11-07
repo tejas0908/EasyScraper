@@ -1,5 +1,7 @@
 from sqlmodel import Field, SQLModel
 from app.util import generate_ulid
+from typing import Optional, List
+from app.models.common import Paging
 
 
 class Project(SQLModel, table=True):
@@ -11,6 +13,16 @@ class Project(SQLModel, table=True):
     user_id: str = Field(nullable=False, foreign_key="user.id")
 
 
+class ProjectCreate(SQLModel):
+    name: str = Field(nullable=False)
+    sleep_seconds_between_page_scrape: int = Field(nullable=False, default=3)
+
+
 class ProjectUpdate(SQLModel):
-    name: str = Field(default=None)
-    sleep_seconds_between_page_scrape: int = Field(default=None)
+    name: Optional[str] = Field(default=None)
+    sleep_seconds_between_page_scrape: Optional[int] = Field(default=None)
+
+
+class ProjectListResponse(SQLModel):
+    projects: List[Project]
+    paging: Paging

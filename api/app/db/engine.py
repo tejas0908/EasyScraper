@@ -3,6 +3,7 @@ import os
 import app.models.auth
 import app.models.project
 import app.models.page_template
+import app.models.scrape_rule
 from typing import Annotated
 from fastapi import Depends
 

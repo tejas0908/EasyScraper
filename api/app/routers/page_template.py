@@ -1,26 +1,12 @@
 from fastapi import APIRouter, status, HTTPException
 from app.models.page_template import PageTemplate, PageTemplateUpdate
-from app.models.project import Project
+from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
 from sqlmodel import select
 from app.models.auth import CurrentUserDep
 from app.models.paging import Paging
 
 page_template_router = APIRouter()
-
-
-def check_if_project_belongs_to_user(project_id, current_user, session):
-    project_statement = (
-        select(Project)
-        .where(Project.id == project_id)
-        .where(Project.user_id == current_user.id)
-    )
-    project = session.exec(project_statement).one_or_none()
-    if project is None:
-        raise HTTPException(
-            detail="Project not found or access denied",
-            status_code=status.HTTP_404_NOT_FOUND,
-        )
 
 
 @page_template_router.post(

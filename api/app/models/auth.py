@@ -17,7 +17,7 @@ class User(SQLModel, table=True):
     password: str = Field(nullable=False, min_length=6, max_length=20)
 
 
-class UserSignup(SQLModel):
+class UserCreate(SQLModel):
     username: str = Field(nullable=False, min_length=6, max_length=20)
     password: str = Field(nullable=False, min_length=6, max_length=20)
 

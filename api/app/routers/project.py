@@ -1,29 +1,37 @@
 from fastapi import APIRouter, status, HTTPException
-from app.models.project import Project, ProjectUpdate
+from app.models.project import (
+    Project,
+    ProjectUpdate,
+    ProjectCreate,
+    ProjectListResponse,
+)
+from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
 from sqlmodel import select
 from app.models.auth import CurrentUserDep
-from app.models.paging import Paging
+from app.models.common import IdResponse, Paging
 
 project_router = APIRouter()
 
 
 @project_router.post("/projects", response_model=Project, tags=["projects"])
 async def create_project(
-    project: Project, current_user: CurrentUserDep, session: SessionDep
+    project_create: ProjectCreate, current_user: CurrentUserDep, session: SessionDep
 ) -> Project:
-    project.user_id = current_user.id
-    project = Project.model_validate(project)
+    project_data = project_create.model_dump(exclude_unset=True)
+    project_data["user_id"] = current_user.id
+    project = Project.model_validate(project_data)
     session.add(project)
     session.commit()
     session.refresh(project)
     return project
 
 
-@project_router.get("/projects/{project_id}", response_model=None, tags=["projects"])
+@project_router.get("/projects/{project_id}", response_model=Project, tags=["projects"])
 async def get_project(
     project_id, current_user: CurrentUserDep, session: SessionDep
 ) -> Project:
+    check_if_project_belongs_to_user(project_id, current_user.id, session)
     statement = (
         select(Project)
         .where(Project.id == project_id)
@@ -39,13 +47,14 @@ async def get_project(
         return project
 
 
-@project_router.put("/projects/{project_id}", response_model=None, tags=["projects"])
+@project_router.put("/projects/{project_id}", response_model=Project, tags=["projects"])
 async def put_project(
     project_id,
     project: ProjectUpdate,
     current_user: CurrentUserDep,
     session: SessionDep,
 ) -> Project:
+    check_if_project_belongs_to_user(project_id, current_user.id, session)
     project_data = project.model_dump(exclude_unset=True)
     statement = (
         select(Project)
@@ -77,13 +86,14 @@ async def list_projects(
         .limit(limit)
     )
     projects = session.exec(statement).all()
-    return {"projects": projects, "paging": Paging(skip=skip, limit=limit)}
+    return ProjectListResponse(projects=projects, paging=Paging(skip=skip, limit=limit))
 
 
 @project_router.delete("/projects/{project_id}", response_model=None, tags=["projects"])
 async def delete_project(
     project_id, current_user: CurrentUserDep, session: SessionDep
 ) -> Project:
+    check_if_project_belongs_to_user(project_id, current_user.id, session)
     statement = (
         select(Project)
         .where(Project.id == project_id)
@@ -98,4 +108,4 @@ async def delete_project(
     else:
         session.delete(project)
         session.commit()
-        return {"id": project_id}
+        return IdResponse(id=project_id)

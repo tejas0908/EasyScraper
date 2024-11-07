@@ -38,3 +38,7 @@
 ## Database Design
 
 ![Database design](plantuml/output/db-schema.png)
+
+## API documentation
+
+https://tejas0908.github.io/EasyScraper/

@@ -8,7 +8,7 @@ from app.models.paging import Paging
 project_router = APIRouter()
 
 
-@project_router.post("/projects", response_model=Project)
+@project_router.post("/projects", response_model=Project, tags=["projects"])
 async def create_project(
     project: Project, current_user: CurrentUserDep, session: SessionDep
 ) -> Project:
@@ -20,7 +20,7 @@ async def create_project(
     return project
 
 
-@project_router.get("/projects/{project_id}", response_model=None)
+@project_router.get("/projects/{project_id}", response_model=None, tags=["projects"])
 async def get_project(
     project_id, current_user: CurrentUserDep, session: SessionDep
 ) -> Project:
@@ -39,7 +39,7 @@ async def get_project(
         return project
 
 
-@project_router.put("/projects/{project_id}", response_model=None)
+@project_router.put("/projects/{project_id}", response_model=None, tags=["projects"])
 async def put_project(
     project_id,
     project: ProjectUpdate,
@@ -66,7 +66,7 @@ async def put_project(
         return db_project
 
 
-@project_router.get("/projects", response_model=None)
+@project_router.get("/projects", response_model=None, tags=["projects"])
 async def list_projects(
     current_user: CurrentUserDep, session: SessionDep, skip: int = 0, limit: int = 10
 ) -> dict:
@@ -80,7 +80,7 @@ async def list_projects(
     return {"projects": projects, "paging": Paging(skip=skip, limit=limit)}
 
 
-@project_router.delete("/projects/{project_id}", response_model=None)
+@project_router.delete("/projects/{project_id}", response_model=None, tags=["projects"])
 async def delete_project(
     project_id, current_user: CurrentUserDep, session: SessionDep
 ) -> Project:

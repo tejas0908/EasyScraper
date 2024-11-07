@@ -1,15 +1,14 @@
 from fastapi import APIRouter, status, HTTPException
-from fastapi.responses import JSONResponse
 from app.models.auth import UserSignup, User, UserOut, UserAccessToken, UserLogin
+from app.models.common import FastAPIError
 from app.db.engine import SessionDep
 from app.util import hash_password, verify_password, generate_access_token
 from sqlmodel import select
-from typing import Union
 
 auth_router = APIRouter()
 
 
-@auth_router.post("/user/signup", response_model=UserOut)
+@auth_router.post("/user/signup", response_model=UserOut, tags=["auth"])
 async def sign_up(user_signup: UserSignup, session: SessionDep) -> UserOut:
     user = User.model_validate(user_signup)
     user.password = hash_password(user.password)
@@ -19,10 +18,18 @@ async def sign_up(user_signup: UserSignup, session: SessionDep) -> UserOut:
     return user
 
 
-@auth_router.post("/user/login", response_model=None)
-async def login(
-    user_login: UserLogin, session: SessionDep
-) -> Union[UserAccessToken, JSONResponse]:
+@auth_router.post(
+    "/user/login",
+    response_model=UserAccessToken,
+    tags=["auth"],
+    responses={
+        401: {
+            "model": FastAPIError,
+            "description": "wrong username or password",
+        }
+    },
+)
+async def login(user_login: UserLogin, session: SessionDep) -> UserAccessToken:
     statement = select(User).where(User.username == user_login.username)
     user = session.exec(statement).first()
     if user is None:

@@ -24,7 +24,9 @@ def check_if_project_belongs_to_user(project_id, current_user, session):
 
 
 @page_template_router.post(
-    "/projects/{project_id}/page_templates", response_model=PageTemplate
+    "/projects/{project_id}/page_templates",
+    response_model=PageTemplate,
+    tags=["page templates"],
 )
 async def create_page_template(
     project_id,
@@ -42,7 +44,9 @@ async def create_page_template(
 
 
 @page_template_router.get(
-    "/projects/{project_id}/page_templates/{page_template_id}", response_model=None
+    "/projects/{project_id}/page_templates/{page_template_id}",
+    response_model=None,
+    tags=["page templates"],
 )
 async def get_page_template(
     project_id, page_template_id, current_user: CurrentUserDep, session: SessionDep
@@ -63,7 +67,9 @@ async def get_page_template(
 
 
 @page_template_router.put(
-    "/projects/{project_id}/page_templates/{page_template_id}", response_model=None
+    "/projects/{project_id}/page_templates/{page_template_id}",
+    response_model=None,
+    tags=["page templates"],
 )
 async def put_page_template(
     project_id,
@@ -93,7 +99,11 @@ async def put_page_template(
         return db_page_template
 
 
-@page_template_router.get("/projects/{project_id}/page_templates", response_model=None)
+@page_template_router.get(
+    "/projects/{project_id}/page_templates",
+    response_model=None,
+    tags=["page templates"],
+)
 async def list_page_templates(
     project_id,
     current_user: CurrentUserDep,
@@ -113,7 +123,9 @@ async def list_page_templates(
 
 
 @page_template_router.delete(
-    "/projects/{project_id}/page_templates/{page_template_id}", response_model=None
+    "/projects/{project_id}/page_templates/{page_template_id}",
+    response_model=None,
+    tags=["page templates"],
 )
 async def delete_page_template(
     project_id, page_template_id, current_user: CurrentUserDep, session: SessionDep

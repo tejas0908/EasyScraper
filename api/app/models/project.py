@@ -1,6 +1,5 @@
 from sqlmodel import Field, SQLModel
 from app.util import generate_ulid
-from typing import Optional
 
 
 class Project(SQLModel, table=True):

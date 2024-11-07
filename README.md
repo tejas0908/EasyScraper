@@ -29,12 +29,12 @@
 
 # Tech Stack
 
-![Tech Stack](plantuml/tech-stack.png)
+![Tech Stack](plantuml/output/tech-stack.png)
 
 ## Use Case Diagram
 
-![Use case diagram](plantuml/use-case-diagram.png)
+![Use case diagram](plantuml/output/use-case-diagram.png)
 
 ## Database Design
 
-![Database design](plantuml/db-schema.png)
+![Database design](plantuml/output/db-schema.png)

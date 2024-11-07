@@ -1,0 +1,9 @@
+{
+    "plantuml.exportFormat": "png",
+    "plantuml.diagramsRoot": "plantuml/src",
+    "plantuml.exportOutDir": "plantuml/output",
+    "plantuml.exportSubFolder": false,
+    "plantuml.render": "PlantUMLServer",
+    "plantuml.server": "https://www.plantuml.com/plantuml",
+    "plantuml.lintDiagramNoName": false
+}

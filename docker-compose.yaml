@@ -40,7 +40,7 @@ services:
   celery-worker-1:
     image: api
     build: ./api
-    command: uv run celery -b ${BROKER_URL} -A app.celery.celery worker -l INFO -c 4
+    command: uv run celery -A app.celery.celery worker -l INFO -c 4
     environment:
       - DB_URL=${DB_URL}
       - JWT_SECRET=${JWT_SECRET}

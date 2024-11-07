@@ -13,4 +13,5 @@
 ** Scraper
 ***_ Celery
 ***_ RabbitMQ
+***_ Redis
 @endmindmap

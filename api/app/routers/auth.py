@@ -12,14 +12,14 @@ auth_router = APIRouter()
 
 @auth_router.post(
     "/user/signup",
-    response_model=UserOut,
+    response_model=UserAccessToken,
     tags=["auth"],
     responses={
         409: {
             "model": FastAPIError,
             "description": "user already exists",
         }
-    }
+    },
 )
 async def sign_up(user_signup: UserCreate, session: SessionDep) -> UserOut:
     check_if_user_exists(user_signup.username, session)
@@ -28,7 +28,9 @@ async def sign_up(user_signup: UserCreate, session: SessionDep) -> UserOut:
     session.add(user)
     session.commit()
     session.refresh(user)
-    return user
+    return UserAccessToken(
+        username=user.username, token=generate_access_token(user.id, user.username)
+    )
 
 
 @auth_router.post(
@@ -40,7 +42,7 @@ async def sign_up(user_signup: UserCreate, session: SessionDep) -> UserOut:
             "model": FastAPIError,
             "description": "wrong username or password",
         }
-    }
+    },
 )
 async def login(user_login: UserLogin, session: SessionDep) -> UserAccessToken:
     statement = select(User).where(User.username == user_login.username)

@@ -29,6 +29,11 @@
 
 ![Deployment View](docs/plantuml/output/deployment.png)
 
+## Sequence Diagrams
+
+![User Signup Sequence Diagram](docs/plantuml/output/sequence-signup.png)
+![User Login Sequence Diagram](docs/plantuml/output/sequence-login.png)
+
 ## API documentation
 
 https://tejas0908.github.io/EasyScraper/

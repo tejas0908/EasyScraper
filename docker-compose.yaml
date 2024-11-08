@@ -1,3 +1,4 @@
+name: easyscraper
 services:
   api:
     image: api
@@ -14,11 +15,14 @@ services:
     healthcheck:
       test: curl -f http://localhost:8000/health
       interval: 30s
+      start_period: 10s
       timeout: 10s
       retries: 5
     depends_on:
-      - rabbitmq
-      - celery-worker-1
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   rabbitmq:
     image: rabbitmq:4-management
@@ -36,6 +40,7 @@ services:
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 30s
+      start_period: 10s
       timeout: 10s
       retries: 5
 
@@ -49,6 +54,7 @@ services:
     healthcheck:
       test: redis-cli ping
       interval: 30s
+      start_period: 10s
       timeout: 10s
       retries: 5
 
@@ -66,10 +72,12 @@ services:
     healthcheck:
       test: celery -b ${BROKER_URL} inspect ping
       interval: 30s
+      start_period: 10s
       timeout: 10s
       retries: 5
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
   
   plantuml:
     image: plantuml/plantuml-server:jetty
@@ -80,8 +88,10 @@ services:
     healthcheck:
       test: curl -f http://localhost:8080
       interval: 30s
+      start_period: 10s
       timeout: 10s
       retries: 5
+    profiles: [plantuml]
 
 volumes:
   redis_volume:

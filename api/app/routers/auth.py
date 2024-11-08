@@ -4,12 +4,25 @@ from app.models.common import FastAPIError
 from app.db.engine import SessionDep
 from app.util import hash_password, verify_password, generate_access_token
 from sqlmodel import select
+from app.db.db_utils import check_if_user_exists
+
 
 auth_router = APIRouter()
 
 
-@auth_router.post("/user/signup", response_model=UserOut, tags=["auth"])
+@auth_router.post(
+    "/user/signup",
+    response_model=UserOut,
+    tags=["auth"],
+    responses={
+        409: {
+            "model": FastAPIError,
+            "description": "user already exists",
+        }
+    }
+)
 async def sign_up(user_signup: UserCreate, session: SessionDep) -> UserOut:
+    check_if_user_exists(user_signup.username, session)
     user = User.model_validate(user_signup)
     user.password = hash_password(user.password)
     session.add(user)

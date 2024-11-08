@@ -1,5 +1,10 @@
 from fastapi import APIRouter, status, HTTPException
-from app.models.scrape_rule import ScrapeRule, ScrapeRuleUpdate, ScrapeRuleCreate
+from app.models.scrape_rule import (
+    ScrapeRule,
+    ScrapeRuleUpdate,
+    ScrapeRuleCreate,
+    ScrapeRuleListResponse,
+)
 from app.db.db_utils import (
     check_if_page_template_belongs_to_project,
     check_if_project_belongs_to_user,
@@ -7,7 +12,7 @@ from app.db.db_utils import (
 from app.db.engine import SessionDep
 from sqlmodel import select
 from app.models.auth import CurrentUserDep
-from app.models.paging import Paging
+from app.models.common import Paging, IdResponse, FastAPIError
 
 scrape_rule_router = APIRouter()
 
@@ -37,8 +42,9 @@ async def create_scrape_rule(
 
 @scrape_rule_router.get(
     "/projects/{project_id}/page_templates/{page_template_id}/scrape_rules/{scrape_rule_id}",
-    response_model=None,
+    response_model=ScrapeRule,
     tags=["scrape rules"],
+    responses={404: {"model": FastAPIError, "description": "ScrapeRule not found"}},
 )
 async def get_scrape_rule(
     project_id,
@@ -65,8 +71,9 @@ async def get_scrape_rule(
 
 @scrape_rule_router.put(
     "/projects/{project_id}/page_templates/{page_template_id}/scrape_rules/{scrape_rule_id}",
-    response_model=None,
+    response_model=ScrapeRule,
     tags=["scrape rules"],
+    responses={404: {"model": FastAPIError, "description": "ScrapeRule not found"}},
 )
 async def update_scrape_rule(
     project_id,
@@ -99,7 +106,7 @@ async def update_scrape_rule(
 
 @scrape_rule_router.get(
     "/projects/{project_id}/page_templates/{page_template_id}/scrape_rules",
-    response_model=None,
+    response_model=ScrapeRuleListResponse,
     tags=["scrape rules"],
 )
 async def list_scrape_rules(
@@ -119,13 +126,16 @@ async def list_scrape_rules(
         .limit(limit)
     )
     scrape_rules = session.exec(statement).all()
-    return {"scrape_rules": scrape_rules, "paging": Paging(skip=skip, limit=limit)}
+    return ScrapeRuleListResponse(
+        scrape_rules=scrape_rules, paging=Paging(skip=skip, limit=limit)
+    )
 
 
 @scrape_rule_router.delete(
     "/projects/{project_id}/page_templates/{page_template_id}/scrape_rules/{scrape_rule_id}",
-    response_model=None,
+    response_model=IdResponse,
     tags=["scrape rules"],
+    responses={404: {"model": FastAPIError, "description": "ScrapeRule not found"}},
 )
 async def delete_scrape_rule(
     project_id,
@@ -149,4 +159,4 @@ async def delete_scrape_rule(
         )
     session.delete(scrape_rule)
     session.commit()
-    return {"id": scrape_rule_id}
+    return IdResponse(id=scrape_rule_id)

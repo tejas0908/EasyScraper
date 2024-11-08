@@ -1,10 +1,15 @@
 from fastapi import APIRouter, status, HTTPException
-from app.models.page_template import PageTemplate, PageTemplateUpdate
+from app.models.page_template import (
+    PageTemplate,
+    PageTemplateUpdate,
+    PageTemplateCreate,
+    PageTemplateListResponse,
+)
 from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
 from sqlmodel import select
 from app.models.auth import CurrentUserDep
-from app.models.paging import Paging
+from app.models.common import Paging, FastAPIError, IdResponse
 
 page_template_router = APIRouter()
 
@@ -16,13 +21,14 @@ page_template_router = APIRouter()
 )
 async def create_page_template(
     project_id,
-    page_template: PageTemplate,
+    page_template_create: PageTemplateCreate,
     current_user: CurrentUserDep,
     session: SessionDep,
 ) -> PageTemplate:
     check_if_project_belongs_to_user(project_id, current_user, session)
-    page_template.project_id = project_id
-    page_template = PageTemplate.model_validate(page_template)
+    page_template_data = page_template_create.model_dump(exclude_unset=True)
+    page_template_data["project_id"] = project_id
+    page_template = PageTemplate.model_validate(page_template_data)
     session.add(page_template)
     session.commit()
     session.refresh(page_template)
@@ -31,8 +37,9 @@ async def create_page_template(
 
 @page_template_router.get(
     "/projects/{project_id}/page_templates/{page_template_id}",
-    response_model=None,
+    response_model=PageTemplate,
     tags=["page templates"],
+    responses={404: {"model": FastAPIError, "description": "PageTemplate not found"}},
 )
 async def get_page_template(
     project_id, page_template_id, current_user: CurrentUserDep, session: SessionDep
@@ -54,8 +61,9 @@ async def get_page_template(
 
 @page_template_router.put(
     "/projects/{project_id}/page_templates/{page_template_id}",
-    response_model=None,
+    response_model=PageTemplate,
     tags=["page templates"],
+    responses={404: {"model": FastAPIError, "description": "PageTemplate not found"}},
 )
 async def put_page_template(
     project_id,
@@ -87,7 +95,7 @@ async def put_page_template(
 
 @page_template_router.get(
     "/projects/{project_id}/page_templates",
-    response_model=None,
+    response_model=PageTemplateListResponse,
     tags=["page templates"],
 )
 async def list_page_templates(
@@ -105,13 +113,16 @@ async def list_page_templates(
         .limit(limit)
     )
     page_templates = session.exec(statement).all()
-    return {"page_templates": page_templates, "paging": Paging(skip=skip, limit=limit)}
+    return PageTemplateListResponse(
+        page_templates=page_templates, paging=Paging(skip=skip, limit=limit)
+    )
 
 
 @page_template_router.delete(
     "/projects/{project_id}/page_templates/{page_template_id}",
-    response_model=None,
+    response_model=IdResponse,
     tags=["page templates"],
+    responses={404: {"model": FastAPIError, "description": "PageTemplate not found"}},
 )
 async def delete_page_template(
     project_id, page_template_id, current_user: CurrentUserDep, session: SessionDep
@@ -131,4 +142,4 @@ async def delete_page_template(
     else:
         session.delete(page_template)
         session.commit()
-        return {"id": page_template_id}
+        return IdResponse(id=page_template_id)

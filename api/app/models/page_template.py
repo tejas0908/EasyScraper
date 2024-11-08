@@ -1,6 +1,7 @@
 from sqlmodel import Field, SQLModel, String
 from app.util import generate_ulid
-from typing import Literal, Optional
+from typing import Literal, Optional, List
+from app.models.common import Paging
 
 
 class PageTemplate(SQLModel, table=True):
@@ -18,6 +19,15 @@ class PageTemplate(SQLModel, table=True):
     project_id: str = Field(nullable=False, foreign_key="project.id")
 
 
+class PageTemplateCreate(SQLModel):
+    name: str = Field(nullable=False)
+    output_type: Literal["PAGE_SOURCE", "LEAF"] = Field(nullable=False, sa_type=String)
+    scraper: Literal["XPATH_SELECTOR", "CSS_SELECTOR", "AUTO_SCRAPER", "AI_SCRAPER"] = (
+        Field(nullable=False, sa_type=String)
+    )
+    output_page_template_id: Optional[str] = Field(nullable=True, default=None)
+
+
 class PageTemplateUpdate(SQLModel):
     name: str = Field(default=None)
     output_type: Literal["PAGE_SOURCE", "LEAF"] = Field(default=None)
@@ -27,3 +37,8 @@ class PageTemplateUpdate(SQLModel):
     output_page_template_id: Optional[str] = Field(
         nullable=True, default=None, foreign_key="page_template.id"
     )
+
+
+class PageTemplateListResponse(SQLModel):
+    page_templates: List[PageTemplate]
+    paging: Paging

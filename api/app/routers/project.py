@@ -31,7 +31,7 @@ async def create_project(
 async def get_project(
     project_id, current_user: CurrentUserDep, session: SessionDep
 ) -> Project:
-    check_if_project_belongs_to_user(project_id, current_user.id, session)
+    check_if_project_belongs_to_user(project_id, current_user, session)
     statement = (
         select(Project)
         .where(Project.id == project_id)
@@ -54,7 +54,7 @@ async def put_project(
     current_user: CurrentUserDep,
     session: SessionDep,
 ) -> Project:
-    check_if_project_belongs_to_user(project_id, current_user.id, session)
+    check_if_project_belongs_to_user(project_id, current_user, session)
     project_data = project.model_dump(exclude_unset=True)
     statement = (
         select(Project)
@@ -93,7 +93,7 @@ async def list_projects(
 async def delete_project(
     project_id, current_user: CurrentUserDep, session: SessionDep
 ) -> Project:
-    check_if_project_belongs_to_user(project_id, current_user.id, session)
+    check_if_project_belongs_to_user(project_id, current_user, session)
     statement = (
         select(Project)
         .where(Project.id == project_id)

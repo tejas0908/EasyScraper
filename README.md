@@ -13,17 +13,21 @@
 
 # Architecture
 
-# Tech Stack
+## Tech Stack
 
-![Tech Stack](plantuml/output/tech-stack.png)
+![Tech Stack](docs/plantuml/output/tech-stack.png)
 
 ## Use Case Diagram
 
-![Use case diagram](plantuml/output/use-case-diagram.png)
+![Use case diagram](docs/plantuml/output/use-case-diagram.png)
 
 ## Database Design
 
-![Database design](plantuml/output/db-schema.png)
+![Database design](docs/plantuml/output/db-schema.png)
+
+## Deployment View
+
+![Deployment View](docs/plantuml/output/deployment.png)
 
 ## API documentation
 

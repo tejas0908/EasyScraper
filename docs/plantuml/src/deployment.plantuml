@@ -1,0 +1,42 @@
+@startuml
+allowmixing
+
+actor "User" as user
+node "Web Browser" as browser {
+}
+
+frame "Docker Compose" {
+    node "ui" as ui {
+        portin ui_3000
+    }
+    node "api" as api {
+        portin api_8000
+    }
+    storage "sqlite" <<shared volume>> as sqlite {
+    }
+    node "rabbitmq" as rabbitmq {
+        portin rabbitmq_5672
+        storage "rabbitmq_volume"
+    }
+    node "redis" as redis {
+        portin redis_6379
+        storage "redis_volume"
+    }
+    node "celery worker" as celery_worker{
+        process "task: scrape pages" as t1
+    }
+}
+
+cloud "External Website" as e1
+
+user -right-> browser
+browser -right-> ui_3000
+ui -right-> api_8000
+api --> rabbitmq_5672
+api --> redis_6379
+celery_worker --> rabbitmq_5672
+celery_worker --> redis_6379
+api --> sqlite
+celery_worker -up-> sqlite
+t1 -left-> e1 : scrape website
+@enduml

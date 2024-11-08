@@ -31,6 +31,8 @@ services:
       - "5672:5672"
     labels:
       NAME: "rabbitmq1"
+    volumes:
+      - rabbitmq_volume:/var/lib/rabbitmq
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 30s
@@ -68,7 +70,20 @@ services:
       retries: 5
     depends_on:
       - rabbitmq
+  
+  plantuml:
+    image: plantuml/plantuml-server:jetty
+    ports:
+      - 8080:8080
+    environment:
+      - BASE_URL=plantuml
+    healthcheck:
+      test: curl -f http://localhost:8080
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
   redis_volume:
   sqlite_volume:
+  rabbitmq_volume:

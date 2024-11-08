@@ -34,6 +34,7 @@ entity SeedPage {
     {static} id: ULID : PK
     url: String
     {static} page_template_id: ULID : FK
+    {static} project_id: ULID : FK
 }
 entity ScrapeRun {
     {static} id: ULID : PK

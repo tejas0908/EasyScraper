@@ -5,11 +5,10 @@
 - [x] User can login to account
 - [x] User can create Scraping Projects
 - [x] User can define Page Templates
-- [ ] User can define Seed Pages
-- [ ] Saving Page Templates auto builds the scraper
+- [x] User can define Seed Pages
 - [ ] User can trigger scraping for the project (each scrape run generate an output)
 - [ ] Scrape Runs can be resumed if they are interrupted by failures
-- [ ] User can set scrape settings- Sleep time between page scrapes
+- [x] User can set scrape settings- Sleep time between page scrapes
 - [ ] User can perform a scrape test by providing URL and Page Template
 
 # Architecture

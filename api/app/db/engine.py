@@ -6,6 +6,7 @@ import app.models.page_template
 import app.models.scrape_rule
 import app.models.ai_prompt
 import app.models.seed_page
+import app.models.scrape_run
 from typing import Annotated
 from fastapi import Depends
 

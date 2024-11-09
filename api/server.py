@@ -5,6 +5,7 @@ from app.routers.page_template import page_template_router
 from app.routers.scrape_rule import scrape_rule_router
 from app.routers.ai_prompt import ai_prompt_router
 from app.routers.seed_page import seed_page_router
+from app.routers.scrape_run import scrape_run_router
 import app.celery.celery
 from app.celery.tasks import update_project_name
 
@@ -25,6 +26,7 @@ tags_metadata = [
     },
     {"name": "ai prompt", "description": "Endpoints for managing AI prompts"},
     {"name": "seed pages", "description": "Endpoints for managing seed pages"},
+    {"name": "scrape runs", "description": "Endpoints for managing scrape runs"},
 ]
 
 app = FastAPI(
@@ -42,6 +44,7 @@ app.include_router(page_template_router)
 app.include_router(scrape_rule_router)
 app.include_router(ai_prompt_router)
 app.include_router(seed_page_router)
+app.include_router(scrape_run_router)
 
 
 @app.get("/health", tags=["miscellaneous"])

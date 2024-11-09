@@ -23,6 +23,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      minio:
+        condition: service_healthy
 
   rabbitmq:
     image: rabbitmq:4-management
@@ -79,6 +81,40 @@ services:
       rabbitmq:
         condition: service_healthy
   
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_DEFAULT_BUCKETS=easyscraper
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+    healthcheck:
+      test: curl -f http://localhost:9000/minio/health/live
+      interval: 30s
+      start_period: 10s
+      timeout: 10s
+      retries: 5
+
+  create-minio-bucket:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb --ignore-existing myminio/${MINIO_DEFAULT_BUCKET};
+      /usr/bin/mc anonymous set public myminio/${MINIO_DEFAULT_BUCKET};
+      exit 0;
+      "
+
   plantuml:
     image: plantuml/plantuml-server:jetty
     ports:
@@ -97,3 +133,4 @@ volumes:
   redis_volume:
   sqlite_volume:
   rabbitmq_volume:
+  minio_data:

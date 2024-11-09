@@ -55,7 +55,7 @@ entity ScrapeRunPage {
 entity ScrapeRunOutput {
     {static} id: ULID : PK
     format: Enum[JSONL, CSV, XLSX]
-    file: blob
+    file_url: String
     {static} scrape_run_id: ULID : FK
 }
 

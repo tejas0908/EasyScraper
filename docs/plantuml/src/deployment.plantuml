@@ -25,6 +25,10 @@ frame "Docker Compose" {
     node "celery worker" as celery_worker{
         process "task: scrape pages" as t1
     }
+    node "minio" as minio {
+        portin minio_9000
+        storage "minio_volume"
+    }
 }
 
 cloud "External Website" as e1
@@ -39,4 +43,6 @@ celery_worker --> redis_6379
 api --> sqlite
 celery_worker -up-> sqlite
 t1 -left-> e1 : scrape website
+api -up-> minio_9000
+browser --> minio_9000 : download scrape run output
 @enduml

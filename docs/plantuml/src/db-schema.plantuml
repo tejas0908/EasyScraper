@@ -8,6 +8,7 @@ entity Project {
     {static} id: ULID : PK
     name: String
     sleep_seconds_between_page_scrape: Integer
+    ignore_scrape_failures: Boolean
     {static} user_id: ULID : FK
 }
 entity PageTemplate {
@@ -40,12 +41,14 @@ entity ScrapeRun {
     {static} id: ULID : PK
     started_on: Epoch
     ended_on: Epoch
+    status: Enum[STARTED, COMPLETED, FAILED]
     {static} project_id: ULID : FK
 }
 entity ScrapeRunPage {
     {static} id: ULID : PK
     url: String
     scrape_output: JSON
+    status: Enum[STARTED, COMPLETED, FAILED]
     {static} page_template_id: ULID : FK
     {static} scrape_run_id: ULID : FK
 }

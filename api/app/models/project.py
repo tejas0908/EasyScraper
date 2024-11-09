@@ -10,17 +10,20 @@ class Project(SQLModel, table=True):
     )
     name: str = Field(nullable=False)
     sleep_seconds_between_page_scrape: int = Field(nullable=False, default=3)
+    ignore_scrape_failures: bool = Field(nullable=False, default=True)
     user_id: str = Field(nullable=False, foreign_key="user.id")
 
 
 class ProjectCreate(SQLModel):
     name: str = Field(nullable=False)
     sleep_seconds_between_page_scrape: int = Field(nullable=False, default=3)
+    ignore_scrape_failures: bool = Field(nullable=False, default=True)
 
 
 class ProjectUpdate(SQLModel):
     name: Optional[str] = Field(default=None)
     sleep_seconds_between_page_scrape: Optional[int] = Field(default=None)
+    ignore_scrape_failures: Optional[bool] = Field(default=None)
 
 
 class ProjectListResponse(SQLModel):

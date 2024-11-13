@@ -6,10 +6,11 @@
 - [x] User can create Scraping Projects
 - [x] User can define Page Templates
 - [x] User can define Seed Pages
-- [ ] User can trigger scraping for the project (each scrape run generate an output)
+- [x] User can trigger scraping for the project (each scrape run generate an output)
+- [ ] User can use xpath, css, auto scraper or AI scraper
 - [ ] Scrape Runs can be resumed if they are interrupted by failures
 - [x] User can set scrape settings- Sleep time between page scrapes
-- [ ] User can perform a scrape test by providing URL and Page Template
+- [x] User can perform a scrape test by providing URL and Page Template
 
 # Architecture
 
@@ -37,6 +38,7 @@
 ## API documentation
 
 https://tejas0908.github.io/EasyScraper/
+
 https://tejas0908.gitbook.io/easyscraper
 
 Re-build api documentation

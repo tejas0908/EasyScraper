@@ -10,8 +10,10 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - BROKER_URL=${BROKER_URL}
       - RESULT_BACKEND=${RESULT_BACKEND}
-    volumes:
-      - sqlite_volume:/app/database
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_DEFAULT_BUCKET=${MINIO_DEFAULT_BUCKET}
     healthcheck:
       test: curl -f http://localhost:8000/health
       interval: 30s
@@ -25,6 +27,24 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+
+  postgres:
+    image: postgres:17
+    hostname: "postgres1"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U ${POSTGRES_USER}
+      interval: 30s
+      start_period: 10s
+      timeout: 10s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:4-management
@@ -69,8 +89,12 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - BROKER_URL=${BROKER_URL}
       - RESULT_BACKEND=${RESULT_BACKEND}
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_DEFAULT_BUCKET=${MINIO_DEFAULT_BUCKET}
     volumes:
-      - sqlite_volume:/app/database
+      - celery_file_data:/app/celery_file_data
     healthcheck:
       test: celery -b ${BROKER_URL} inspect ping
       interval: 30s
@@ -111,7 +135,6 @@ services:
       /bin/sh -c "
       /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
       /usr/bin/mc mb --ignore-existing myminio/${MINIO_DEFAULT_BUCKET};
-      /usr/bin/mc anonymous set public myminio/${MINIO_DEFAULT_BUCKET};
       exit 0;
       "
 
@@ -131,6 +154,7 @@ services:
 
 volumes:
   redis_volume:
-  sqlite_volume:
   rabbitmq_volume:
   minio_data:
+  celery_file_data:
+  postgres_volume:

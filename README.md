@@ -37,6 +37,7 @@
 ## API documentation
 
 https://tejas0908.github.io/EasyScraper/
+https://tejas0908.gitbook.io/easyscraper
 
 Re-build api documentation
 ```bash

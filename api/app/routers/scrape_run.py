@@ -6,6 +6,9 @@ from app.models.scrape_run import (
     ScrapeRunOutput,
     ScrapeRunPage,
     ScrapeRunMiniView,
+    ScrapeTestRequest,
+    ScrapeTestResponse,
+    ScrapeRunOutputView
 )
 from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
@@ -13,6 +16,9 @@ from sqlmodel import select, func, col
 from app.models.auth import CurrentUserDep
 from app.models.common import Paging, FastAPIError
 from time import time
+from app.celery.tasks import scrape_page_for_test, scrape_master
+from fastapi.responses import FileResponse
+from app.util import get_file_from_minio
 
 scrape_run_router = APIRouter()
 
@@ -37,9 +43,7 @@ async def create_scrape_run(
     session.add(scrape_run)
     session.commit()
     session.refresh(scrape_run)
-
-    # start scraping task
-
+    scrape_master.delay(project_id, scrape_run.id, resume=False)
     scrape_run_view = ScrapeRunMiniView.model_validate(scrape_run.model_dump())
     return scrape_run_view
 
@@ -70,9 +74,7 @@ async def resume_scrape_run(
     session.add(scrape_run)
     session.commit()
     session.refresh(scrape_run)
-
-    # start scraping task
-
+    scrape_master.delay(project_id, scrape_run.id, resume=True)
     scrape_run_view = ScrapeRunMiniView.model_validate(scrape_run.model_dump())
     return scrape_run_view
 
@@ -143,4 +145,62 @@ async def list_scrape_runs(
     scrape_runs = session.exec(scrape_runs_query).all()
     return ScrapeRunListResponse(
         scrape_runs == scrape_runs, paing=Paging(skip=skip, limit=limit)
+    )
+
+
+@scrape_run_router.post(
+    "/projects/{project_id}/scrape_test",
+    response_model=ScrapeTestResponse,
+    tags=["scrape runs"],
+)
+async def scrape_test(
+    project_id,
+    scrape_test_request: ScrapeTestRequest,
+    current_user: CurrentUserDep,
+    session: SessionDep,
+) -> ScrapeTestResponse:
+    check_if_project_belongs_to_user(project_id, current_user, session)
+
+    scrape_result = scrape_page_for_test.delay(
+        project_id, scrape_test_request.page_template_id, scrape_test_request.url
+    ).get()
+
+    return ScrapeTestResponse(output=scrape_result)
+
+
+@scrape_run_router.get(
+    "/projects/{project_id}/scrape_runs/{scrape_run_id}/outputs/{scrape_run_output_id}/download",
+    tags=["scrape runs"],
+    responses={
+        404: {"model": FastAPIError, "description": "Scrape run output not found"}
+    },
+    response_class=FileResponse,
+)
+async def download_scrape_run_output(
+    project_id,
+    scrape_run_id,
+    scrape_run_output_id,
+    current_user: CurrentUserDep,
+    session: SessionDep,
+):
+    check_if_project_belongs_to_user(project_id, current_user, session)
+    scrape_run_output = session.exec(
+        select(ScrapeRunOutput)
+        .where(ScrapeRunOutput.id == scrape_run_output_id)
+        .where(ScrapeRunOutput.scrape_run_id == scrape_run_id)
+    ).first()
+    if not scrape_run_output:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Scrape run output not found"
+        )
+
+    file_name = scrape_run_output.file_url.split("/")[-1]
+    file_path = get_file_from_minio(scrape_run_output.file_url)
+    if not file_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="File not found in MinIO"
+        )
+
+    return FileResponse(
+        file_path, media_type="application/octet-stream", filename=file_name
     )

@@ -16,6 +16,7 @@ entity PageTemplate {
     name: String
     output_type: Enum[PAGE_SOURCE, LEAF]
     scraper: [XPATH_SELECTOR, CSS_SELECTOR, AUTO_SCRAPER, AI_SCRAPER]
+    example_url: String
     {static} output_page_template_id: ULID : FK
     {static} project_id: ULID : FK
 }
@@ -49,6 +50,7 @@ entity ScrapeRunPage {
     url: String
     scrape_output: JSON
     status: Enum[STARTED, COMPLETED, FAILED]
+    output_type: Enum[PAGE_SOURCE, LEAF]
     {static} page_template_id: ULID : FK
     {static} scrape_run_id: ULID : FK
 }

@@ -14,17 +14,17 @@ class User(SQLModel, table=True):
         default_factory=generate_ulid, primary_key=True, unique=True, nullable=False
     )
     username: str = Field(nullable=False, unique=True, index=True, min_length=6, max_length=20)
-    password: str = Field(nullable=False, min_length=6, max_length=20)
+    password: str = Field(nullable=False, min_length=6, max_length=500)
 
 
 class UserCreate(SQLModel):
     username: str = Field(nullable=False, min_length=6, max_length=20)
-    password: str = Field(nullable=False, min_length=6, max_length=20)
+    password: str = Field(nullable=False, min_length=6, max_length=500)
 
 
 class UserLogin(SQLModel):
     username: str = Field(nullable=False, min_length=6, max_length=20)
-    password: str = Field(nullable=False, min_length=6, max_length=20)
+    password: str = Field(nullable=False, min_length=6, max_length=500)
 
 
 class UserAccessToken(SQLModel):

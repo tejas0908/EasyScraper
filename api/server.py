@@ -7,7 +7,6 @@ from app.routers.ai_prompt import ai_prompt_router
 from app.routers.seed_page import seed_page_router
 from app.routers.scrape_run import scrape_run_router
 import app.celery.celery
-from app.celery.tasks import update_project_name
 
 tags_metadata = [
     {

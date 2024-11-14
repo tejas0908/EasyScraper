@@ -1,6 +1,5 @@
 from app.celery.celery import celery_app
-from app.db.engine import engine
-from sqlmodel import Session, select
+from sqlmodel import Session, select, create_engine
 from app.models.project import Project
 from app.models.page_template import PageTemplate
 from app.models.scrape_rule import ScrapeRule
@@ -16,42 +15,19 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 import os
 from pathlib import Path
+from sqlalchemy.pool import NullPool
+from datetime import datetime
 
+db_url = os.environ["DB_URL"]
+engine = create_engine(db_url, echo=True, poolclass=NullPool)
 session = Session(engine)
 
 
-@celery_app.task
-def update_project_name(project_id):
-    statement = select(Project).where(Project.id == project_id)
-    project = session.exec(statement).one_or_none()
-    project.name = "Celery updated name"
-    session.add(project)
-    session.commit()
-    session.refresh(project)
-    project = update_project_settings.delay(project_id).get(disable_sync_subtasks=False)
-    res = group(add.s(4, 4), add.s(8, 8), add.s(16, 16))()
-    while res.completed_count() < 3:
-        print("completed_count", res.completed_count())
-        time.sleep(1)
-    print("completed_count", res.completed_count())
-    print(res.get(disable_sync_subtasks=False))
-    return project
-
-
-@celery_app.task
-def update_project_settings(project_id):
-    statement = select(Project).where(Project.id == project_id)
-    project = session.exec(statement).one_or_none()
-    project.sleep_seconds_between_page_scrape = 999
-    session.add(project)
-    session.commit()
-    session.refresh(project)
-    return project
-
-
-@celery_app.task
-def add(x, y):
-    return x + y
+def get_auto_scraper(scrape_run_id, url, wanted_dict):
+    print(f"Building auto scraper for {scrape_run_id}")
+    scraper = AutoScraper()
+    scraper.build(url, wanted_dict=wanted_dict)
+    return scraper
 
 
 def get_project(project_id):
@@ -106,15 +82,15 @@ def get_seed_pages(project_id):
     return seed_pages
 
 
-def scrape_page(page_template, scrape_rules, url):
+def scrape_page(scrape_run_id, page_template, scrape_rules, url):
     scrape_result = {}
     if page_template.scraper == "AUTO_SCRAPER":
         wanted_dict = {}
         for scrape_rule in scrape_rules:
             wanted_dict[scrape_rule.alias] = [scrape_rule.value]
-        # scraper should be built outside
-        scraper = AutoScraper()
-        scraper.build(page_template.example_url, wanted_dict=wanted_dict)
+        scraper = get_auto_scraper(
+            scrape_run_id, page_template.example_url, wanted_dict
+        )
         scrape_result = scraper.get_result_similar(
             url, group_by_alias=True, unique=True
         )
@@ -132,8 +108,8 @@ def scrape_page(page_template, scrape_rules, url):
     return scrape_result
 
 
-@celery_app.task
-def scrape_page_for_run(project_id, scrape_run_page_id):
+@celery_app.task(time_limit=60)
+def scrape_page_for_run(project_id, scrape_run_id, scrape_run_page_id):
     project = get_project(project_id)
     scrape_run_page = get_scrape_run_page(scrape_run_page_id)
     scrape_result = {}
@@ -142,7 +118,7 @@ def scrape_page_for_run(project_id, scrape_run_page_id):
         url = scrape_run_page.url
         page_template = get_page_template(page_template_id, project_id)
         scrape_rules = get_scrape_rules(page_template_id)
-        scrape_result = scrape_page(page_template, scrape_rules, url)
+        scrape_result = scrape_page(scrape_run_id, page_template, scrape_rules, url)
         scrape_run_page.status = "COMPLETED"
         scrape_run_page.scrape_output = scrape_result
     except:
@@ -154,11 +130,11 @@ def scrape_page_for_run(project_id, scrape_run_page_id):
     return scrape_result, page_template.output_page_template_id
 
 
-@celery_app.task
+@celery_app.task(time_limit=60)
 def scrape_page_for_test(project_id, page_template_id, url):
     page_template = get_page_template(page_template_id, project_id)
     scrape_rules = get_scrape_rules(page_template_id)
-    scrape_result = scrape_page(page_template, scrape_rules, url)
+    scrape_result = scrape_page(str(int(time.time())), page_template, scrape_rules, url)
     return scrape_result
 
 
@@ -269,7 +245,9 @@ def scrape_master(project_id, scrape_run_id, resume=False):
             break
         scrape_page_tasks = []
         for scrape_run_page in scrape_run_pages:
-            scrape_page_task = scrape_page_for_run.s(project_id, scrape_run_page.id)
+            scrape_page_task = scrape_page_for_run.s(
+                project_id, scrape_run_id, scrape_run_page.id
+            )
             scrape_page_tasks.append(scrape_page_task)
         group_promise = group(scrape_page_tasks)()
         while not group_promise.ready():
@@ -304,7 +282,9 @@ def scrape_master(project_id, scrape_run_id, resume=False):
             break
         scrape_page_tasks = []
         for scrape_run_page in scrape_run_pages:
-            scrape_page_task = scrape_page_for_run.s(project_id, scrape_run_page.id)
+            scrape_page_task = scrape_page_for_run.s(
+                project_id, scrape_run_id, scrape_run_page.id
+            )
             scrape_page_tasks.append(scrape_page_task)
         group_promise = group(scrape_page_tasks)()
         while not group_promise.ready():
@@ -358,6 +338,7 @@ def scrape_master(project_id, scrape_run_id, resume=False):
 
     # update scrape run status as COMPLETED
     scrape_run.status = "COMPLETED"
+    scrape_run.ended_on = datetime.now()
     session.add(scrape_run)
     session.commit()
 

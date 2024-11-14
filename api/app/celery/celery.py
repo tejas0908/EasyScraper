@@ -15,6 +15,11 @@ class CeleryConfig:
     event_serializer = "json"
     accept_content = ["application/json", "application/x-python-serialize"]
     result_accept_content = ["application/json", "application/x-python-serialize"]
+    worker_send_task_events = True
+    task_track_started = True
+    task_send_sent_event = True
+    result_extended = True
+    enable_utc = True
 
 
 celery_app.config_from_object(CeleryConfig)

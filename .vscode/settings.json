@@ -5,5 +5,6 @@
     "plantuml.exportSubFolder": false,
     "plantuml.render": "PlantUMLServer",
     "plantuml.server": "http://localhost:8080/plantuml",
-    "plantuml.lintDiagramNoName": false
+    "plantuml.lintDiagramNoName": false,
+    "CodeGPT.apiKey": "Ollama"
 }

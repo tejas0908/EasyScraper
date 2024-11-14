@@ -21,8 +21,6 @@ services:
       timeout: 10s
       retries: 5
     depends_on:
-      rabbitmq:
-        condition: service_healthy
       redis:
         condition: service_healthy
       minio:
@@ -41,26 +39,6 @@ services:
       - postgres_volume:/var/lib/postgresql/data
     healthcheck:
       test: pg_isready -U ${POSTGRES_USER}
-      interval: 30s
-      start_period: 10s
-      timeout: 10s
-      retries: 5
-
-  rabbitmq:
-    image: rabbitmq:4-management
-    hostname: "rabbit1"
-    environment:
-      - RABBITMQ_DEFAULT_USER:${RABBITMQ_USER}
-      - RABBITMQ_DEFAULT_PASS:${RABBITMQ_PASS}"
-    ports:
-      - "15672:15672"
-      - "5672:5672"
-    labels:
-      NAME: "rabbitmq1"
-    volumes:
-      - rabbitmq_volume:/var/lib/rabbitmq
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
       interval: 30s
       start_period: 10s
       timeout: 10s
@@ -102,8 +80,17 @@ services:
       timeout: 10s
       retries: 5
     depends_on:
-      rabbitmq:
+      redis:
         condition: service_healthy
+  
+  celery-insights:
+    image: ghcr.io/danyi1212/celery-insights:latest
+    ports:
+      - 8555:8555
+    environment:
+      - BROKER_URL=${BROKER_URL}
+      - RESULT_BACKEND=${RESULT_BACKEND}
+    profiles: [dev]
   
   minio:
     image: minio/minio
@@ -150,11 +137,10 @@ services:
       start_period: 10s
       timeout: 10s
       retries: 5
-    profiles: [plantuml]
+    profiles: [dev]
 
 volumes:
   redis_volume:
-  rabbitmq_volume:
   minio_data:
   celery_file_data:
   postgres_volume:

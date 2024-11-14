@@ -17,6 +17,10 @@ import os
 from pathlib import Path
 from sqlalchemy.pool import NullPool
 from datetime import datetime
+from lxml import html
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 db_url = os.environ["DB_URL"]
 engine = create_engine(db_url, echo=True, poolclass=NullPool)
@@ -82,29 +86,93 @@ def get_seed_pages(project_id):
     return seed_pages
 
 
+def scrape_page_auto_scraper(scrape_run_id, page_template, scrape_rules, url):
+    wanted_dict = {}
+    for scrape_rule in scrape_rules:
+        wanted_dict[scrape_rule.alias] = [scrape_rule.value]
+    scraper = get_auto_scraper(scrape_run_id, page_template.example_url, wanted_dict)
+    scrape_result = scraper.get_result_similar(url, group_by_alias=True, unique=True)
+    for scrape_rule in scrape_rules:
+        if scrape_rule.type == "SINGLE":
+            if (
+                scrape_rule.alias in scrape_result
+                and len(scrape_result[scrape_rule.alias]) > 0
+            ):
+                scrape_result[scrape_rule.alias] = scrape_result[scrape_rule.alias][0]
+            else:
+                scrape_result[scrape_rule.alias] = None
+    return scrape_result
+
+
+def get_root_url(url):
+    parsed_url = urlparse(url)
+    return f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+
+def get_href(href, root):
+    return href if href.startswith("http") else f"{root}{href}"
+
+
+def scrape_page_xpath_selector(scrape_run_id, page_template, scrape_rules, url):
+    root = get_root_url(url)
+    response = requests.get(url)
+    tree = html.fromstring(response.content)
+    scrape_result = {}
+    for scrape_rule in scrape_rules:
+        elements = tree.xpath(scrape_rule.value)
+        elements = [
+            get_href(element.attrib["href"], root) if scrape_rule.href else element.text
+            for element in elements
+        ]
+        if scrape_rule.type == "SINGLE":
+            scrape_result[scrape_rule.alias] = (
+                elements[0] if len(elements) > 0 else None
+            )
+        else:
+            scrape_result[scrape_rule.alias] = elements
+    return scrape_result
+
+
+def scrape_page_css_selector(scrape_run_id, page_template, scrape_rules, url):
+    root = get_root_url(url)
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, "html.parser")
+    scrape_result = {}
+    for scrape_rule in scrape_rules:
+        elements = soup.select(scrape_rule.value)
+        elements = [
+            get_href(element.get("href"), root) if scrape_rule.href else element.text
+            for element in elements
+        ]
+        if scrape_rule.type == "SINGLE":
+            scrape_result[scrape_rule.alias] = elements[0] if elements else None
+        else:
+            scrape_result[scrape_rule.alias] = [element for element in elements]
+    return scrape_result
+
+
+def scrape_page_ai_scraper(scrape_run_id, page_template, scrape_rules, url):
+    return {}
+
+
 def scrape_page(scrape_run_id, page_template, scrape_rules, url):
     scrape_result = {}
     if page_template.scraper == "AUTO_SCRAPER":
-        wanted_dict = {}
-        for scrape_rule in scrape_rules:
-            wanted_dict[scrape_rule.alias] = [scrape_rule.value]
-        scraper = get_auto_scraper(
-            scrape_run_id, page_template.example_url, wanted_dict
+        scrape_result = scrape_page_auto_scraper(
+            scrape_run_id, page_template, scrape_rules, url
         )
-        scrape_result = scraper.get_result_similar(
-            url, group_by_alias=True, unique=True
+    if page_template.scraper == "XPATH_SELECTOR":
+        scrape_result = scrape_page_xpath_selector(
+            scrape_run_id, page_template, scrape_rules, url
         )
-        for scrape_rule in scrape_rules:
-            if scrape_rule.type == "SINGLE":
-                if (
-                    scrape_rule.alias in scrape_result
-                    and len(scrape_result[scrape_rule.alias]) > 0
-                ):
-                    scrape_result[scrape_rule.alias] = scrape_result[scrape_rule.alias][
-                        0
-                    ]
-                else:
-                    scrape_result[scrape_rule.alias] = None
+    if page_template.scraper == "CSS_SELECTOR":
+        scrape_result = scrape_page_css_selector(
+            scrape_run_id, page_template, scrape_rules, url
+        )
+    if page_template.scraper == "AI_SCRAPER":
+        scrape_result = scrape_page_ai_scraper(
+            scrape_run_id, page_template, scrape_rules, url
+        )
     return scrape_result
 
 

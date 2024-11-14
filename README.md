@@ -28,7 +28,7 @@
 
 ## Deployment View
 
-![Deployment View](docs/plantuml/output/deployment.png)
+![Deployment View](docs/plantuml/output/deployment.jpg)
 
 ## Sequence Diagrams
 
@@ -38,8 +38,6 @@
 ## API documentation
 
 https://tejas0908.github.io/EasyScraper/
-
-https://tejas0908.gitbook.io/easyscraper
 
 Re-build api documentation
 ```bash

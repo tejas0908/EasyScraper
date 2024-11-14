@@ -3,15 +3,14 @@
 ** UI
 ***_ Vite
 ***_ React
-***_ Chakra UI
+***_ Shadcn
 ** API
 ***_ UV
 ***_ FastAPI
 ***_ Python
 ** DB
-***_ SQLite
+***_ Postgres
 ** Scraper
 ***_ Celery
-***_ RabbitMQ
 ***_ Redis
 @endmindmap

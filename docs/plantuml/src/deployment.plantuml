@@ -12,7 +12,9 @@ frame "Docker Compose" {
     node "api" as api {
         portin api_8000
     }
-    storage "sqlite" <<shared volume>> as sqlite {
+    node "postgres" as postgres {
+        portin postgres_5432
+        storage "postgres_volume"
     }
     node "rabbitmq" as rabbitmq {
         portin rabbitmq_5672
@@ -40,9 +42,9 @@ api --> rabbitmq_5672
 api --> redis_6379
 celery_worker --> rabbitmq_5672
 celery_worker --> redis_6379
-api --> sqlite
-celery_worker -up-> sqlite
+api --> postgres_5432
+celery_worker -up-> postgres_5432
+celery_worker -up-> minio_9000
 t1 -left-> e1 : scrape website
 api -up-> minio_9000
-browser --> minio_9000 : download scrape run output
 @enduml

@@ -3,7 +3,7 @@ title User Login Sequence Diagram
 participant Browser as browser
 participant UI as ui
 participant API as api
-database SQLite as sqlite
+database Postgres as db
 
 browser -> ui: Home Page
 ui -> ui: check if token exists and valid
@@ -12,7 +12,7 @@ browser -> ui: User Login Page
 ui -> browser: login form
 browser -> ui: username + password
 ui -> api: POST /user/login
-api -> sqlite: check if user exists
+api -> db: check if user exists
 api -> api: verify password \nusing hash comparision
 api -> api: generate JWT token
 api -> ui: JWT token

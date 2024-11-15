@@ -11,6 +11,7 @@ class ScrapeRule(SQLModel, table=True):
     alias: str = Field(nullable=False, min_length=3, max_length=100)
     type: Literal["SINGLE", "MULTI"] = Field(nullable=False, sa_type=String)
     value: str = Field(nullable=True, default=None, max_length=1000)
+    href: bool = Field(nullable=True, default=None)
     page_template_id: str = Field(
         nullable=True, default=None, foreign_key="pagetemplate.id"
     )
@@ -20,12 +21,14 @@ class ScrapeRuleCreate(SQLModel):
     alias: str = Field(nullable=False, min_length=3, max_length=100)
     type: Literal["SINGLE", "MULTI"] = Field(nullable=False, sa_type=String)
     value: str = Field(nullable=True, default=None, max_length=1000)
+    href: bool = Field(nullable=True, default=None)
 
 
 class ScrapeRuleUpdate(SQLModel):
     alias: Optional[str] = Field(default=None, min_length=3, max_length=100)
     type: Literal["SINGLE", "MULTI"] = Field(default=None)
     value: Optional[str] = Field(default=None, max_length=1000)
+    href: bool = Field(nullable=True, default=None)
 
 
 class ScrapeRuleListResponse(SQLModel):

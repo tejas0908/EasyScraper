@@ -8,7 +8,7 @@ from app.models.scrape_run import (
     ScrapeRunMiniView,
     ScrapeTestRequest,
     ScrapeTestResponse,
-    ScrapeRunOutputView
+    ScrapeRunOutputView,
 )
 from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
@@ -44,37 +44,6 @@ async def create_scrape_run(
     session.commit()
     session.refresh(scrape_run)
     scrape_master.delay(project_id, scrape_run.id, resume=False)
-    scrape_run_view = ScrapeRunMiniView.model_validate(scrape_run.model_dump())
-    return scrape_run_view
-
-
-@scrape_run_router.post(
-    "/projects/{project_id}/scrape_runs/{scrape_run_id}/resume",
-    response_model=ScrapeRunMiniView,
-    tags=["scrape runs"],
-)
-async def resume_scrape_run(
-    project_id,
-    scrape_run_id,
-    current_user: CurrentUserDep,
-    session: SessionDep,
-) -> ScrapeRunView:
-    check_if_project_belongs_to_user(project_id, current_user, session)
-    scrape_run = session.exec(
-        select(ScrapeRun)
-        .where(ScrapeRun.id == scrape_run_id)
-        .where(ScrapeRun.project_id == project_id)
-    ).first()
-    if not scrape_run:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Scrape run not found"
-        )
-    scrape_run.status = "STARTED"
-    scrape_run.ended_on = None
-    session.add(scrape_run)
-    session.commit()
-    session.refresh(scrape_run)
-    scrape_master.delay(project_id, scrape_run.id, resume=True)
     scrape_run_view = ScrapeRunMiniView.model_validate(scrape_run.model_dump())
     return scrape_run_view
 

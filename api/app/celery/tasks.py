@@ -21,10 +21,13 @@ from lxml import html
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+from openai import OpenAI
 
 db_url = os.environ["DB_URL"]
 engine = create_engine(db_url, echo=True, poolclass=NullPool)
 session = Session(engine)
+
+openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 
 def get_auto_scraper(scrape_run_id, url, wanted_dict):
@@ -152,7 +155,53 @@ def scrape_page_css_selector(scrape_run_id, page_template, scrape_rules, url):
 
 
 def scrape_page_ai_scraper(scrape_run_id, page_template, scrape_rules, url):
-    return {}
+    url_response = requests.get(url)
+    ai_input = None
+    if page_template.ai_input == "HTML":
+        ai_input = url_response.text
+    else:
+        soup = BeautifulSoup(url_response.text, "html.parser")
+        ai_input = soup.get_text()
+    response_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "scrape_result",
+            "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": False,
+            },
+            "strict": True,
+        },
+    }
+    for scrape_rule in scrape_rules:
+        if scrape_rule.type == "SINGLE":
+            response_format["json_schema"]["schema"]["properties"][
+                scrape_rule.alias
+            ] = {"type": "string"}
+        else:
+            response_format["json_schema"]["schema"]["properties"][
+                scrape_rule.alias
+            ] = {"type": "array", "items": {"type": "string"}}
+        response_format["json_schema"]["schema"]["required"].append(scrape_rule.alias)
+    openai_response = openai_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a web scraper.\n" + page_template.ai_prompt
+                    if page_template.ai_prompt
+                    else ""
+                ),
+            },
+            {"role": "user", "content": ai_input},
+        ],
+        response_format=response_format,
+    )
+    scrape_result = openai_response.choices[0].message.content
+    return scrape_result
 
 
 def scrape_page(scrape_run_id, page_template, scrape_rules, url):
@@ -176,7 +225,7 @@ def scrape_page(scrape_run_id, page_template, scrape_rules, url):
     return scrape_result
 
 
-@celery_app.task(time_limit=60)
+@celery_app.task(time_limit=60, rate_limit="3/m")
 def scrape_page_for_run(project_id, scrape_run_id, scrape_run_page_id):
     project = get_project(project_id)
     scrape_run_page = get_scrape_run_page(scrape_run_page_id)
@@ -228,13 +277,18 @@ def write_to_jsonl_file(scrape_run_pages, scrape_run_id, page_template_id):
 
 def write_to_csv_file(scrape_run_pages, scrape_run_id, page_template_id):
     output_file_path = f"/app/celery_file_data/scrape_run_outputs/{scrape_run_id}_{page_template_id}.csv"
+    csv_scrape_run_pages = [
+        x
+        for x in scrape_run_pages
+        if type(x.scrape_output) == dict and len(x.scrape_output.keys()) > 0
+    ]
     with open(output_file_path, "w", newline="") as csv_output_file:
         fieldnames = (
-            scrape_run_pages[0].scrape_output.keys() if scrape_run_pages else []
+            csv_scrape_run_pages[0].scrape_output.keys() if csv_scrape_run_pages else []
         )
         writer = csv.DictWriter(csv_output_file, fieldnames=fieldnames)
         writer.writeheader()
-        for scrape_run_page in scrape_run_pages:
+        for scrape_run_page in csv_scrape_run_pages:
             writer.writerow(scrape_run_page.scrape_output)
     return output_file_path
 
@@ -242,16 +296,23 @@ def write_to_csv_file(scrape_run_pages, scrape_run_id, page_template_id):
 def write_to_xlsx_file(scrape_run_pages, scrape_run_id, page_template_id):
     # write scrape output to XLSX file
     output_file_path = f"/app/celery_file_data/scrape_run_outputs/{scrape_run_id}_{page_template_id}.xlsx"
+    xlsx_scrape_run_pages = [
+        x
+        for x in scrape_run_pages
+        if type(x.scrape_output) == dict and len(x.scrape_output.keys()) > 0
+    ]
     workbook = xlsxwriter.Workbook(output_file_path)
     worksheet = workbook.add_worksheet()
 
     # Write headers
-    fieldnames = scrape_run_pages[0].scrape_output.keys() if scrape_run_pages else []
+    fieldnames = (
+        xlsx_scrape_run_pages[0].scrape_output.keys() if xlsx_scrape_run_pages else []
+    )
     for col_num, fieldname in enumerate(fieldnames):
         worksheet.write(0, col_num, fieldname)
 
     # Write data
-    for row_num, scrape_run_page in enumerate(scrape_run_pages, start=1):
+    for row_num, scrape_run_page in enumerate(xlsx_scrape_run_pages, start=1):
         for col_num, fieldname in enumerate(fieldnames):
             worksheet.write(
                 row_num, col_num, scrape_run_page.scrape_output.get(fieldname)

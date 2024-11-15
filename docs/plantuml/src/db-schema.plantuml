@@ -15,8 +15,10 @@ entity PageTemplate {
     {static} id: ULID : PK
     name: String
     output_type: Enum[PAGE_SOURCE, LEAF]
-    scraper: [XPATH_SELECTOR, CSS_SELECTOR, AUTO_SCRAPER, AI_SCRAPER]
+    scraper: Enum[XPATH_SELECTOR, CSS_SELECTOR, AUTO_SCRAPER, AI_SCRAPER]
     example_url: String
+    ai_prompt: String
+    ai_input: Enum[HTML, TEXT]
     {static} output_page_template_id: ULID : FK
     {static} project_id: ULID : FK
 }
@@ -25,11 +27,7 @@ entity ScrapeRule {
     alias: String
     type: Enum[SINGLE, MULTI]
     value: String
-    {static} page_template_id: ULID : FK
-}
-entity AIPrompt {
-    {static} id: ULID : PK
-    prompt: String
+    href: Boolean
     {static} page_template_id: ULID : FK
 }
 entity SeedPage {
@@ -66,7 +64,6 @@ Project "1" -down-> "N" PageTemplate
 Project "1" -right-> "N" SeedPage
 SeedPage "1" -down-> "1" PageTemplate
 PageTemplate "1" --> "N" ScrapeRule
-PageTemplate "1" --> "1" AIPrompt
 Project "1" --> "N" ScrapeRun
 ScrapeRun "1" --> "N" ScrapeRunPage
 ScrapeRun "1" --> "N" ScrapeRunOutput
@@ -76,7 +73,6 @@ hide Project methods
 hide PageTemplate methods
 hide SeedPage methods
 hide ScrapeRule methods
-hide AIPrompt methods
 hide ScrapeRun methods
 hide ScrapeRunPage methods
 hide ScrapeRunOutput methods

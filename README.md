@@ -7,7 +7,7 @@
 - [x] User can define Page Templates
 - [x] User can define Seed Pages
 - [x] User can trigger scraping for the project (each scrape run generate an output)
-- [ ] User can use xpath, css, auto scraper or AI scraper
+- [x] User can use xpath, css, auto scraper or AI scraper
 - [x] User can set scrape settings- Sleep time between page scrapes
 - [x] User can perform a scrape test by providing URL and Page Template
 - [ ] User can import/export projects as JSON

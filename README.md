@@ -18,6 +18,8 @@
 - [ ] tasks.py refactor
 - [ ] api documentation - add more field level details
 - [ ] experiment with outlines library
+- [ ] login with github option
+- [ ] rate limited scraping
 
 
 # Architecture

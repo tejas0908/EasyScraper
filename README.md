@@ -11,6 +11,14 @@
 - [x] User can set scrape settings- Sleep time between page scrapes
 - [x] User can perform a scrape test by providing URL and Page Template
 - [ ] User can import/export projects as JSON
+- [ ] Kubernetes helm chart
+- [ ] Github actions for build and push to dockerhub
+- [ ] Use boto sdk instead of minio sdk so that there is an option to use S3 bucket
+- [ ] UI implementation
+- [ ] tasks.py refactor
+- [ ] api documentation - add more field level details
+- [ ] experiment with outlines library
+
 
 # Architecture
 

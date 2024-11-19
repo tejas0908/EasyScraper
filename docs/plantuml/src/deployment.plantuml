@@ -1,50 +1,24 @@
 @startuml
-allowmixing
-
-actor "User" as user
-node "Web Browser" as browser {
+component Browser as browser
+component "External Website" as ew
+package "Docker Compose" as dc {
+    component UI as ui
+    component API as api
+    component Redis as redis
+    component Postgres as postgres
+    component Minio as minio
+    component "Celery Workers" as cw
 }
 
-frame "Docker Compose" {
-    node "ui" as ui {
-        portin ui_3000
-    }
-    node "api" as api {
-        portin api_8000
-    }
-    node "postgres" as postgres {
-        portin postgres_5432
-        storage "postgres_volume"
-    }
-    node "rabbitmq" as rabbitmq {
-        portin rabbitmq_5672
-        storage "rabbitmq_volume"
-    }
-    node "redis" as redis {
-        portin redis_6379
-        storage "redis_volume"
-    }
-    node "celery worker" as celery_worker{
-        process "task: scrape pages" as t1
-    }
-    node "minio" as minio {
-        portin minio_9000
-        storage "minio_volume"
-    }
-}
-
-cloud "External Website" as e1
-
-user -right-> browser
-browser -right-> ui_3000
-ui -right-> api_8000
-api --> rabbitmq_5672
-api --> redis_6379
-celery_worker --> rabbitmq_5672
-celery_worker --> redis_6379
-api --> postgres_5432
-celery_worker -up-> postgres_5432
-celery_worker -up-> minio_9000
-t1 -left-> e1 : scrape website
-api -up-> minio_9000
+browser -right-> ui
+ui -right-> api
+api -right-> redis : Broker &\nResult Backend
+cw -left-> redis : Broker &\nResult Backend
+cw -down-> postgres
+cw -up-> minio : Save \nOutput Files
+api -up-> minio : Download \nOutput Files
+api -down-> postgres
+cw -right-> ew : Scrape\nWebsite
+redis --[hidden]u-> minio
+redis --[hidden]d-> postgres
 @enduml

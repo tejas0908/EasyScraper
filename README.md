@@ -38,7 +38,7 @@
 
 ## Deployment View
 
-![Deployment View](docs/plantuml/output/deployment.jpg)
+![Deployment View](docs/plantuml/output/deployment.png)
 
 ## Sequence Diagrams
 

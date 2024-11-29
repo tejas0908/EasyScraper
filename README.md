@@ -20,6 +20,8 @@
 - [ ] experiment with outlines library
 - [ ] login with github option
 - [ ] rate limited scraping
+- [ ] use litellm for AI calls
+- [ ] chrome extension to extract xpaths and css selectors?
 
 
 # Architecture

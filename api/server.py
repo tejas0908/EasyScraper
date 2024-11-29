@@ -6,6 +6,7 @@ from app.routers.scrape_rule import scrape_rule_router
 from app.routers.seed_page import seed_page_router
 from app.routers.scrape_run import scrape_run_router
 import app.celery.celery
+from fastapi.middleware.cors import CORSMiddleware
 
 tags_metadata = [
     {
@@ -35,6 +36,14 @@ app = FastAPI(
     docs_url=None,
     openapi_tags=tags_metadata,
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(auth_router)
 app.include_router(project_router)
 app.include_router(page_template_router)

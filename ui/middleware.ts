@@ -26,4 +26,8 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
+    if (request.nextUrl.pathname == '/'){
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
 }

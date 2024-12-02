@@ -1,11 +1,18 @@
 'use client';
 
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useState } from "react";
 import { useRouter } from 'next/navigation'
 import { useCookies } from 'react-cookie';
+import {
+    Alert,
+    AlertDescription,
+    AlertTitle,
+} from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
+import Link from 'next/link'
+import { buttonVariants } from "@/components/ui/button"
 
 export default function Signup() {
     const router = useRouter();
@@ -54,25 +61,42 @@ export default function Signup() {
     }
 
     return (
-        <div className="grid grid-cols-[1fr,300px,1fr] h-screen grid-rows-[1fr,350px,1fr] bg-slate-50">
-            <div className="bg-white rounded-sm col-start-2 row-start-2 border p-4">
-                <div className="pt-4">
-                    <Label htmlFor="username">Username</Label>
+        <div className="grid w-screen h-screen grid-cols-[50%,50%]">
+            <div className="">
+                <div className="flex flex-col justify-between p-12 w-full h-full bg-login-page text-white bg-center bg-cover">
+                    <div className="text-2xl">EasyScraper</div>
+                    <div className="text-xl">Scraping made easy. Scrape any website without writing code</div>
+                </div>
+            </div>
+            <div className="flex flex-col justify-center items-center space-y-2">
+                <div className="text-2xl font-bold">Create an account</div>
+                <div className="text-sm pb-4">Enter your username and password below</div>
+
+                <div className="w-64">
                     <Input type="text" id="username" value={username} onChange={handleUsernameChange} placeholder="Username" />
                 </div>
-                <div className="pt-4">
-                    <Label htmlFor="password">Password</Label>
+
+                <div className="w-64">
                     <Input type="password" id="password" value={password} onChange={handlePasswordChange} placeholder="Password" />
                 </div>
-                <div className="pt-4">
-                    <Label htmlFor="confirmpassword">Confirm Password</Label>
+
+                <div className="w-64">
                     <Input type="password" id="confirmpassword" value={confirmPassword} onChange={handleConfirmPasswordChange} placeholder="Confirm Password" />
                 </div>
-                <div className="pt-6 grid grid-cols-[1fr,100px,1fr]">
-                    <Button className="col-start-2" onClick={handleSignup}>Signup</Button>
-                </div>
+                { error ? (
                 <div>
-                    <span className="text-red-500">{error}</span>
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                            {error}
+                        </AlertDescription>
+                    </Alert>
+                </div>
+                ) : (<div></div>)}
+                <div className="flex space-x-6 pt-4">
+                    <Link href="/login" className={buttonVariants({ variant: "outline" })}>Login</Link>
+                    <Button onClick={handleSignup}>Signup</Button>
                 </div>
             </div>
         </div>

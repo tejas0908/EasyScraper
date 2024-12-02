@@ -9,6 +9,10 @@ export default {
   ],
   theme: {
   	extend: {
+		backgroundImage: {
+			'login-page':
+			  "url('/spider.jpg')",
+		},
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

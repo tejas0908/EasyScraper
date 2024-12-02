@@ -1,6 +1,9 @@
+'use client';
+
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -8,22 +11,32 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { Home, LogOut, BookCopy } from "lucide-react"
+import { useRouter } from 'next/navigation'
+import { useCookies } from 'react-cookie';
 
 const items = [
   {
     title: "Projects",
-    url: "/dashboard/projects",
-    icon: Home,
+    url: "/dashboard",
+    icon: BookCopy,
   }
 ]
 
 export function AppSidebar() {
-    return (
-      <Sidebar>
+  const router = useRouter();
+  const [cookies, setCookie, removeCookie] = useCookies(['token']);
+
+  async function handleLogout() {
+    removeCookie("token");
+    router.push("/login");
+  }
+
+  return (
+    <Sidebar variant="sidebar" collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>EasyScraper</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -40,6 +53,16 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleLogout}>
+              <LogOut />
+              <span>Logout</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
-    )
+  )
 }

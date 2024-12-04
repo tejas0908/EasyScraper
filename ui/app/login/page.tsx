@@ -103,7 +103,7 @@ export default function Login() {
 
     return (
         <div className="grid w-screen h-screen md:grid-cols-[50%,50%] grid-cols-1">
-            <div className="flex-col justify-between p-12 w-full h-full bg-login-page text-white bg-center bg-cover md:flex hidden">
+            <div className="flex-col justify-between p-12 w-full h-full text-white md:flex hidden bg-gradient-to-r from-black via-slate-400 via-70%">
                 <div className="text-2xl">EasyScraper</div>
                 <div className="text-xl">Scraping made easy. Scrape any website without writing code</div>
             </div>

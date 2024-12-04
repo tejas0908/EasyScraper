@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useReducer } from "react";
 import { useCookies } from 'react-cookie';
 import { Loader2, Edit } from "lucide-react"
 import { toast } from "sonner"
@@ -22,10 +22,22 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+    SheetFooter,
+    SheetClose
+} from "@/components/ui/sheet"
+import { EditPageTemplateSheet } from "./sheet-edit-page-template";
 
 export function TabPageTemplates({ project, parentForceUpdate }: { project: Project, parentForceUpdate: any }) {
     const [cookies, setCookie] = useCookies(['token']);
     const [pageTemplates, setPageTemplates] = useState<PageTemplate[]>([]);
+    const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
 
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/page_templates?` + new URLSearchParams({ skip: String(0), limit: String(100) }).toString(), {
@@ -43,6 +55,9 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
 
     return (
         <div className="p-2 space-y-4 w-[600px]">
+            <div className="flex justify-end">
+                <EditPageTemplateSheet pageTemplate={null} parentForceUpdate={forceUpdate}/>
+            </div>
             {pageTemplates.length > 0 &&
                 <Accordion type="single" collapsible>
                     {pageTemplates.map((pageTemplate, index) => (
@@ -58,7 +73,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
                             </AccordionTrigger>
                             <AccordionContent>
                                 <div className="border rounded-sm p-4 grid grid-cols-3 gap-4">
-                                    <Button className="col-start-3"><Edit /> Edit Page Template</Button>
+                                    <EditPageTemplateSheet pageTemplate={pageTemplate} parentForceUpdate={forceUpdate}/>
                                     <div>
                                         <Label>Name</Label>
                                         <Input type="text" disabled readOnly value={pageTemplate.name}></Input>

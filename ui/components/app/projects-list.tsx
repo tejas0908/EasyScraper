@@ -83,6 +83,21 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
 
     return (
         <div>
+            <div className='flex'>
+                <Pagination className='justify-end'>
+                    <PaginationContent className='border rounded-md'>
+                        <PaginationItem>
+                            <PaginationPrevious className={currentPage <= 0 ? "pointer-events-none opacity-50" : "cursor-pointer"} onClick={() => handlePageChange(currentPage - 1)} />
+                        </PaginationItem>
+                        <PaginationItem>
+                            <PaginationLink className="cursor-pointer">{currentPage + 1}</PaginationLink>
+                        </PaginationItem>
+                        <PaginationItem>
+                            <PaginationNext className="cursor-pointer" onClick={() => handlePageChange(currentPage + 1)} />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            </div>
             <div className='grid lg:grid-cols-3 xl:grid-cols-5 grid-cols-1 gap-2'>
                 {projects.length > 0 && projects.map((project, index) => (
                     <div key={project.id} className='rounded-sm border shadow-sm grid grid-cols-1 h-[60px] p-4'>
@@ -124,21 +139,6 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
                         </div>
                     </div>
                 ))}
-            </div>
-            <div>
-                <Pagination>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious className={currentPage <= 0 ? "pointer-events-none opacity-50" : "cursor-pointer"} onClick={() => handlePageChange(currentPage - 1)} />
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationLink className="cursor-pointer">{currentPage + 1}</PaginationLink>
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationNext className="cursor-pointer" onClick={() => handlePageChange(currentPage + 1)} />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
             </div>
         </div>
     );

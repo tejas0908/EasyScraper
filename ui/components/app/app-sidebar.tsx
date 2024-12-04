@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Home, LogOut, BookCopy } from "lucide-react"
+import { SunMoon, LogOut, BookCopy } from "lucide-react"
 import { useRouter } from 'next/navigation'
 import { useCookies } from 'react-cookie';
 
@@ -32,6 +32,19 @@ export function AppSidebar() {
     router.push("/login");
   }
 
+  async function handleToggleDarkMode() {
+    let theme = localStorage.getItem('theme');
+    if (!theme) {
+      theme = 'light';
+    }
+    theme = (theme == 'dark') ? 'light' : 'dark';
+    document.documentElement.classList.toggle(
+      'dark',
+      theme == 'dark' ? true : false
+    )
+    localStorage.setItem('theme', theme);
+  }
+
   return (
     <Sidebar variant="sidebar" collapsible="icon">
       <SidebarContent>
@@ -41,7 +54,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive>
                     <a href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
@@ -56,6 +69,10 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleToggleDarkMode}>
+              <SunMoon />
+              <span>Toggle Dark / Light Mode</span>
+            </SidebarMenuButton>
             <SidebarMenuButton onClick={handleLogout}>
               <LogOut />
               <span>Logout</span>

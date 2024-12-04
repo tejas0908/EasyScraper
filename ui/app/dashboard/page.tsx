@@ -51,7 +51,7 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="grid grid-cols-1 p-4 gap-2">
+        <div className="grid grid-cols-1 p-4 gap-2 grid-rows-[40px,1fr]">
             <div className="flex flex-row-reverse">
                 <Sheet>
                     <SheetTrigger asChild><Button><Plus />Project</Button></SheetTrigger>

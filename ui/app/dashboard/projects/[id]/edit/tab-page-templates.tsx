@@ -22,16 +22,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-    SheetFooter,
-    SheetClose
-} from "@/components/ui/sheet"
 import { EditPageTemplateSheet } from "./sheet-edit-page-template";
 
 export function TabPageTemplates({ project, parentForceUpdate }: { project: Project, parentForceUpdate: any }) {
@@ -51,17 +41,17 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
         }).then((data) => {
             setPageTemplates(data.page_templates);
         });
-    }, []);
+    }, [ignored]);
 
     return (
-        <div className="p-2 space-y-4 w-[600px]">
+        <div className="p-2 space-y-4">
             <div className="flex justify-end">
-                <EditPageTemplateSheet pageTemplate={null} parentForceUpdate={forceUpdate}/>
+                <EditPageTemplateSheet pageTemplate={null} pageTemplates={pageTemplates} project={project} parentForceUpdate={forceUpdate} />
             </div>
             {pageTemplates.length > 0 &&
                 <Accordion type="single" collapsible>
                     {pageTemplates.map((pageTemplate, index) => (
-                        <AccordionItem key={pageTemplate.id} value={pageTemplate.id}>
+                        <AccordionItem key={pageTemplate.id} value={pageTemplate.id} className="border rounded-md my-2 px-2">
                             <AccordionTrigger>
                                 <div className="flex flex-row justify-between w-full">
                                     <div>{pageTemplate.name}</div>
@@ -73,7 +63,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
                             </AccordionTrigger>
                             <AccordionContent>
                                 <div className="border rounded-sm p-4 grid grid-cols-3 gap-4">
-                                    <EditPageTemplateSheet pageTemplate={pageTemplate} parentForceUpdate={forceUpdate}/>
+                                    <EditPageTemplateSheet pageTemplate={pageTemplate} pageTemplates={pageTemplates} project={project} parentForceUpdate={forceUpdate} />
                                     <div>
                                         <Label>Name</Label>
                                         <Input type="text" disabled readOnly value={pageTemplate.name}></Input>

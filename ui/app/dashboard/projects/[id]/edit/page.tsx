@@ -52,7 +52,7 @@ export default function ProjectEdit({
             </div>
             <div className="p-2">
                 {project &&
-                    <Tabs defaultValue="page_templates" className="w-[400px]">
+                    <Tabs defaultValue="page_templates">
                         <TabsList>
                             <TabsTrigger value="page_templates">Page Templates</TabsTrigger>
                             <TabsTrigger value="seed_pages">Seed Pages</TabsTrigger>

@@ -15,4 +15,5 @@ export interface PageTemplate {
     scraper: string;
     ai_prompt: string;
     output_page_template_id: string;
+    project_id: string;
 }

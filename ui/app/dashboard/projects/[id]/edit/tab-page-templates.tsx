@@ -23,6 +23,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { EditPageTemplateSheet } from "./sheet-edit-page-template";
+import { ScrapeRulesList } from "./scrape-rules-list";
 
 export function TabPageTemplates({ project, parentForceUpdate }: { project: Project, parentForceUpdate: any }) {
     const [cookies, setCookie] = useCookies(['token']);
@@ -61,7 +62,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
                                     </div>
                                 </div>
                             </AccordionTrigger>
-                            <AccordionContent>
+                            <AccordionContent className="space-y-2">
                                 <div className="border rounded-sm p-4 grid grid-cols-3 gap-4">
                                     <EditPageTemplateSheet pageTemplate={pageTemplate} pageTemplates={pageTemplates} project={project} parentForceUpdate={forceUpdate} />
                                     <div>
@@ -94,7 +95,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div>
+                                    {pageTemplate.output_page_template_id && <div>
                                         <Label>Output Page Template</Label>
                                         <Select value={pageTemplate.output_page_template_id} disabled>
                                             <SelectTrigger>
@@ -108,7 +109,10 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
                                                 }
                                             </SelectContent>
                                         </Select>
-                                    </div>
+                                    </div>}
+                                </div>
+                                <div className="border">
+                                    <ScrapeRulesList pageTemplate={pageTemplate} parentForceUpdate={forceUpdate} />
                                 </div>
                             </AccordionContent>
                         </AccordionItem>

@@ -17,3 +17,27 @@ export interface PageTemplate {
     output_page_template_id: string;
     project_id: string;
 }
+
+export interface ScrapeRule {
+    id: string;
+    alias: string;
+    type: string;
+    value: string;
+    href: boolean;
+    page_template_id: string;
+}
+
+export interface ScrapeRun {
+    id: string;
+    started_on: number;
+    ended_on: number;
+    status: string;
+    project_id: string;
+}
+
+export interface SeedPage {
+    id: string;
+    url: string;
+    page_template_id: string;
+    project_id: string;
+}

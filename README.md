@@ -14,7 +14,7 @@
 - [ ] Kubernetes helm chart
 - [ ] Github actions for build and push to dockerhub
 - [ ] Use boto sdk instead of minio sdk so that there is an option to use S3 bucket
-- [ ] UI implementation
+- [x] UI implementation
 - [ ] tasks.py refactor
 - [ ] api documentation - add more field level details
 - [ ] experiment with outlines library

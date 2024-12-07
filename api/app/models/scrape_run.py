@@ -76,5 +76,5 @@ class ScrapeTestResponse(SQLModel):
 
 
 class ScrapeRunListResponse(SQLModel):
-    scrape_runs: List[ScrapeRun]
+    scrape_runs: List[ScrapeRunView]
     paging: Paging

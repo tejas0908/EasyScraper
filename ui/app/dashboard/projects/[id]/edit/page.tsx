@@ -14,7 +14,10 @@ import { useEffect, useState, use, useReducer } from "react";
 import { useCookies } from 'react-cookie';
 import { TabSettings } from "./tab-settings";
 import { TabPageTemplates } from "./tab-page-templates";
-import { Project } from "@/app/lib/types";
+import { TabSeedPages } from "./tab-seed-pages";
+import { TabScrapeTest } from "./tab-scrape-test";
+import { TabScrapeRuns } from "./tab-scrape-runs";
+import { Project, PageTemplate } from "@/app/lib/types";
 
 export default function ProjectEdit({
     params,
@@ -25,6 +28,7 @@ export default function ProjectEdit({
     const [cookies, setCookie] = useCookies(['token']);
     const projectId = use(params).id;
     const [project, setProject] = useState<Project | null>(null);
+    const [pageTemplates, setPageTemplates] = useState<PageTemplate[]>([]);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
 
     useEffect(() => {
@@ -38,6 +42,17 @@ export default function ProjectEdit({
             return res.json();
         }).then((data) => {
             setProject(data);
+        });
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${projectId}/page_templates?` + new URLSearchParams({ skip: String(0), limit: String(100) }).toString(), {
+            method: "get",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            }
+        }).then((res) => {
+            return res.json();
+        }).then((data) => {
+            setPageTemplates(data.page_templates);
         });
     }, [ignored]);
 
@@ -65,9 +80,21 @@ export default function ProjectEdit({
                                 <TabPageTemplates project={project} parentForceUpdate={forceUpdate} />
                             </div>
                         </TabsContent>
-                        <TabsContent value="seed_pages">Change your password here.</TabsContent>
-                        <TabsContent value="scrape_test">Change your password here.</TabsContent>
-                        <TabsContent value="scrape_runs">Change your password here.</TabsContent>
+                        <TabsContent value="seed_pages">
+                            <div>
+                                <TabSeedPages project={project} pageTemplates={pageTemplates} parentForceUpdate={forceUpdate} />
+                            </div>
+                        </TabsContent>
+                        <TabsContent value="scrape_test">
+                            <div>
+                                <TabScrapeTest project={project} pageTemplates={pageTemplates} parentForceUpdate={forceUpdate} />
+                            </div>
+                        </TabsContent>
+                        <TabsContent value="scrape_runs">
+                            <div>
+                                <TabScrapeRuns project={project} parentForceUpdate={forceUpdate} />
+                            </div>
+                        </TabsContent>
                         <TabsContent value="settings">
                             <div className="">
                                 <TabSettings project={project} parentForceUpdate={forceUpdate} />

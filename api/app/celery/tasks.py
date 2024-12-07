@@ -225,7 +225,7 @@ def scrape_page(scrape_run_id, page_template, scrape_rules, url):
     return scrape_result
 
 
-@celery_app.task(time_limit=60, rate_limit="3/m")
+@celery_app.task(time_limit=60)
 def scrape_page_for_run(project_id, scrape_run_id, scrape_run_page_id):
     project = get_project(project_id)
     scrape_run_page = get_scrape_run_page(scrape_run_page_id)

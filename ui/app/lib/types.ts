@@ -29,15 +29,22 @@ export interface ScrapeRule {
 
 export interface ScrapeRun {
     id: string;
-    started_on: number;
-    ended_on: number;
+    started_on: string;
+    ended_on: string;
     status: string;
     project_id: string;
+    run_time: number;
+    outputs: { id: string; format: string }[];
+    total_discovered_pages: number;
+    total_successful_scraped_pages: number;
+    total_failed_scraped_pages: number;
+    progress: number;
 }
 
 export interface SeedPage {
     id: string;
     url: string;
     page_template_id: string;
+    page_template: PageTemplate;
     project_id: string;
 }

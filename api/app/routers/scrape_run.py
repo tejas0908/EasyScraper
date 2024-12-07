@@ -47,6 +47,26 @@ async def create_scrape_run(
     scrape_run_view = ScrapeRunMiniView.model_validate(scrape_run.model_dump())
     return scrape_run_view
 
+def populate_scrape_run(scrape_run_view: ScrapeRunView, session):
+    scrape_run_view.outputs = session.exec(
+        select(ScrapeRunOutput).where(ScrapeRunOutput.scrape_run_id == scrape_run_view.id)
+    ).all()
+    scrape_run_view.total_discovered_pages = session.exec(
+        select(func.count(col(ScrapeRunPage.id))).where(
+            ScrapeRunPage.scrape_run_id == scrape_run_view.id
+        )
+    ).one()
+    scrape_run_view.total_successful_scraped_pages = session.exec(
+        select(func.count(col(ScrapeRunPage.id)))
+        .where(ScrapeRunPage.scrape_run_id == scrape_run_view.id)
+        .where(ScrapeRunPage.status == "COMPLETED")
+    ).one()
+    scrape_run_view.total_failed_scraped_pages = session.exec(
+        select(func.count(col(ScrapeRunPage.id)))
+        .where(ScrapeRunPage.scrape_run_id == scrape_run_view.id)
+        .where(ScrapeRunPage.status == "FAILED")
+    ).one()
+    return scrape_run_view
 
 @scrape_run_router.get(
     "/projects/{project_id}/scrape_runs/{scrape_run_id}",
@@ -71,24 +91,7 @@ async def get_scrape_run(
             status_code=status.HTTP_404_NOT_FOUND, detail="Scrape run not found"
         )
     scrape_run_view = ScrapeRunView.model_validate(scrape_run.model_dump())
-    scrape_run_view.outputs = session.exec(
-        select(ScrapeRunOutput).where(ScrapeRunOutput.scrape_run_id == scrape_run_id)
-    ).all()
-    scrape_run_view.total_discovered_pages = session.exec(
-        select(func.count(col(ScrapeRunPage.id))).where(
-            ScrapeRunPage.scrape_run_id == scrape_run_id
-        )
-    ).one()
-    scrape_run_view.total_successful_scraped_pages = session.exec(
-        select(func.count(col(ScrapeRunPage.id)))
-        .where(ScrapeRunPage.scrape_run_id == scrape_run_id)
-        .where(ScrapeRunPage.status == "COMPLETED")
-    ).one()
-    scrape_run_view.total_failed_scraped_pages = session.exec(
-        select(func.count(col(ScrapeRunPage.id)))
-        .where(ScrapeRunPage.scrape_run_id == scrape_run_id)
-        .where(ScrapeRunPage.status == "FAILED")
-    ).one()
+    scrape_run_view = populate_scrape_run(scrape_run_view, session)
     return scrape_run_view
 
 
@@ -98,22 +101,30 @@ async def get_scrape_run(
     tags=["scrape runs"],
 )
 async def list_scrape_runs(
-    project_id: int,
+    project_id,
     current_user: CurrentUserDep,
     session: SessionDep,
     skip: int = 0,
     limit: int = 10,
+    sort: str = "started_on:desc"
 ) -> ScrapeRunListResponse:
     check_if_project_belongs_to_user(project_id, current_user, session)
+    sort_field, sort_dir = sort.split(":")
     scrape_runs_query = (
         select(ScrapeRun)
         .where(ScrapeRun.project_id == project_id)
+        .order_by(getattr(getattr(ScrapeRun, sort_field), sort_dir)())
         .offset(skip)
         .limit(limit)
     )
     scrape_runs = session.exec(scrape_runs_query).all()
+    scrape_run_views = []
+    for scrape_run in scrape_runs:
+        scrape_run_view = ScrapeRunView.model_validate(scrape_run.model_dump())
+        scrape_run_view = populate_scrape_run(scrape_run_view, session)
+        scrape_run_views.append(scrape_run_view)
     return ScrapeRunListResponse(
-        scrape_runs == scrape_runs, paing=Paging(skip=skip, limit=limit)
+        scrape_runs = scrape_run_views, paging=Paging(skip=skip, limit=limit)
     )
 
 

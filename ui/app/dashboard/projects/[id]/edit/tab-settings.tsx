@@ -51,7 +51,7 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
     }
 
     return (
-        <div className="p-2 space-y-4">
+        <div className="p-2 space-y-4 w-[500px]">
             <div className="space-y-1 flex flex-col rounded-lg border p-4">
                 <Label>Project Name</Label>
                 <Input type="text" id="project_name" placeholder="Project Name" value={projectName} onChange={handleProjectNameChange} />

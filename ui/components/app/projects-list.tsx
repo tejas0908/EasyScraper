@@ -82,7 +82,7 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
     }
 
     return (
-        <div>
+        <div className='space-y-2'>
             <div className='flex'>
                 <Pagination className='justify-end'>
                     <PaginationContent className='border rounded-md'>

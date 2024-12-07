@@ -29,7 +29,7 @@ export function ScrapeRulesList({ pageTemplate, parentForceUpdate }: { pageTempl
             </div>
             <div className="grid grid-cols-5 gap-4 p-4">
                 {scrapeRules && scrapeRules.map((scrapeRule, index) => (
-                    <div key={scrapeRule.id} className="border flex flex-row rounded-md p-2 items-center justify-between shadow">
+                    <div key={scrapeRule.id} className="border flex flex-row rounded-md p-2 items-center justify-between shadow hover:bg-slate-100 transition duration-300">
                         <div className="truncate">
                             {scrapeRule.alias}
                         </div>

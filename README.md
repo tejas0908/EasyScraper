@@ -1,27 +1,27 @@
 # EasyScraper
 
 ## Backlog
-- [x] User can signup for a new account
-- [x] User can login to account
-- [x] User can create Scraping Projects
-- [x] User can define Page Templates
-- [x] User can define Seed Pages
-- [x] User can trigger scraping for the project (each scrape run generate an output)
-- [x] User can use xpath, css, auto scraper or AI scraper
-- [x] User can set scrape settings- Sleep time between page scrapes
-- [x] User can perform a scrape test by providing URL and Page Template
-- [ ] User can import/export projects as JSON
+- [ ] Import / Export Project in JSON format
 - [ ] Kubernetes helm chart
 - [ ] Github actions for build and push to dockerhub
-- [ ] Use boto sdk instead of minio sdk so that there is an option to use S3 bucket
-- [x] UI implementation
-- [ ] tasks.py refactor
+- [ ] blob store interface (Minio Impl, S3 Impl)
+- [ ] scraper interface (Xpath Impl, CSS Impl, Autoscraper Impl, AI Impl)
 - [ ] api documentation - add more field level details
-- [ ] experiment with outlines library
+- [ ] model provider support (OpenAI Impl, Ollama Impl, ...)
 - [ ] login with github option
 - [ ] rate limited scraping
 - [ ] use litellm for AI calls
 - [ ] chrome extension to extract xpaths and css selectors?
+- [ ] signup takes first and lastname
+- [ ] auto logout if token expires
+- [ ] pagination changes (next page / total records)
+- [ ] add pagination to page templates, scrape rules, seed pages and scrape runs
+- [ ] scrape output interface (JSONL Impl, CSV Impl, XLSX Impl)
+- [ ] dashboard analytics and per project analytics (Total projects, Total Scrape runs, Scrape run pie chart, Scrape pages pie chart)
+- [ ] download images for scraped links
+- [ ] playwright automated testing
+- [ ] fix lint issues on ui
+- [ ] project takes website url input, extract favicon and display
 
 
 # Architecture

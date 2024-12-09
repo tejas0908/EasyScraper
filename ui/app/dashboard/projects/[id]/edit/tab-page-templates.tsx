@@ -41,6 +41,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
             return res.json();
         }).then((data) => {
             setPageTemplates(data.page_templates);
+            parentForceUpdate();
         });
     }, [ignored]);
 

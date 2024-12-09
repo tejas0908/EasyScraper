@@ -14,6 +14,7 @@ import {
 import { SunMoon, LogOut, BookCopy } from "lucide-react"
 import { useRouter } from 'next/navigation'
 import { useCookies } from 'react-cookie';
+import { useEffect } from "react";
 
 const items = [
   {
@@ -34,16 +35,40 @@ export function AppSidebar() {
 
   async function handleToggleDarkMode() {
     let theme = localStorage.getItem('theme');
-    if (!theme) {
-      theme = 'light';
+    if (theme == null) {
+      if (document.documentElement.classList.value.length > 0) {
+        theme = 'dark';
+      } else {
+        theme = 'light';
+      }
     }
-    theme = (theme == 'dark') ? 'light' : 'dark';
+    let isDark = theme === 'dark';
+    let toggle = !isDark;
+    theme = toggle ? 'dark' : 'light';
     document.documentElement.classList.toggle(
       'dark',
-      theme == 'dark' ? true : false
+      toggle
     )
     localStorage.setItem('theme', theme);
   }
+
+  useEffect(() => {
+    console.log('useEffect');
+    let theme = localStorage.getItem('theme');
+    if (theme == null) {
+      if (document.documentElement.classList.value.length > 0) {
+        theme = 'dark';
+      } else {
+        theme = 'light';
+      }
+    }
+    let isDark = theme === 'dark';
+    document.documentElement.classList.toggle(
+      'dark',
+      isDark
+    )
+    localStorage.setItem('theme', theme);
+  }, []);
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">

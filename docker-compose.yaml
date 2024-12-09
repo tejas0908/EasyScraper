@@ -13,6 +13,9 @@ services:
       start_period: 10s
       timeout: 10s
       retries: 5
+    depends_on:
+      api:
+        condition: service_healthy
 
   api:
     image: api
@@ -49,7 +52,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - 5432:5432
     volumes:
       - postgres_volume:/var/lib/postgresql/data
     healthcheck:
@@ -60,7 +63,7 @@ services:
       retries: 5
 
   redis:
-    image: redis/redis-stack:latest
+    image: redis:7
     ports:
       - 6379:6379
       - 8001:8001
@@ -90,7 +93,7 @@ services:
     volumes:
       - celery_file_data:/app/celery_file_data
     healthcheck:
-      test: celery -b ${BROKER_URL} inspect ping
+      test: uv run celery -A app.celery.celery inspect ping
       interval: 30s
       start_period: 10s
       timeout: 10s

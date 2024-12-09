@@ -22,6 +22,7 @@
 - [ ] playwright automated testing
 - [ ] fix lint issues on ui
 - [ ] project takes website url input, extract favicon and display
+- [ ] documentation
 
 
 # Architecture

@@ -21,6 +21,7 @@
 - [ ] fix lint issues on ui
 - [ ] project takes website url input, extract favicon and display
 - [ ] documentation
+- [ ] flyway db migrations
 
 # Architecture
 

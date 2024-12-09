@@ -26,24 +26,24 @@
 
 ## Tech Stack
 
-![Tech Stack](docs/plantuml/output/tech-stack.png)
+![Tech Stack](plantuml/output/tech-stack.png)
 
 ## Use Case Diagram
 
-![Use case diagram](docs/plantuml/output/use-case-diagram.png)
+![Use case diagram](plantuml/output/use-case-diagram.png)
 
 ## Database Design
 
-![Database design](docs/plantuml/output/db-schema.png)
+![Database design](plantuml/output/db-schema.png)
 
 ## Deployment View
 
-![Deployment View](docs/plantuml/output/deployment.png)
+![Deployment View](plantuml/output/deployment.png)
 
 ## Sequence Diagrams
 
-![User Signup Sequence Diagram](docs/plantuml/output/sequence-signup.png)
-![User Login Sequence Diagram](docs/plantuml/output/sequence-login.png)
+![User Signup Sequence Diagram](plantuml/output/sequence-signup.png)
+![User Login Sequence Diagram](plantuml/output/sequence-login.png)
 
 ## API documentation
 

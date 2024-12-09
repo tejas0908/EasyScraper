@@ -1,7 +1,6 @@
-FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+FROM ghcr.io/astral-sh/uv:python3.13-alpine
 
-RUN apt-get update -y && \
-    apt-get install curl -y
+RUN apk --no-cache add curl
 
 ADD . /app
 

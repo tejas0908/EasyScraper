@@ -13,6 +13,7 @@ services:
       start_period: 10s
       timeout: 10s
       retries: 5
+    scale: 0
     depends_on:
       api:
         condition: service_healthy
@@ -38,6 +39,7 @@ services:
       start_period: 10s
       timeout: 10s
       retries: 5
+    scale: 1
     depends_on:
       redis:
         condition: service_healthy
@@ -76,7 +78,7 @@ services:
       timeout: 10s
       retries: 5
 
-  celery-worker-1:
+  celery-worker:
     image: api
     build: ./api
     command: uv run celery -A app.celery.celery worker -l INFO -c 4
@@ -98,6 +100,7 @@ services:
       start_period: 10s
       timeout: 10s
       retries: 5
+    scale: 1
     depends_on:
       redis:
         condition: service_healthy

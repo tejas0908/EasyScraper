@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { useState, useEffect, useReducer } from "react";
 import { useCookies } from 'react-cookie';
-import { Loader2, Edit, Play, RefreshCw } from "lucide-react"
+import { Dot, Loader, Play, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import moment from 'moment'
 import {
@@ -57,14 +57,18 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
                 }
 
                 let t2 = new Date(Date.now()).getTime();
-                console.log(sr.ended_on);
                 if (sr.ended_on != null) {
                     t2 = new Date(sr.ended_on).getTime();
                 }
                 let t1 = new Date(sr.started_on).getTime();
                 sr.run_time = (t2 - t1) / 1000;
-                sr.progress = ((sr.total_failed_scraped_pages + sr.total_successful_scraped_pages) / sr.total_discovered_pages) * 100;
-                sr.progress = Math.round(sr.progress * 100) / 100;
+                if (["LEAF_SCRAPING", "OUTPUT", "COMPLETED"].includes(sr.stage)) {
+                    sr.progress = ((sr.total_failed_scraped_pages + sr.total_successful_scraped_pages) / sr.total_discovered_pages) * 100;
+                    sr.progress = Math.round(sr.progress * 100) / 100;
+                } else {
+                    sr.progress = 0;
+                }
+
             });
             setScrapeRuns(data.scrape_runs);
             setPendingRefresh(false);
@@ -108,7 +112,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
 
         var hDisplay = h > 0 ? h + "h " : "";
         var mDisplay = m > 0 ? m + "m " : "";
-        var sDisplay = s > 0 ? s + "s" : "";
+        var sDisplay = s >= 0 ? s + "s" : "";
         return hDisplay + mDisplay + sDisplay;
     }
 
@@ -131,15 +135,32 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
         }
     }
 
+    function getStageMessage(stage: string) {
+        switch (stage) {
+            case "CREATED":
+                return "Allocating Resources";
+            case "STARTED":
+                return "Started Scraping";
+            case "PAGE_GENERATION":
+                return "Discovering Pages";
+            case "LEAF_SCRAPING":
+                return "Scraping Leaf Pages";
+            case "OUTPUT":
+                return "Generating Output Files";
+            case "COMPLETED":
+                return ""
+        }
+    }
+
     return (
         <div className="p-2 space-y-4">
             <div className="flex justify-end space-x-2">
                 <Button onClick={triggerScrape}>
-                    <Play className="dark:fill-black"/>
+                    <Play className="dark:fill-black" />
                     Trigger Scrape
                 </Button>
                 <Button variant="outline" size="icon" onClick={refreshScrapeRunsClick}>
-                    <RefreshCw className={pendingRefresh ? "animate-spin": ""}/>
+                    <RefreshCw className={pendingRefresh ? "animate-spin" : ""} />
                 </Button>
             </div>
             {scrapeRuns.length > 0 &&
@@ -153,11 +174,12 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
                                     </div>
                                     <div className="flex flex-row space-x-2">
                                         <Badge className="bg-blue-200 dark:text-black dark:bg-blue-400" variant="secondary">{secondsToHms(scrapeRun.run_time)}</Badge>
-                                        <Badge className={scrapeRun.status == "COMPLETED" ? "bg-green-200 dark:text-black dark:bg-green-400" : "bg-blue-200 dark:text-black dark:bg-blue-400"} variant="secondary">{scrapeRun.status}</Badge>
+                                        <Badge className={scrapeRun.status == "COMPLETED" ? "bg-green-200 dark:text-black dark:bg-green-400" : "bg-blue-200 dark:text-black dark:bg-blue-400"} variant="secondary">{scrapeRun.status == 'STARTED' ? 'Running' : 'Completed'}{scrapeRun.status == 'STARTED' && <Loader className="animate-spin h-3" />}</Badge>
                                     </div>
                                     <div className="flex flex-row space-x-2 items-center">
                                         <Progress className="w-16" value={scrapeRun.progress} />
                                         <div>{scrapeRun.progress}%</div>
+                                        <div>{getStageMessage(scrapeRun.stage)}</div>
                                     </div>
 
                                 </div>

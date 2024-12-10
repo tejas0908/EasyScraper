@@ -38,6 +38,7 @@ async def create_scrape_run(
         "started_on": int(time()),
         "status": "STARTED",
         "project_id": project_id,
+        "stage": "CREATED"
     }
     scrape_run = ScrapeRun.model_validate(scrape_run_data)
     session.add(scrape_run)

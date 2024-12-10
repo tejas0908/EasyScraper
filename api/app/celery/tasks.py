@@ -346,9 +346,18 @@ def upload_to_minio(local_file_path):
         return None
 
 
+def update_stage(stage, scrape_run_id, project_id):
+    scrape_run = get_scrape_run(scrape_run_id, project_id)
+    scrape_run.stage = stage
+    session.add(scrape_run)
+    session.commit()
+    session.refresh(scrape_run)
+
+
 @celery_app.task
 def scrape_master(project_id, scrape_run_id, resume=False):
     scrape_run = get_scrape_run(scrape_run_id, project_id)
+    update_stage("STARTED", scrape_run_id, project_id)
 
     # add seed pages to scrape run pages, if resume then skip this step
     seed_pages = get_seed_pages(project_id)
@@ -365,6 +374,7 @@ def scrape_master(project_id, scrape_run_id, resume=False):
             session.add(scrape_run_page)
             session.commit()
 
+    update_stage("PAGE_GENERATION", scrape_run_id, project_id)
     # while there are page generators in STARTED status, scrape pages, then add more pages to scrape run pages
     while True:
         scrape_run_pages = get_scrape_run_pages_by_status(
@@ -402,6 +412,7 @@ def scrape_master(project_id, scrape_run_id, resume=False):
                 session.add(scrape_run_page)
                 session.commit()
 
+    update_stage("LEAF_SCRAPING", scrape_run_id, project_id)
     # while there are leafs in STARTED status, scrape pages
     while True:
         scrape_run_pages = get_scrape_run_pages_by_status(
@@ -420,6 +431,7 @@ def scrape_master(project_id, scrape_run_id, resume=False):
             print("leaf scraping complete => ", group_promise.completed_count())
             time.sleep(10)
 
+    update_stage("OUTPUT", scrape_run_id, project_id)
     # create scrape output files and upload to minio, add scrape run outputs to db
     scrape_run_pages = get_scrape_run_pages_by_status(
         scrape_run_id, "COMPLETED", "LEAF"
@@ -467,8 +479,8 @@ def scrape_master(project_id, scrape_run_id, resume=False):
 
     # update scrape run status as COMPLETED
     scrape_run.status = "COMPLETED"
+    scrape_run.stage = "COMPLETED"
     scrape_run.ended_on = datetime.now()
     session.add(scrape_run)
     session.commit()
-
     return

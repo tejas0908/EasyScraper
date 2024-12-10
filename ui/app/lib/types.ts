@@ -32,6 +32,7 @@ export interface ScrapeRun {
     started_on: string;
     ended_on: string;
     status: string;
+    stage: string;
     project_id: string;
     run_time: number;
     outputs: { id: string; format: string }[];

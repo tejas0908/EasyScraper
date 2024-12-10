@@ -15,6 +15,9 @@ class ScrapeRun(SQLModel, table=True):
     status: Literal["STARTED", "COMPLETED", "FAILED"] = Field(
         nullable=False, sa_type=String
     )
+    stage: Literal[
+        "CREATED", "STARTED", "PAGE_GENERATION", "LEAF_SCRAPING", "OUTPUT", "COMPLETED"
+    ] = Field(nullable=False, sa_type=String)
     project_id: str = Field(nullable=False, foreign_key="project.id")
 
 
@@ -51,6 +54,9 @@ class ScrapeRunView(SQLModel):
     started_on: datetime
     ended_on: Optional[datetime]
     status: Literal["STARTED", "COMPLETED", "FAILED"] = Field(sa_type=String)
+    stage: Literal[
+        "CREATED", "STARTED", "PAGE_GENERATION", "LEAF_SCRAPING", "OUTPUT", "COMPLETED"
+    ] = Field(nullable=False, sa_type=String)
     outputs: List[ScrapeRunOutputView] = Field(default=[])
     total_discovered_pages: int = Field(default=0)
     total_successful_scraped_pages: int = Field(default=0)
@@ -63,6 +69,9 @@ class ScrapeRunMiniView(SQLModel):
     started_on: datetime
     ended_on: Optional[datetime]
     status: Literal["STARTED", "COMPLETED", "FAILED"] = Field(sa_type=String)
+    stage: Literal[
+        "CREATED", "STARTED", "PAGE_GENERATION", "LEAF_SCRAPING", "OUTPUT", "COMPLETED"
+    ] = Field(nullable=False, sa_type=String)
     project_id: str
 
 

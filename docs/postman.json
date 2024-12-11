@@ -16,9 +16,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -84,10 +81,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"token\", jsonData.token);",
 									""
@@ -137,10 +130,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"project_id\", jsonData.id);"
 								],
@@ -154,7 +143,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"test project 1\"\n}",
+							"raw": "{\n    \"name\": \"test project 1\",\n    \"sleep_seconds_between_page_scrape\": 3,\n    \"ignore_scrape_failures\": true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -180,9 +169,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -219,9 +205,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -267,9 +250,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -306,9 +286,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -320,7 +297,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{root}}/projects?skip=0&limit=10",
+							"raw": "{{root}}/projects?page=0&limit=10&sort_field=name&sort_direction=asc",
 							"host": [
 								"{{root}}"
 							],
@@ -329,12 +306,20 @@
 							],
 							"query": [
 								{
-									"key": "skip",
+									"key": "page",
 									"value": "0"
 								},
 								{
 									"key": "limit",
 									"value": "10"
+								},
+								{
+									"key": "sort_field",
+									"value": "name"
+								},
+								{
+									"key": "sort_direction",
+									"value": "asc"
 								}
 							]
 						}
@@ -353,10 +338,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"page_template_id\", jsonData.id);"
 								],
@@ -370,7 +351,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Category Page\",\n    \"output_type\": \"PAGE_SOURCE\",\n    \"scraper\": \"XPATH_SELECTOR\",\n    \"output_page_template_id\": null\n}",
+							"raw": "{\n    \"name\": \"Category Page\",\n    \"output_type\": \"PAGE_SOURCE\",\n    \"scraper\": \"AUTO_SCRAPER\",\n    \"output_page_template_id\": null,\n    \"example_url\": \"https://www.wolford.com/en-us/legwear/hosiery/\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -404,9 +385,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -419,7 +397,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Category Page updated\",\n    \"output_type\": \"PAGE_SOURCE\",\n    \"scraper\": \"XPATH_SELECTOR\",\n    \"output_page_template_id\": null\n}",
+							"raw": "{\n    \"name\": \"Product Page\",\n    \"output_type\": \"LEAF\",\n    \"example_url\": \"\",\n    \"ai_input\": \"TEXT\",\n    \"scraper\": \"AI_SCRAPER\",\n    \"ai_prompt\": \"\",\n    \"output_page_template_id\": null\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -458,9 +436,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -503,9 +478,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -548,9 +520,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -603,10 +572,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
 									"var jsonData = pm.response.json();",
 									"pm.environment.set(\"scrape_rule_id\", jsonData.id);"
 								],
@@ -620,7 +585,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"alias\": \"alias1\",\n    \"type\": \"SINGLE\",\n    \"value\": \"value1\"\n}",
+							"raw": "{\n    \"alias\": \"urls\",\n    \"type\": \"MULTI\",\n    \"value\": \"https://www.wolford.com/en-us/mat-de-luxe-form.-string-body-79226.8809.html\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -660,9 +625,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
+									"",
 									""
 								],
 								"type": "text/javascript",
@@ -720,9 +683,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -783,9 +743,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -843,9 +800,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"success\", function(){",
-									"    pm.response.to.have.status(200);",
-									"});",
 									""
 								],
 								"type": "text/javascript",
@@ -869,7 +823,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{root}}/projects/:project_id/page_templates/:page_template_id/scrape_rules?skip=0&limit=10",
+							"raw": "{{root}}/projects/:project_id/page_templates/:page_template_id/scrape_rules?page=0&limit=10&sort_field=alias&sort_direction=asc",
 							"host": [
 								"{{root}}"
 							],
@@ -882,129 +836,21 @@
 							],
 							"query": [
 								{
-									"key": "skip",
+									"key": "page",
 									"value": "0"
 								},
 								{
 									"key": "limit",
 									"value": "10"
-								}
-							],
-							"variable": [
-								{
-									"key": "project_id",
-									"value": "{{project_id}}"
 								},
 								{
-									"key": "page_template_id",
-									"value": "{{page_template_id}}"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "AI Prompt",
-			"item": [
-				{
-					"name": "Create AI Prompt",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"prompt\": \"this is a test prompt\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{root}}/projects/:project_id/page_templates/:page_template_id/ai_prompt",
-							"host": [
-								"{{root}}"
-							],
-							"path": [
-								"projects",
-								":project_id",
-								"page_templates",
-								":page_template_id",
-								"ai_prompt"
-							],
-							"variable": [
-								{
-									"key": "project_id",
-									"value": "{{project_id}}"
+									"key": "sort_field",
+									"value": "alias"
 								},
 								{
-									"key": "page_template_id",
-									"value": "{{page_template_id}}"
+									"key": "sort_direction",
+									"value": "asc"
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update AI Prompt",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"prompt\": \"this is a test prompt - updated\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{root}}/projects/:project_id/page_templates/:page_template_id/ai_prompt",
-							"host": [
-								"{{root}}"
-							],
-							"path": [
-								"projects",
-								":project_id",
-								"page_templates",
-								":page_template_id",
-								"ai_prompt"
-							],
-							"variable": [
-								{
-									"key": "project_id",
-									"value": "{{project_id}}"
-								},
-								{
-									"key": "page_template_id",
-									"value": "{{page_template_id}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get AI Prompt",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{root}}/projects/:project_id/page_templates/:page_template_id/ai_prompt",
-							"host": [
-								"{{root}}"
-							],
-							"path": [
-								"projects",
-								":project_id",
-								"page_templates",
-								":page_template_id",
-								"ai_prompt"
 							],
 							"variable": [
 								{
@@ -1045,7 +891,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"url\": \"https://www.google.com\",\n    \"page_template_id\": \"{{page_template_id}}\"\n}",
+							"raw": "{\n    \"url\": \"https://www.wolford.com/en-us/ready-to-wear/clothing/\",\n    \"page_template_id\": \"{{page_template_id}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1177,7 +1023,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{root}}/projects/:project_id/seed_pages?skip=0&limit=10",
+							"raw": "{{root}}/projects/:project_id/seed_pages?page=0&limit=10&sort_field=id&sort_direction=asc",
 							"host": [
 								"{{root}}"
 							],
@@ -1188,12 +1034,274 @@
 							],
 							"query": [
 								{
-									"key": "skip",
+									"key": "page",
 									"value": "0"
 								},
 								{
 									"key": "limit",
 									"value": "10"
+								},
+								{
+									"key": "sort_field",
+									"value": "id"
+								},
+								{
+									"key": "sort_direction",
+									"value": "asc"
+								}
+							],
+							"variable": [
+								{
+									"key": "project_id",
+									"value": "{{project_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Scrape Runs",
+			"item": [
+				{
+					"name": "Create Scrape Run",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"scrape_run_id\", jsonData.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{root}}/projects/:project_id/scrape_runs",
+							"host": [
+								"{{root}}"
+							],
+							"path": [
+								"projects",
+								":project_id",
+								"scrape_runs"
+							],
+							"variable": [
+								{
+									"key": "project_id",
+									"value": "{{project_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resume Scrape Run",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{root}}/projects/:project_id/scrape_runs/:scrape_run_id/resume",
+							"host": [
+								"{{root}}"
+							],
+							"path": [
+								"projects",
+								":project_id",
+								"scrape_runs",
+								":scrape_run_id",
+								"resume"
+							],
+							"variable": [
+								{
+									"key": "project_id",
+									"value": "{{project_id}}"
+								},
+								{
+									"key": "scrape_run_id",
+									"value": "{{scrape_run_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Scrape Run",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{root}}/projects/:project_id/scrape_runs/:scrape_run_id",
+							"host": [
+								"{{root}}"
+							],
+							"path": [
+								"projects",
+								":project_id",
+								"scrape_runs",
+								":scrape_run_id"
+							],
+							"variable": [
+								{
+									"key": "project_id",
+									"value": "{{project_id}}"
+								},
+								{
+									"key": "scrape_run_id",
+									"value": "{{scrape_run_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download Scrape Output",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{root}}/projects/:project_id/scrape_runs/:scrape_run_id/outputs/:scrape_run_output_id/download",
+							"host": [
+								"{{root}}"
+							],
+							"path": [
+								"projects",
+								":project_id",
+								"scrape_runs",
+								":scrape_run_id",
+								"outputs",
+								":scrape_run_output_id",
+								"download"
+							],
+							"variable": [
+								{
+									"key": "project_id",
+									"value": "{{project_id}}"
+								},
+								{
+									"key": "scrape_run_id",
+									"value": "{{scrape_run_id}}"
+								},
+								{
+									"key": "scrape_run_output_id",
+									"value": "01JEESHGJ6PZ7GKZ15ES9X8QFK"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Scrape Test",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"url\": \"https://www.wolford.com/en-us/travel-knee-highs-34412.7005.html\",\n    \"page_template_id\": \"01JCJPR1VXHB401HR85DTRRGC4\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{root}}/projects/:project_id/scrape_test",
+							"host": [
+								"{{root}}"
+							],
+							"path": [
+								"projects",
+								":project_id",
+								"scrape_test"
+							],
+							"variable": [
+								{
+									"key": "project_id",
+									"value": "{{project_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Scrape Runs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{root}}/projects/:project_id/scrape_runs?page=0&limit=10&sort_field=started_on&sort_direction=desc",
+							"host": [
+								"{{root}}"
+							],
+							"path": [
+								"projects",
+								":project_id",
+								"scrape_runs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "sort_field",
+									"value": "started_on"
+								},
+								{
+									"key": "sort_direction",
+									"value": "desc"
 								}
 							],
 							"variable": [

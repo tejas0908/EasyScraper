@@ -152,6 +152,28 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
         }
     }
 
+    function getStatusMessage(status: string) {
+        switch (status) {
+            case "STARTED":
+                return "Running";
+            case "COMPLETED":
+                return "Completed";
+            case "FAILED":
+                return "Failed";
+        }
+    }
+
+    function getStatusColor(status: string) {
+        switch (status) {
+            case "STARTED":
+                return "bg-blue-200 dark:text-black dark:bg-blue-400";
+            case "COMPLETED":
+                return "bg-green-200 dark:text-black dark:bg-green-400";
+            case "FAILED":
+                return "bg-red-200 dark:text-black dark:bg-red-400";
+        }
+    }
+
     return (
         <div className="p-2 space-y-4">
             <div className="flex justify-end space-x-2">
@@ -174,7 +196,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
                                     </div>
                                     <div className="flex flex-row space-x-2">
                                         <Badge className="bg-blue-200 dark:text-black dark:bg-blue-400" variant="secondary">{secondsToHms(scrapeRun.run_time)}</Badge>
-                                        <Badge className={scrapeRun.status == "COMPLETED" ? "bg-green-200 dark:text-black dark:bg-green-400" : "bg-blue-200 dark:text-black dark:bg-blue-400"} variant="secondary">{scrapeRun.status == 'STARTED' ? 'Running' : 'Completed'}{scrapeRun.status == 'STARTED' && <Loader className="animate-spin h-3" />}</Badge>
+                                        <Badge className={getStatusColor(scrapeRun.status)} variant="secondary">{getStatusMessage(scrapeRun.status)}{scrapeRun.status == 'STARTED' && <Loader className="animate-spin h-3" />}</Badge>
                                     </div>
                                     <div className="flex flex-row space-x-2 items-center">
                                         <Progress className="w-16" value={scrapeRun.progress} />

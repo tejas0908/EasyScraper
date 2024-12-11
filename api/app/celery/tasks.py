@@ -22,6 +22,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from openai import OpenAI
+import traceback
 
 db_url = os.environ["DB_URL"]
 engine = create_engine(db_url, echo=True, poolclass=NullPool)
@@ -270,7 +271,10 @@ def write_to_jsonl_file(scrape_run_pages, scrape_run_id, page_template_id):
     output_file_path = f"/app/celery_file_data/scrape_run_outputs/{scrape_run_id}_{page_template_id}.jsonl"
     with open(output_file_path, "w") as output_file:
         for scrape_run_page in scrape_run_pages:
-            json_line = json.dumps(scrape_run_page.scrape_output)
+            output = scrape_run_page.scrape_output
+            output["scrape_url"] = scrape_run_page.url
+            output["scrape_id"] = scrape_run_page.id
+            json_line = json.dumps(output)
             output_file.write(json_line + "\n")
     return output_file_path
 
@@ -289,7 +293,10 @@ def write_to_csv_file(scrape_run_pages, scrape_run_id, page_template_id):
         writer = csv.DictWriter(csv_output_file, fieldnames=fieldnames)
         writer.writeheader()
         for scrape_run_page in csv_scrape_run_pages:
-            writer.writerow(scrape_run_page.scrape_output)
+            output = scrape_run_page.scrape_output
+            output["scrape_url"] = scrape_run_page.url
+            output["scrape_id"] = scrape_run_page.id
+            writer.writerow(output)
     return output_file_path
 
 
@@ -308,15 +315,16 @@ def write_to_xlsx_file(scrape_run_pages, scrape_run_id, page_template_id):
     fieldnames = (
         xlsx_scrape_run_pages[0].scrape_output.keys() if xlsx_scrape_run_pages else []
     )
-    for col_num, fieldname in enumerate(fieldnames):
+    for col_num, fieldname in enumerate(list(fieldnames) + ["scrape_url", "scrape_id"]):
         worksheet.write(0, col_num, fieldname)
 
     # Write data
     for row_num, scrape_run_page in enumerate(xlsx_scrape_run_pages, start=1):
+        output = scrape_run_page.scrape_output
+        output["scrape_url"] = scrape_run_page.url
+        output["scrape_id"] = scrape_run_page.id
         for col_num, fieldname in enumerate(fieldnames):
-            worksheet.write(
-                row_num, col_num, scrape_run_page.scrape_output.get(fieldname)
-            )
+            worksheet.write(row_num, col_num, output.get(fieldname))
     workbook.close()
     return output_file_path
 
@@ -356,131 +364,147 @@ def update_stage(stage, scrape_run_id, project_id):
 
 @celery_app.task
 def scrape_master(project_id, scrape_run_id, resume=False):
-    scrape_run = get_scrape_run(scrape_run_id, project_id)
-    update_stage("STARTED", scrape_run_id, project_id)
+    try:
+        scrape_run = get_scrape_run(scrape_run_id, project_id)
+        update_stage("STARTED", scrape_run_id, project_id)
 
-    # add seed pages to scrape run pages, if resume then skip this step
-    seed_pages = get_seed_pages(project_id)
-    for seed_page in seed_pages:
-        if not resume:
-            page_template = get_page_template(seed_page.page_template_id, project_id)
-            scrape_run_page = ScrapeRunPage(
-                url=seed_page.url,
-                output_type=page_template.output_type,
-                page_template_id=seed_page.page_template_id,
-                scrape_run_id=scrape_run_id,
-                status="STARTED",
-            )
-            session.add(scrape_run_page)
-            session.commit()
-
-    update_stage("PAGE_GENERATION", scrape_run_id, project_id)
-    # while there are page generators in STARTED status, scrape pages, then add more pages to scrape run pages
-    while True:
-        scrape_run_pages = get_scrape_run_pages_by_status(
-            scrape_run_id, "STARTED", "PAGE_SOURCE"
-        )
-        if len(scrape_run_pages) == 0:
-            break
-        scrape_page_tasks = []
-        for scrape_run_page in scrape_run_pages:
-            scrape_page_task = scrape_page_for_run.s(
-                project_id, scrape_run_id, scrape_run_page.id
-            )
-            scrape_page_tasks.append(scrape_page_task)
-        group_promise = group(scrape_page_tasks)()
-        while not group_promise.ready():
-            print(
-                "page generator scraping complete => ", group_promise.completed_count()
-            )
-            time.sleep(10)
-        group_results = group_promise.get(disable_sync_subtasks=False)
-        for group_result in group_results:
-            urls = group_result[0]["urls"]
-            output_page_template_id = group_result[1]
-            output_page_template = get_page_template(
-                output_page_template_id, project_id
-            )
-            for url in urls:
+        # add seed pages to scrape run pages, if resume then skip this step
+        seed_pages = get_seed_pages(project_id)
+        for seed_page in seed_pages:
+            if not resume:
+                page_template = get_page_template(
+                    seed_page.page_template_id, project_id
+                )
                 scrape_run_page = ScrapeRunPage(
-                    url=url,
-                    output_type=output_page_template.output_type,
-                    page_template_id=output_page_template_id,
+                    url=seed_page.url,
+                    output_type=page_template.output_type,
+                    page_template_id=seed_page.page_template_id,
                     scrape_run_id=scrape_run_id,
                     status="STARTED",
                 )
                 session.add(scrape_run_page)
                 session.commit()
 
-    update_stage("LEAF_SCRAPING", scrape_run_id, project_id)
-    # while there are leafs in STARTED status, scrape pages
-    while True:
-        scrape_run_pages = get_scrape_run_pages_by_status(
-            scrape_run_id, "STARTED", "LEAF"
-        )
-        if len(scrape_run_pages) == 0:
-            break
-        scrape_page_tasks = []
-        for scrape_run_page in scrape_run_pages:
-            scrape_page_task = scrape_page_for_run.s(
-                project_id, scrape_run_id, scrape_run_page.id
+        update_stage("PAGE_GENERATION", scrape_run_id, project_id)
+        # while there are page generators in STARTED status, scrape pages, then add more pages to scrape run pages
+        while True:
+            scrape_run_pages = get_scrape_run_pages_by_status(
+                scrape_run_id, "STARTED", "PAGE_SOURCE"
             )
-            scrape_page_tasks.append(scrape_page_task)
-        group_promise = group(scrape_page_tasks)()
-        while not group_promise.ready():
-            print("leaf scraping complete => ", group_promise.completed_count())
-            time.sleep(10)
+            if len(scrape_run_pages) == 0:
+                break
+            scrape_page_tasks = []
+            for scrape_run_page in scrape_run_pages:
+                scrape_page_task = scrape_page_for_run.s(
+                    project_id, scrape_run_id, scrape_run_page.id
+                )
+                scrape_page_tasks.append(scrape_page_task)
+            group_promise = group(scrape_page_tasks)()
+            while not group_promise.ready():
+                print(
+                    "page generator scraping complete => ",
+                    group_promise.completed_count(),
+                )
+                time.sleep(10)
+            group_results = group_promise.get(disable_sync_subtasks=False)
+            for group_result in group_results:
+                urls = group_result[0]["urls"]
+                output_page_template_id = group_result[1]
+                output_page_template = get_page_template(
+                    output_page_template_id, project_id
+                )
+                for url in urls:
+                    scrape_run_page = ScrapeRunPage(
+                        url=url,
+                        output_type=output_page_template.output_type,
+                        page_template_id=output_page_template_id,
+                        scrape_run_id=scrape_run_id,
+                        status="STARTED",
+                    )
+                    session.add(scrape_run_page)
+                    session.commit()
 
-    update_stage("OUTPUT", scrape_run_id, project_id)
-    # create scrape output files and upload to minio, add scrape run outputs to db
-    scrape_run_pages = get_scrape_run_pages_by_status(
-        scrape_run_id, "COMPLETED", "LEAF"
-    )
-    unique_page_template_ids = set(map(lambda x: x.page_template_id, scrape_run_pages))
-    unique_page_templates = [
-        get_page_template(x, project_id) for x in unique_page_template_ids
-    ]
-    Path("/app/celery_file_data/scrape_run_outputs").mkdir(parents=True, exist_ok=True)
-    for page_template in unique_page_templates:
-        grouped_scrape_run_pages = [
-            x for x in scrape_run_pages if x.page_template_id == page_template.id
+        update_stage("LEAF_SCRAPING", scrape_run_id, project_id)
+        # while there are leafs in STARTED status, scrape pages
+        while True:
+            scrape_run_pages = get_scrape_run_pages_by_status(
+                scrape_run_id, "STARTED", "LEAF"
+            )
+            if len(scrape_run_pages) == 0:
+                break
+            scrape_page_tasks = []
+            for scrape_run_page in scrape_run_pages:
+                scrape_page_task = scrape_page_for_run.s(
+                    project_id, scrape_run_id, scrape_run_page.id
+                )
+                scrape_page_tasks.append(scrape_page_task)
+            group_promise = group(scrape_page_tasks)()
+            while not group_promise.ready():
+                print("leaf scraping complete => ", group_promise.completed_count())
+                time.sleep(10)
+
+        update_stage("OUTPUT", scrape_run_id, project_id)
+        # create scrape output files and upload to minio, add scrape run outputs to db
+        scrape_run_pages = get_scrape_run_pages_by_status(
+            scrape_run_id, "COMPLETED", "LEAF"
+        )
+        unique_page_template_ids = set(
+            map(lambda x: x.page_template_id, scrape_run_pages)
+        )
+        unique_page_templates = [
+            get_page_template(x, project_id) for x in unique_page_template_ids
         ]
-        jsonl_file_path = write_to_jsonl_file(
-            grouped_scrape_run_pages, scrape_run_id, page_template.id
+        Path("/app/celery_file_data/scrape_run_outputs").mkdir(
+            parents=True, exist_ok=True
         )
-        csv_file_path = write_to_csv_file(
-            grouped_scrape_run_pages, scrape_run_id, page_template.id
-        )
-        xlsx_file_path = write_to_xlsx_file(
-            grouped_scrape_run_pages, scrape_run_id, page_template.id
-        )
-        jsonl_file_url = upload_to_minio(jsonl_file_path)
-        csv_file_url = upload_to_minio(csv_file_path)
-        xlsx_file_url = upload_to_minio(xlsx_file_path)
-        jsonl_scrape_run_output = ScrapeRunOutput(
-            format="JSONL",
-            file_url=jsonl_file_url,
-            scrape_run_id=scrape_run_id,
-        )
-        csv_scrape_run_output = ScrapeRunOutput(
-            format="CSV",
-            file_url=csv_file_url,
-            scrape_run_id=scrape_run_id,
-        )
-        xlsx_scrape_run_output = ScrapeRunOutput(
-            format="XLSX",
-            file_url=xlsx_file_url,
-            scrape_run_id=scrape_run_id,
-        )
-        session.add(jsonl_scrape_run_output)
-        session.add(csv_scrape_run_output)
-        session.add(xlsx_scrape_run_output)
-        session.commit()
+        for page_template in unique_page_templates:
+            grouped_scrape_run_pages = [
+                x for x in scrape_run_pages if x.page_template_id == page_template.id
+            ]
+            jsonl_file_path = write_to_jsonl_file(
+                grouped_scrape_run_pages, scrape_run_id, page_template.id
+            )
+            csv_file_path = write_to_csv_file(
+                grouped_scrape_run_pages, scrape_run_id, page_template.id
+            )
+            xlsx_file_path = write_to_xlsx_file(
+                grouped_scrape_run_pages, scrape_run_id, page_template.id
+            )
+            jsonl_file_url = upload_to_minio(jsonl_file_path)
+            csv_file_url = upload_to_minio(csv_file_path)
+            xlsx_file_url = upload_to_minio(xlsx_file_path)
+            jsonl_scrape_run_output = ScrapeRunOutput(
+                format="JSONL",
+                file_url=jsonl_file_url,
+                scrape_run_id=scrape_run_id,
+            )
+            csv_scrape_run_output = ScrapeRunOutput(
+                format="CSV",
+                file_url=csv_file_url,
+                scrape_run_id=scrape_run_id,
+            )
+            xlsx_scrape_run_output = ScrapeRunOutput(
+                format="XLSX",
+                file_url=xlsx_file_url,
+                scrape_run_id=scrape_run_id,
+            )
+            session.add(jsonl_scrape_run_output)
+            session.add(csv_scrape_run_output)
+            session.add(xlsx_scrape_run_output)
+            session.commit()
 
-    # update scrape run status as COMPLETED
-    scrape_run.status = "COMPLETED"
-    scrape_run.stage = "COMPLETED"
-    scrape_run.ended_on = datetime.now()
-    session.add(scrape_run)
-    session.commit()
+        # update scrape run status as COMPLETED
+        scrape_run.status = "COMPLETED"
+        scrape_run.stage = "COMPLETED"
+        scrape_run.ended_on = datetime.now()
+        session.add(scrape_run)
+        session.commit()
+    except:
+        print(traceback.format_exc())
+        scrape_run = get_scrape_run(scrape_run_id, project_id)
+        scrape_run.status = "FAILED"
+        scrape_run.stage = "COMPLETED"
+        scrape_run.ended_on = datetime.now()
+        session.add(scrape_run)
+        session.commit()
     return

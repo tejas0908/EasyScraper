@@ -1,5 +1,4 @@
 import { Project, PageTemplate } from "@/app/lib/types";
-import { useCookies } from 'react-cookie';
 import {
     Sheet,
     SheetContent,
@@ -22,9 +21,9 @@ import { Input } from "@/components/ui/input"
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
+import { useToken } from "@/app/lib/token";
 
 export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, parentForceUpdate }: { pageTemplate: PageTemplate | null, pageTemplates: PageTemplate[], project: Project, parentForceUpdate: any }) {
-    const [cookies, setCookie] = useCookies(['token']);
     const [name, setName] = useState(pageTemplate ? pageTemplate.name : '');
     const id = pageTemplate ? pageTemplate.id : null;
     const [outputType, setOutputType] = useState(pageTemplate ? pageTemplate.output_type : 'LEAF');
@@ -44,6 +43,7 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
         aiInput: null,
         server: null
     });
+    const getToken = useToken();
 
     function registerError(field: string, message: string | null) {
         setError({
@@ -130,7 +130,7 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
             method: method,
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             },
             body: JSON.stringify(body)
         });
@@ -148,7 +148,7 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
             method: "delete",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             }
         });
         if (data.status == 200) {

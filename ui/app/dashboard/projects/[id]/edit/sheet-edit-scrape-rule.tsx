@@ -1,5 +1,4 @@
 import { Project, PageTemplate, ScrapeRule } from "@/app/lib/types";
-import { useCookies } from 'react-cookie';
 import {
     Sheet,
     SheetContent,
@@ -22,9 +21,9 @@ import { Input } from "@/components/ui/input"
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
+import { useToken } from "@/app/lib/token";
 
 export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, parentForceUpdate }: { scrapeRule: ScrapeRule | null, pageTemplate: PageTemplate, scrapeRules: ScrapeRule[], parentForceUpdate: any }) {
-    const [cookies, setCookie] = useCookies(['token']);
     const [open, setOpen] = useState(false);
     const [error, setError] = useState<{ [key: string]: string | null }>({
         alias: null,
@@ -37,6 +36,7 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
     const [type, setType] = useState(scrapeRule ? scrapeRule.type : 'SINGLE');
     const [value, setValue] = useState(scrapeRule ? scrapeRule.value : '');
     const [href, setHref] = useState(scrapeRule ? String(scrapeRule.href) : 'false');
+    const getToken = useToken();
 
     useEffect(() => {
         if (pageTemplate.output_type == "PAGE_SOURCE") {
@@ -113,7 +113,7 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
             method: method,
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             },
             body: JSON.stringify(body)
         });
@@ -131,7 +131,7 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
             method: "delete",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             }
         });
         if (data.status == 200) {

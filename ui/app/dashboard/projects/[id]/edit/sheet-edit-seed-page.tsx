@@ -1,5 +1,5 @@
 import { Project, PageTemplate, SeedPage } from "@/app/lib/types";
-import { useCookies } from 'react-cookie';
+import { useToken } from "@/app/lib/token";
 import {
     Sheet,
     SheetContent,
@@ -24,7 +24,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 
 export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForceUpdate }: { seedPage: SeedPage | null, project: Project, pageTemplates: PageTemplate[], parentForceUpdate: any }) {
-    const [cookies, setCookie] = useCookies(['token']);
     const [open, setOpen] = useState(false);
     const [error, setError] = useState<{ [key: string]: string | null }>({
         url: null,
@@ -36,6 +35,7 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
     const id = seedPage ? seedPage.id : null;
     const [url, setUrl] = useState(seedPage ? seedPage.url : '');
     const [pageTemplateId, setPageTemplateId] = useState(seedPage ? seedPage.page_template_id : '');
+    const getToken = useToken();
 
     function registerError(field: string, message: string | null) {
         setError({
@@ -84,7 +84,7 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
             method: method,
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             },
             body: JSON.stringify(body)
         });
@@ -102,7 +102,7 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
             method: "delete",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             }
         });
         if (data.status == 200) {

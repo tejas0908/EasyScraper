@@ -3,9 +3,8 @@
 import { ProjectsList } from "@/components/app/projects-list";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { Input } from "@/components/ui/input"
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { useCookies } from 'react-cookie';
 import {
     Sheet,
     SheetContent,
@@ -14,17 +13,18 @@ import {
     SheetTitle,
     SheetTrigger,
     SheetFooter
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react"
-import { toast } from "sonner"
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useToken } from "@/app/lib/token";
 
 export default function Dashboard() {
     const [projectName, setProjectName] = useState('');
     const [lastRender, setLastRender] = useState(Date.now());
-    const [cookies, setCookie] = useCookies(['token']);
     const router = useRouter();
     const [pendingCreateProject, setPendingCreateProject] = useState(false);
+    const getToken = useToken();
 
     function handleProjectNameChange(e: any) {
         setProjectName(e.target.value);
@@ -36,8 +36,8 @@ export default function Dashboard() {
             method: "post",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
-            },
+                "Authorization": getToken()
+            } as HeadersInit,
             body: JSON.stringify({
                 "name": projectName
             })

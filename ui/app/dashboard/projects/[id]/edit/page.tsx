@@ -11,13 +11,13 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { useEffect, useState, use, useReducer } from "react";
-import { useCookies } from 'react-cookie';
 import { TabSettings } from "./tab-settings";
 import { TabPageTemplates } from "./tab-page-templates";
 import { TabSeedPages } from "./tab-seed-pages";
 import { TabScrapeTest } from "./tab-scrape-test";
 import { TabScrapeRuns } from "./tab-scrape-runs";
 import { Project, PageTemplate } from "@/app/lib/types";
+import { useToken } from "@/app/lib/token";
 
 export default function ProjectEdit({
     params,
@@ -25,7 +25,7 @@ export default function ProjectEdit({
     params: Promise<{ id: string }>
 }) {
     const router = useRouter();
-    const [cookies, setCookie] = useCookies(['token']);
+    const getToken = useToken();
     const projectId = use(params).id;
     const [project, setProject] = useState<Project | null>(null);
     const [pageTemplates, setPageTemplates] = useState<PageTemplate[]>([]);
@@ -36,7 +36,7 @@ export default function ProjectEdit({
             method: "get",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             }
         }).then((res) => {
             return res.json();
@@ -47,7 +47,7 @@ export default function ProjectEdit({
             method: "get",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             }
         }).then((res) => {
             return res.json();

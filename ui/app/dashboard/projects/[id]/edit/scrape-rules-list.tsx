@@ -1,19 +1,19 @@
 import { PageTemplate, ScrapeRule } from "@/app/lib/types";
 import { useEffect, useState, useReducer } from "react";
-import { useCookies } from 'react-cookie';
 import { EditScrapeRuleSheet } from "./sheet-edit-scrape-rule";
+import { useToken } from "@/app/lib/token";
 
 export function ScrapeRulesList({ pageTemplate, parentForceUpdate }: { pageTemplate: PageTemplate, parentForceUpdate: any }) {
     const [scrapeRules, setScrapeRules] = useState<ScrapeRule[]>([]);
-    const [cookies, setCookie] = useCookies(['token']);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
+    const getToken = useToken();
 
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${pageTemplate.project_id}/page_templates/${pageTemplate.id}/scrape_rules?` + new URLSearchParams({ skip: String(0), limit: String(100) }).toString(), {
             method: "get",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             }
         }).then((res) => {
             return res.json();

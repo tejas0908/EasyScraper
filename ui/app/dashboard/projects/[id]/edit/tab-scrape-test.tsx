@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { useState } from "react";
-import { useCookies } from 'react-cookie';
+import { useToken } from "@/app/lib/token";
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import {
@@ -17,11 +17,11 @@ import {
 } from "@/components/ui/select"
 
 export function TabScrapeTest({ project, pageTemplates, parentForceUpdate }: { project: Project, pageTemplates: PageTemplate[], parentForceUpdate: any }) {
-    const [cookies, setCookie] = useCookies(['token']);
     const [url, setUrl] = useState('');
     const [pageTemplateId, setPageTemplateId] = useState('');
     const [pendingScrape, setPendingScrape] = useState(false);
     const [scrapeTestOutput, setScrapeTestOutput] = useState<any[]>([]);
+    const getToken = useToken();
 
     function handleUrlChange(e: any) {
         const turl = e.target.value;
@@ -38,7 +38,7 @@ export function TabScrapeTest({ project, pageTemplates, parentForceUpdate }: { p
             method: "post",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             },
             body: JSON.stringify({
                 "url": url,

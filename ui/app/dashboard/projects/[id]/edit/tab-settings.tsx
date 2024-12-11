@@ -5,16 +5,16 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { useState } from "react";
-import { useCookies } from 'react-cookie';
+import { useToken } from "@/app/lib/token";
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 export function TabSettings({ project, parentForceUpdate }: { project: Project, parentForceUpdate: any }) {
-    const [cookies, setCookie] = useCookies(['token']);
     const [projectName, setProjectName] = useState(project.name);
     const [ignoreScrapeFailures, setIgnoreScrapeFailures] = useState(project.ignore_scrape_failures);
     const [sleepSecondsBetweenPageScrapes, setSleepSecondsBetweenPageScrapes] = useState(project.sleep_seconds_between_page_scrape);
     const [pendingUpdate, setPendingUpdate] = useState(false);
+    const getToken = useToken();
 
     function handleProjectNameChange(e: any) {
         const pname = e.target.value;
@@ -35,7 +35,7 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
             method: "put",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             },
             body: JSON.stringify({
                 "name": projectName,

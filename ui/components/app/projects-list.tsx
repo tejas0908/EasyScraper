@@ -4,7 +4,7 @@ import { Ellipsis } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link'
 import { useState, useEffect } from 'react';
-import { useCookies } from 'react-cookie';
+import { useToken } from "@/app/lib/token";
 import { Book } from 'lucide-react';
 import {
     DropdownMenu,
@@ -38,12 +38,12 @@ interface ProjectsTableProps {
 }
 
 export function ProjectsList({ lastRender }: ProjectsTableProps) {
-    const [cookies, setCookie] = useCookies(['token']);
     const [projects, setProjects] = useState<{ id: string, name: string }[]>([]);
     const [localLastRender, setLocalLastRender] = useState(Date.now());
     const [currentPage, setCurrentPage] = useState(0);
     const limit = 10;
     const [fetchPending, setFetchPending] = useState(false);
+    const getToken = useToken();
 
     useEffect(() => {
         setProjects([]);
@@ -52,8 +52,8 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
             method: "get",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
-            }
+                "Authorization": getToken()
+            } as HeadersInit
         }).then((res) => {
             return res.json();
         }).then((data) => {
@@ -67,8 +67,8 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
             method: "delete",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
-            }
+                "Authorization": getToken()
+            } as HeadersInit
         });
         if (data.status == 200) {
             toast.success(`Project deleted`);

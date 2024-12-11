@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { useState, useEffect, useReducer } from "react";
-import { useCookies } from 'react-cookie';
+import { useToken } from "@/app/lib/token";
 import { Loader2, Edit } from "lucide-react"
 import { toast } from "sonner"
 import {
@@ -26,16 +26,16 @@ import { EditPageTemplateSheet } from "./sheet-edit-page-template";
 import { ScrapeRulesList } from "./scrape-rules-list";
 
 export function TabPageTemplates({ project, parentForceUpdate }: { project: Project, parentForceUpdate: any }) {
-    const [cookies, setCookie] = useCookies(['token']);
     const [pageTemplates, setPageTemplates] = useState<PageTemplate[]>([]);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
+    const getToken = useToken();
 
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/page_templates?` + new URLSearchParams({ skip: String(0), limit: String(100) }).toString(), {
             method: "get",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             }
         }).then((res) => {
             return res.json();

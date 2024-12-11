@@ -53,7 +53,6 @@ export function AppSidebar() {
   }
 
   useEffect(() => {
-    console.log('useEffect');
     let theme = localStorage.getItem('theme');
     if (theme == null) {
       if (document.documentElement.classList.value.length > 0) {

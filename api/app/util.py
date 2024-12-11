@@ -28,7 +28,7 @@ def verify_password(password_hash, password_plain):
 
 
 def generate_access_token(id, username):
-    dt = datetime.now(tz=timezone.utc) + timedelta(hours=1)
+    dt = datetime.now(tz=timezone.utc) + timedelta(minutes=int(os.environ["TOKEN_EXPIRY_MINUTES"]))
     return jwt.encode(
         {"id": id, "username": username, "exp": dt}, jwt_secret, algorithm="HS256"
     )

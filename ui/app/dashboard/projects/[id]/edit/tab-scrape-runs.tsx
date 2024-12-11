@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { useState, useEffect, useReducer } from "react";
-import { useCookies } from 'react-cookie';
+import { useToken } from "@/app/lib/token";
 import { Dot, Loader, Play, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import moment from 'moment'
@@ -29,12 +29,12 @@ import { Progress } from "@/components/ui/progress"
 
 
 export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project, parentForceUpdate: any }) {
-    const [cookies, setCookie] = useCookies(['token']);
     const [scrapeRuns, setScrapeRuns] = useState<ScrapeRun[]>([]);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [pendingTrigger, setPendingTrigger] = useState(false);
     const [pendingRefresh, setPendingRefresh] = useState(false);
     const timezoneOffset = (new Date()).getTimezoneOffset();
+    const getToken = useToken();
 
     function refreshScrapeRuns() {
         setPendingRefresh(true);
@@ -42,7 +42,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
             method: "get",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             }
         }).then((res) => {
             return res.json();
@@ -89,7 +89,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
             method: "post",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             }
         });
         if (data.status == 200) {
@@ -120,7 +120,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
         let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/scrape_runs/${scrapeRunId}/outputs/${outputFileId}/download`, {
             method: "get",
             headers: {
-                "Authorization": `Bearer ${cookies.token}`
+                "Authorization": getToken()
             }
         });
         if (data.status == 200) {

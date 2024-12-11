@@ -41,6 +41,7 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
     const [projects, setProjects] = useState<{ id: string, name: string }[]>([]);
     const [localLastRender, setLocalLastRender] = useState(Date.now());
     const [currentPage, setCurrentPage] = useState(0);
+    const [nextPage, setNextPage] = useState(false);
     const limit = 10;
     const [fetchPending, setFetchPending] = useState(false);
     const getToken = useToken();
@@ -58,6 +59,7 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
             return res.json();
         }).then((data) => {
             setProjects(data.projects);
+            setNextPage(data.paging.next_page);
             setFetchPending(false);
         });
     }, [lastRender, localLastRender]);
@@ -93,7 +95,7 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
                             <PaginationLink className="cursor-pointer">{currentPage + 1}</PaginationLink>
                         </PaginationItem>
                         <PaginationItem>
-                            <PaginationNext className="cursor-pointer" onClick={() => handlePageChange(currentPage + 1)} />
+                            <PaginationNext className={!nextPage ? "pointer-events-none opacity-50" : "cursor-pointer"} onClick={() => handlePageChange(currentPage + 1)} />
                         </PaginationItem>
                     </PaginationContent>
                 </Pagination>

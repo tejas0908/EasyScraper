@@ -17,20 +17,22 @@ import {
 } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { EditPageTemplateSheet } from "./sheet-edit-page-template";
-import { ScrapeRulesList } from "./scrape-rules-list";
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination"
 import { Progress } from "@/components/ui/progress"
 
 
 export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project, parentForceUpdate: any }) {
     const [scrapeRuns, setScrapeRuns] = useState<ScrapeRun[]>([]);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [nextPage, setNextPage] = useState(false);
+    const limit = 10;
     const [pendingTrigger, setPendingTrigger] = useState(false);
     const [pendingRefresh, setPendingRefresh] = useState(false);
     const timezoneOffset = (new Date()).getTimezoneOffset();
@@ -38,7 +40,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
 
     function refreshScrapeRuns() {
         setPendingRefresh(true);
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/scrape_runs?` + new URLSearchParams({ page: String(0), limit: String(5), sort_field: 'started_on', sort_direction: 'desc' }).toString(), {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/scrape_runs?` + new URLSearchParams({ page: String(currentPage), limit: String(limit), sort_field: 'started_on', sort_direction: 'desc' }).toString(), {
             method: "get",
             headers: {
                 "Content-Type": "application/json",
@@ -71,6 +73,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
 
             });
             setScrapeRuns(data.scrape_runs);
+            setNextPage(data.paging.next_page);
             setPendingRefresh(false);
         });
     }
@@ -81,7 +84,11 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
             refreshScrapeRuns();
         }, 10000);
         return () => clearInterval(interval);
-    }, [ignored]);
+    }, [ignored, currentPage]);
+
+    async function handlePageChange(page: number) {
+        setCurrentPage(page);
+    }
 
     async function triggerScrape() {
         setPendingTrigger(true);
@@ -177,6 +184,19 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
     return (
         <div className="p-2 space-y-4">
             <div className="flex justify-end space-x-2">
+                {((currentPage > 0) || (currentPage == 0 && nextPage == true)) && <Pagination className="justify-end">
+                    <PaginationContent className='border rounded-md'>
+                        <PaginationItem>
+                            <PaginationPrevious className={currentPage <= 0 ? "pointer-events-none opacity-50" : "cursor-pointer"} onClick={() => handlePageChange(currentPage - 1)} />
+                        </PaginationItem>
+                        <PaginationItem>
+                            <PaginationLink className="cursor-pointer">{currentPage + 1}</PaginationLink>
+                        </PaginationItem>
+                        <PaginationItem>
+                            <PaginationNext className={!nextPage ? "pointer-events-none opacity-50" : "cursor-pointer"} onClick={() => handlePageChange(currentPage + 1)} />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>}
                 <Button onClick={triggerScrape}>
                     <Play className="dark:fill-black" />
                     Trigger Scrape

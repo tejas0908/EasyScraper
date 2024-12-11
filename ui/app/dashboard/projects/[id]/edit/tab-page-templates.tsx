@@ -31,7 +31,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
     const getToken = useToken();
 
     useEffect(() => {
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/page_templates?` + new URLSearchParams({ skip: String(0), limit: String(100) }).toString(), {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/page_templates?` + new URLSearchParams({ page: String(0), limit: String(100), sort_field: 'name', sort_direction: 'asc' }).toString(), {
             method: "get",
             headers: {
                 "Content-Type": "application/json",

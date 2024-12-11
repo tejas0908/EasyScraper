@@ -1,7 +1,7 @@
 from sqlmodel import Field, SQLModel
 from app.util import generate_ulid
 from typing import Optional, List
-from app.models.common import Paging
+from app.models.common import PagingResponse
 
 
 class Project(SQLModel, table=True):
@@ -28,4 +28,4 @@ class ProjectUpdate(SQLModel):
 
 class ProjectListResponse(SQLModel):
     projects: List[Project]
-    paging: Paging
+    paging: PagingResponse

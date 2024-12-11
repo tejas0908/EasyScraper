@@ -10,7 +10,7 @@ export function TabSeedPages({ project, pageTemplates, parentForceUpdate }: { pr
     const getToken = useToken();
 
     useEffect(() => {
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/seed_pages?` + new URLSearchParams({ skip: String(0), limit: String(100) }).toString(), {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/seed_pages?` + new URLSearchParams({ page: String(0), limit: String(100), sort_field: 'id', sort_direction: 'asc' }).toString(), {
             method: "get",
             headers: {
                 "Content-Type": "application/json",

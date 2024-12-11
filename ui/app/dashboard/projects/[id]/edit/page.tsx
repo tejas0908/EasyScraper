@@ -43,7 +43,7 @@ export default function ProjectEdit({
         }).then((data) => {
             setProject(data);
         });
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${projectId}/page_templates?` + new URLSearchParams({ skip: String(0), limit: String(100) }).toString(), {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${projectId}/page_templates?` + new URLSearchParams({ page: String(0), limit: String(100), sort_field: 'name', sort_direction: 'asc' }).toString(), {
             method: "get",
             headers: {
                 "Content-Type": "application/json",

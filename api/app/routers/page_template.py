@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
 from app.models.page_template import (
     PageTemplate,
     PageTemplateUpdate,
@@ -9,7 +9,16 @@ from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
 from sqlmodel import select
 from app.models.auth import CurrentUserDep
-from app.models.common import Paging, FastAPIError, IdResponse
+from app.models.common import (
+    PagingResponse,
+    FastAPIError,
+    IdResponse,
+    PagingWithSortRequest,
+    paging_with_sort,
+)
+from sqlmodel import select, func, col
+import math
+from typing import Annotated
 
 page_template_router = APIRouter()
 
@@ -102,19 +111,37 @@ async def list_page_templates(
     project_id,
     current_user: CurrentUserDep,
     session: SessionDep,
-    skip: int = 0,
-    limit: int = 10,
+    paging_with_sort: Annotated[PagingWithSortRequest, Depends(paging_with_sort)],
 ) -> dict:
     check_if_project_belongs_to_user(project_id, current_user, session)
     statement = (
         select(PageTemplate)
         .where(PageTemplate.project_id == project_id)
-        .offset(skip)
-        .limit(limit)
+        .order_by(
+            getattr(
+                getattr(PageTemplate, paging_with_sort.sort_field),
+                paging_with_sort.sort_direction,
+            )()
+        )
+        .offset(paging_with_sort.page * paging_with_sort.limit)
+        .limit(paging_with_sort.limit)
     )
+    total_records = session.exec(
+        select(func.count(col(PageTemplate.id))).where(
+            PageTemplate.project_id == project_id
+        )
+    ).one()
+    total_pages = math.ceil(total_records / paging_with_sort.limit)
     page_templates = session.exec(statement).all()
     return PageTemplateListResponse(
-        page_templates=page_templates, paging=Paging(skip=skip, limit=limit)
+        page_templates=page_templates,
+        paging=PagingResponse(
+            page=paging_with_sort.page,
+            limit=paging_with_sort.limit,
+            next_page=paging_with_sort.page < total_pages - 1,
+            total_pages=total_pages,
+            total_records=total_records,
+        ),
     )
 
 

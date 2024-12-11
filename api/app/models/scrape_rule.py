@@ -1,7 +1,7 @@
 from sqlmodel import Field, SQLModel, String
 from app.util import generate_ulid
 from typing import Literal, Optional, List
-from app.models.common import Paging
+from app.models.common import PagingResponse
 
 
 class ScrapeRule(SQLModel, table=True):
@@ -33,4 +33,4 @@ class ScrapeRuleUpdate(SQLModel):
 
 class ScrapeRuleListResponse(SQLModel):
     scrape_rules: List[ScrapeRule]
-    paging: Paging
+    paging: PagingResponse

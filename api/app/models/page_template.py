@@ -1,7 +1,7 @@
 from sqlmodel import Field, SQLModel, String
 from app.util import generate_ulid
 from typing import Literal, Optional, List
-from app.models.common import Paging
+from app.models.common import PagingResponse
 
 
 class PageTemplate(SQLModel, table=True):
@@ -50,4 +50,4 @@ class PageTemplateUpdate(SQLModel):
 
 class PageTemplateListResponse(SQLModel):
     page_templates: List[PageTemplate]
-    paging: Paging
+    paging: PagingResponse

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
 from app.models.project import (
     Project,
     ProjectUpdate,
@@ -7,9 +7,16 @@ from app.models.project import (
 )
 from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
-from sqlmodel import select
 from app.models.auth import CurrentUserDep
-from app.models.common import IdResponse, Paging
+from app.models.common import (
+    IdResponse,
+    PagingResponse,
+    PagingWithSortRequest,
+    paging_with_sort,
+)
+from typing import Annotated
+from sqlmodel import select, func, col
+import math
 
 project_router = APIRouter()
 
@@ -77,16 +84,37 @@ async def put_project(
 
 @project_router.get("/projects", response_model=None, tags=["projects"])
 async def list_projects(
-    current_user: CurrentUserDep, session: SessionDep, skip: int = 0, limit: int = 10
+    current_user: CurrentUserDep,
+    session: SessionDep,
+    paging_with_sort: Annotated[PagingWithSortRequest, Depends(paging_with_sort)],
 ) -> dict:
     statement = (
         select(Project)
         .where(Project.user_id == current_user.id)
-        .offset(skip)
-        .limit(limit)
+        .order_by(
+            getattr(
+                getattr(Project, paging_with_sort.sort_field),
+                paging_with_sort.sort_direction,
+            )()
+        )
+        .offset(paging_with_sort.page * paging_with_sort.limit)
+        .limit(paging_with_sort.limit)
     )
     projects = session.exec(statement).all()
-    return ProjectListResponse(projects=projects, paging=Paging(skip=skip, limit=limit))
+    total_records = session.exec(
+        select(func.count(col(Project.id))).where(Project.user_id == current_user.id)
+    ).one()
+    total_pages = math.ceil(total_records / paging_with_sort.limit)
+    return ProjectListResponse(
+        projects=projects,
+        paging=PagingResponse(
+            page=paging_with_sort.page,
+            limit=paging_with_sort.limit,
+            next_page=paging_with_sort.page < total_pages - 1,
+            total_pages=total_pages,
+            total_records=total_records,
+        ),
+    )
 
 
 @project_router.delete("/projects/{project_id}", response_model=None, tags=["projects"])

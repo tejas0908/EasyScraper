@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
 from app.models.scrape_rule import (
     ScrapeRule,
     ScrapeRuleUpdate,
@@ -12,7 +12,16 @@ from app.db.db_utils import (
 from app.db.engine import SessionDep
 from sqlmodel import select
 from app.models.auth import CurrentUserDep
-from app.models.common import Paging, IdResponse, FastAPIError
+from app.models.common import (
+    PagingResponse,
+    IdResponse,
+    FastAPIError,
+    PagingWithSortRequest,
+    paging_with_sort,
+)
+from typing import Annotated
+from sqlmodel import select, func, col
+import math
 
 scrape_rule_router = APIRouter()
 
@@ -114,20 +123,38 @@ async def list_scrape_rules(
     page_template_id,
     current_user: CurrentUserDep,
     session: SessionDep,
-    skip: int = 0,
-    limit: int = 10,
+    paging_with_sort: Annotated[PagingWithSortRequest, Depends(paging_with_sort)],
 ) -> dict:
     check_if_project_belongs_to_user(project_id, current_user, session)
     check_if_page_template_belongs_to_project(page_template_id, project_id, session)
     statement = (
         select(ScrapeRule)
         .where(ScrapeRule.page_template_id == page_template_id)
-        .offset(skip)
-        .limit(limit)
+        .order_by(
+            getattr(
+                getattr(ScrapeRule, paging_with_sort.sort_field),
+                paging_with_sort.sort_direction,
+            )()
+        )
+        .offset(paging_with_sort.page * paging_with_sort.limit)
+        .limit(paging_with_sort.limit)
     )
     scrape_rules = session.exec(statement).all()
+    total_records = session.exec(
+        select(func.count(col(ScrapeRule.id))).where(
+            ScrapeRule.page_template_id == page_template_id
+        )
+    ).one()
+    total_pages = math.ceil(total_records / paging_with_sort.limit)
     return ScrapeRuleListResponse(
-        scrape_rules=scrape_rules, paging=Paging(skip=skip, limit=limit)
+        scrape_rules=scrape_rules,
+        paging=PagingResponse(
+            page=paging_with_sort.page,
+            limit=paging_with_sort.limit,
+            next_page=paging_with_sort.page < total_pages - 1,
+            total_pages=total_pages,
+            total_records=total_records,
+        ),
     )
 
 

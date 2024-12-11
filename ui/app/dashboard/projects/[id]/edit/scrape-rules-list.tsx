@@ -9,7 +9,7 @@ export function ScrapeRulesList({ pageTemplate, parentForceUpdate }: { pageTempl
     const getToken = useToken();
 
     useEffect(() => {
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${pageTemplate.project_id}/page_templates/${pageTemplate.id}/scrape_rules?` + new URLSearchParams({ skip: String(0), limit: String(100) }).toString(), {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${pageTemplate.project_id}/page_templates/${pageTemplate.id}/scrape_rules?` + new URLSearchParams({ page: String(0), limit: String(100), sort_field: 'alias', sort_direction: 'asc' }).toString(), {
             method: "get",
             headers: {
                 "Content-Type": "application/json",

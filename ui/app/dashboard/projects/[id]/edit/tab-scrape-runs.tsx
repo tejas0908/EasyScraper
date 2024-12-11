@@ -38,7 +38,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
 
     function refreshScrapeRuns() {
         setPendingRefresh(true);
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/scrape_runs?` + new URLSearchParams({ skip: String(0), limit: String(5) }).toString(), {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/scrape_runs?` + new URLSearchParams({ page: String(0), limit: String(5), sort_field: 'started_on', sort_direction: 'desc' }).toString(), {
             method: "get",
             headers: {
                 "Content-Type": "application/json",

@@ -48,7 +48,7 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
     useEffect(() => {
         setProjects([]);
         setFetchPending(true);
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects?` + new URLSearchParams({ skip: String(currentPage * limit), limit: String(limit) }).toString(), {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects?` + new URLSearchParams({ page: String(currentPage), limit: String(limit), sort_field: 'name', sort_direction: 'asc' }).toString(), {
             method: "get",
             headers: {
                 "Content-Type": "application/json",

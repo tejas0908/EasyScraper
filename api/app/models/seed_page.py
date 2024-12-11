@@ -1,7 +1,7 @@
 from sqlmodel import Field, SQLModel
 from app.util import generate_ulid
 from typing import List
-from app.models.common import Paging
+from app.models.common import PagingResponse
 
 
 class SeedPage(SQLModel, table=True):
@@ -25,4 +25,4 @@ class SeedPageUpdate(SQLModel):
 
 class SeedPageListResponse(SQLModel):
     seed_pages: List[SeedPage]
-    paging: Paging
+    paging: PagingResponse

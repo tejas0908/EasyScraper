@@ -2,7 +2,7 @@ from sqlmodel import Field, SQLModel, String
 from sqlalchemy import JSON, Column
 from app.util import generate_ulid
 from typing import Literal, Optional, List
-from app.models.common import Paging
+from app.models.common import PagingResponse
 from datetime import datetime
 
 
@@ -86,4 +86,4 @@ class ScrapeTestResponse(SQLModel):
 
 class ScrapeRunListResponse(SQLModel):
     scrape_runs: List[ScrapeRunView]
-    paging: Paging
+    paging: PagingResponse

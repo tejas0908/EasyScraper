@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Depends
 from app.models.scrape_run import (
     ScrapeRun,
     ScrapeRunView,
@@ -14,11 +14,19 @@ from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
 from sqlmodel import select, func, col
 from app.models.auth import CurrentUserDep
-from app.models.common import Paging, FastAPIError
+from app.models.common import (
+    PagingResponse,
+    FastAPIError,
+    PagingWithSortRequest,
+    paging_with_sort,
+)
 from time import time
 from app.celery.tasks import scrape_page_for_test, scrape_master
 from fastapi.responses import FileResponse
 from app.util import get_file_from_minio
+from typing import Annotated
+from sqlmodel import select, func, col
+import math
 
 scrape_run_router = APIRouter()
 
@@ -38,7 +46,7 @@ async def create_scrape_run(
         "started_on": int(time()),
         "status": "STARTED",
         "project_id": project_id,
-        "stage": "CREATED"
+        "stage": "CREATED",
     }
     scrape_run = ScrapeRun.model_validate(scrape_run_data)
     session.add(scrape_run)
@@ -48,9 +56,12 @@ async def create_scrape_run(
     scrape_run_view = ScrapeRunMiniView.model_validate(scrape_run.model_dump())
     return scrape_run_view
 
+
 def populate_scrape_run(scrape_run_view: ScrapeRunView, session):
     scrape_run_view.outputs = session.exec(
-        select(ScrapeRunOutput).where(ScrapeRunOutput.scrape_run_id == scrape_run_view.id)
+        select(ScrapeRunOutput).where(
+            ScrapeRunOutput.scrape_run_id == scrape_run_view.id
+        )
     ).all()
     scrape_run_view.total_discovered_pages = session.exec(
         select(func.count(col(ScrapeRunPage.id))).where(
@@ -68,6 +79,7 @@ def populate_scrape_run(scrape_run_view: ScrapeRunView, session):
         .where(ScrapeRunPage.status == "FAILED")
     ).one()
     return scrape_run_view
+
 
 @scrape_run_router.get(
     "/projects/{project_id}/scrape_runs/{scrape_run_id}",
@@ -105,27 +117,40 @@ async def list_scrape_runs(
     project_id,
     current_user: CurrentUserDep,
     session: SessionDep,
-    skip: int = 0,
-    limit: int = 10,
-    sort: str = "started_on:desc"
+    paging_with_sort: Annotated[PagingWithSortRequest, Depends(paging_with_sort)],
 ) -> ScrapeRunListResponse:
     check_if_project_belongs_to_user(project_id, current_user, session)
-    sort_field, sort_dir = sort.split(":")
     scrape_runs_query = (
         select(ScrapeRun)
         .where(ScrapeRun.project_id == project_id)
-        .order_by(getattr(getattr(ScrapeRun, sort_field), sort_dir)())
-        .offset(skip)
-        .limit(limit)
+        .order_by(
+            getattr(
+                getattr(ScrapeRun, paging_with_sort.sort_field),
+                paging_with_sort.sort_direction,
+            )()
+        )
+        .offset(paging_with_sort.page * paging_with_sort.limit)
+        .limit(paging_with_sort.limit)
     )
     scrape_runs = session.exec(scrape_runs_query).all()
+    total_records = session.exec(
+        select(func.count(col(ScrapeRun.id))).where(ScrapeRun.project_id == project_id)
+    ).one()
+    total_pages = math.ceil(total_records / paging_with_sort.limit)
     scrape_run_views = []
     for scrape_run in scrape_runs:
         scrape_run_view = ScrapeRunView.model_validate(scrape_run.model_dump())
         scrape_run_view = populate_scrape_run(scrape_run_view, session)
         scrape_run_views.append(scrape_run_view)
     return ScrapeRunListResponse(
-        scrape_runs = scrape_run_views, paging=Paging(skip=skip, limit=limit)
+        scrape_runs=scrape_run_views,
+        paging=PagingResponse(
+            page=paging_with_sort.page,
+            limit=paging_with_sort.limit,
+            next_page=paging_with_sort.page < total_pages - 1,
+            total_pages=total_pages,
+            total_records=total_records,
+        ),
     )
 
 

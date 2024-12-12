@@ -46,6 +46,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      db-migration:
+        condition: service_completed_successfully
 
   postgres:
     image: postgres:17-alpine
@@ -64,6 +66,15 @@ services:
       start_period: 10s
       timeout: 10s
       retries: 5
+  
+  db-migration:
+    image: flyway/flyway
+    command: -X -url=${FLYWAY_DB_URL} -schemas=public -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -connectRetries=60 migrate
+    volumes:
+      - ./db:/flyway/sql
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   redis:
     image: redis:7
@@ -105,6 +116,10 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
+      db-migration:
+        condition: service_completed_successfully
   
   celery-insights:
     image: ghcr.io/danyi1212/celery-insights:latest

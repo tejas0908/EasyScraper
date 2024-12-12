@@ -6,7 +6,6 @@ import os
 from datetime import datetime, timezone, timedelta
 import boto3
 from botocore.client import Config
-from urllib.parse import urlparse
 import tempfile
 
 jwt_secret = os.environ["JWT_SECRET"]
@@ -27,10 +26,14 @@ def verify_password(password_hash, password_plain):
         return False
 
 
-def generate_access_token(id, username):
-    dt = datetime.now(tz=timezone.utc) + timedelta(minutes=int(os.environ["TOKEN_EXPIRY_MINUTES"]))
+def generate_access_token(id, username, full_name):
+    dt = datetime.now(tz=timezone.utc) + timedelta(
+        minutes=int(os.environ["TOKEN_EXPIRY_MINUTES"])
+    )
     return jwt.encode(
-        {"id": id, "username": username, "exp": dt}, jwt_secret, algorithm="HS256"
+        {"id": id, "username": username, "exp": dt, "full_name": full_name},
+        jwt_secret,
+        algorithm="HS256",
     )
 
 

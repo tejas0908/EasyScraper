@@ -19,11 +19,7 @@ export default function Login() {
     const router = useRouter();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState<{
-        username: string | null;
-        password: string | null;
-        server: string | null;
-    }>({
+    const [error, setError] = useState<{ [key: string]: string | null }>({
         username: null,
         password: null,
         server: null
@@ -31,18 +27,29 @@ export default function Login() {
     const [cookies, setCookie] = useCookies(['token']);
     const [pendingLogin, setPendingLogin] = useState(false);
 
+    function registerError(field: string, message: string | null) {
+        setError({
+            ...error,
+            [field]: message
+        });
+    }
+
+    function hasErrors() {
+        let hasError = false;
+        for (let k in error) {
+            if (error[k] != null) {
+                hasError = true;
+            }
+        }
+        return hasError;
+    }
+
     function handleUsernameChange(e: any) {
         const uname = e.target.value;
         if (uname.length >= 6 && uname.length <= 20) {
-            setError({
-                ...error,
-                username: null
-            });
+            registerError("username", null);
         } else {
-            setError({
-                ...error,
-                username: "Username should be between 6 and 20 characters"
-            });
+            registerError("username", "Username should be between 6 and 20 characters");
         }
         setUsername(uname);
     }
@@ -50,15 +57,9 @@ export default function Login() {
     function handlePasswordChange(e: any) {
         const pass = e.target.value;
         if (pass.length >= 6 && pass.length <= 500) {
-            setError({
-                ...error,
-                password: null
-            });
+            registerError("password", null);
         } else {
-            setError({
-                ...error,
-                password: "Password should be between 6 and 500 characters"
-            });
+            registerError("password", "Password should be between 6 and 500 characters");
         }
         setPassword(pass);
     }
@@ -79,23 +80,14 @@ export default function Login() {
         if (data.status != 200) {
             if (Array.isArray(response.detail)) {
                 const temp = response.detail.map((x: { msg: string; }) => x.msg).join('\n');
-                setError({
-                    ...error,
-                    server: temp
-                });
+                registerError("server", temp);
             } else {
-                setError({
-                    ...error,
-                    server: response.detail
-                });
+                registerError("server", response.detail);
             }
             setPendingLogin(false);
         }
         else {
-            setError({
-                ...error,
-                server: null
-            });
+            registerError("server", null);
             setCookie('token', response.token);
             router.push("/dashboard");
         }
@@ -112,23 +104,19 @@ export default function Login() {
                 <div className="text-sm pb-4">Enter your username and password below</div>
 
                 <div className="w-64">
-                    <Input type="text" id="username" value={username} onChange={handleUsernameChange} placeholder="Username" />
+                    <Input type="text" id="username" value={username} onChange={handleUsernameChange} placeholder="Username" className={error.username ? 'border-red-500' : ''}/>
+                    <div className="text-red-500 text-xs">{error.username}</div>
                 </div>
 
                 <div className="w-64">
-                    <Input type="password" id="password" value={password} onChange={handlePasswordChange} placeholder="Password" />
+                    <Input type="password" id="password" value={password} onChange={handlePasswordChange} placeholder="Password" className={error.password ? 'border-red-500' : ''}/>
+                    <div className="text-red-500 text-xs">{error.password}</div>
                 </div>
-                {error.username || error.password || error.server ? (
+                {error.server ? (
                     <div>
                         <Alert variant="destructive">
                             <AlertCircle className="h-4 w-4" />
                             <AlertTitle>Error</AlertTitle>
-                            <AlertDescription>
-                                {error.username}
-                            </AlertDescription>
-                            <AlertDescription>
-                                {error.password}
-                            </AlertDescription>
                             <AlertDescription>
                                 {error.server}
                             </AlertDescription>
@@ -136,8 +124,8 @@ export default function Login() {
                     </div>
                 ) : (<div></div>)}
                 <div className="flex space-x-6 pt-4">
-                    <Link href="/signup" className={buttonVariants({ variant: "outline" })}>Sign Up</Link>
-                    <Button onClick={handleLogin} disabled={error.username != null || error.password != null || pendingLogin}>
+                    <Link href="/signup" className={`${buttonVariants({ variant: "outline" })} hover:scale-105 transition duration-0`}>Sign Up</Link>
+                    <Button className="hover:scale-105 transition duration-0" onClick={handleLogin} disabled={hasErrors() || pendingLogin || username.length == 0 || password.length == 0}>
                         {pendingLogin && <Loader2 className="animate-spin" />}
                         Login
                     </Button>

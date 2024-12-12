@@ -29,7 +29,7 @@ async def sign_up(user_signup: UserCreate, session: SessionDep) -> UserOut:
     session.commit()
     session.refresh(user)
     return UserAccessToken(
-        username=user.username, token=generate_access_token(user.id, user.username)
+        username=user.username, token=generate_access_token(user.id, user.username, user.full_name)
     )
 
 
@@ -55,7 +55,7 @@ async def login(user_login: UserLogin, session: SessionDep) -> UserAccessToken:
     elif verify_password(user.password, user_login.password):
         return UserAccessToken(
             username=user_login.username,
-            token=generate_access_token(user.id, user.username),
+            token=generate_access_token(user.id, user.username, user.full_name),
         )
     else:
         raise HTTPException(

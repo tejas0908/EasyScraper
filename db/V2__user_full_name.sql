@@ -1,0 +1,1 @@
+ALTER TABLE public.user ADD full_name varchar(500) null;

@@ -15,11 +15,13 @@ class User(SQLModel, table=True):
     )
     username: str = Field(nullable=False, unique=True, index=True, min_length=6, max_length=20)
     password: str = Field(nullable=False, min_length=6, max_length=500)
+    full_name: str = Field(nullable=True, min_length=3, max_length=500)
 
 
 class UserCreate(SQLModel):
     username: str = Field(nullable=False, min_length=6, max_length=20)
     password: str = Field(nullable=False, min_length=6, max_length=500)
+    full_name: str = Field(nullable=True, min_length=3, max_length=500)
 
 
 class UserLogin(SQLModel):

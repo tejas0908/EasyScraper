@@ -35,12 +35,14 @@
     "react-dom": "19.0.0-rc-66855b96-20241106",
     "sonner": "^1.7.0",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "validator": "^13.12.0"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/validator": "^13.12.2",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",

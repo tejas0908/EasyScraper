@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input"
-import { useEffect, useState } from "react";
-import { Textarea } from "@/components/ui/textarea"
+import { useState } from "react";
+import validator from "validator";
 import { toast } from "sonner"
 
 export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForceUpdate }: { seedPage: SeedPage | null, project: Project, pageTemplates: PageTemplate[], parentForceUpdate: any }) {
@@ -57,7 +57,12 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
     function handleUrlChange(e: any) {
         let turl = e.target.value;
         if (turl.length > 0) {
-            registerError("url", null);
+            if(validator.isURL(turl)){
+                registerError("url", null);
+            }else{
+                registerError("url", "Invalid Url");
+            }
+            
         } else {
             registerError("url", "URL is mandatory");
         }
@@ -153,7 +158,7 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
                 </div>
 
                 <SheetFooter className='pt-4 px-2'>
-                    <Button onClick={handleSaveSeedPage} disabled={pendingSave || hasErrors()}>
+                    <Button onClick={handleSaveSeedPage} disabled={pendingSave || hasErrors() || pageTemplateId.length == 0 || url.length == 0}>
                         {pendingSave && <Loader2 className="animate-spin" />}
                         Save
                     </Button>

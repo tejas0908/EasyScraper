@@ -15,9 +15,37 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
     const [sleepSecondsBetweenPageScrapes, setSleepSecondsBetweenPageScrapes] = useState(project.sleep_seconds_between_page_scrape);
     const [pendingUpdate, setPendingUpdate] = useState(false);
     const getToken = useToken();
+    const [error, setError] = useState<{ [key: string]: string | null }>({
+        projectName: null,
+        ignoreScrapeFailures: null,
+        sleepSecondsBetweenPageScrapes: null,
+        server: null
+    });
+
+    function registerError(field: string, message: string | null) {
+        setError({
+            ...error,
+            [field]: message
+        });
+    }
+
+    function hasErrors() {
+        let hasError = false;
+        for (let k in error) {
+            if (error[k] != null) {
+                hasError = true;
+            }
+        }
+        return hasError;
+    }
 
     function handleProjectNameChange(e: any) {
         const pname = e.target.value;
+        if(pname.length >= 3 && pname.length <=100){
+            registerError("projectName", null);
+        }else{
+            registerError("projectName", "Project Name should be between 3 and 100 characters")
+        }
         setProjectName(pname);
     }
 
@@ -54,7 +82,8 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
         <div className="p-2 space-y-4 w-[500px]">
             <div className="space-y-1 flex flex-col rounded-lg border p-4">
                 <Label>Project Name</Label>
-                <Input type="text" id="project_name" placeholder="Project Name" value={projectName} onChange={handleProjectNameChange} />
+                <Input type="text" id="project_name" placeholder="Project Name" value={projectName} onChange={handleProjectNameChange} className={error.projectName ? 'border-red-500' : ''}/>
+                <div className="text-red-500 text-xs">{error.projectName}</div>
             </div>
             <div className="space-y-1 flex flex-row items-center justify-between rounded-lg border p-4">
                 <Label>Ignore Scrape Failures</Label>
@@ -68,7 +97,7 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
                 </div>
             </div>
             <div className="flex justify-start">
-                <Button className="w-28" onClick={handleProjectUpdate} disabled={pendingUpdate}>
+                <Button className="w-28" onClick={handleProjectUpdate} disabled={pendingUpdate || hasErrors()}>
                     {pendingUpdate && <Loader2 className="animate-spin" />}
                     Save Changes
                 </Button>

@@ -1,9 +1,7 @@
 import { Project, PageTemplate } from "@/app/lib/types";
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch"
-import { Slider } from "@/components/ui/slider"
+import validator from "validator";
 import { useState } from "react";
 import { useToken } from "@/app/lib/token";
 import { Loader2 } from "lucide-react"
@@ -22,13 +20,50 @@ export function TabScrapeTest({ project, pageTemplates, parentForceUpdate }: { p
     const [pendingScrape, setPendingScrape] = useState(false);
     const [scrapeTestOutput, setScrapeTestOutput] = useState<any[]>([]);
     const getToken = useToken();
+    const [error, setError] = useState<{ [key: string]: string | null }>({
+        url: null,
+        pageTemplate: null,
+        server: null
+    });
+
+    function registerError(field: string, message: string | null) {
+        setError({
+            ...error,
+            [field]: message
+        });
+    }
+
+    function hasErrors() {
+        let hasError = false;
+        for (let k in error) {
+            if (error[k] != null) {
+                hasError = true;
+            }
+        }
+        return hasError;
+    }
 
     function handleUrlChange(e: any) {
         const turl = e.target.value;
+        if (turl.length > 0) {
+            if (validator.isURL(turl)) {
+                registerError("url", null);
+            } else {
+                registerError("url", "Invalid Url");
+            }
+
+        } else {
+            registerError("url", "Url is mandatory");
+        }
         setUrl(turl);
     }
 
     function handlePageTemplateChange(e: any) {
+        if (e == null || e.length == 0) {
+            registerError("pageTemplate", "Page template is mandatory");
+        } else {
+            registerError("pageTemplate", null);
+        }
         setPageTemplateId(e);
     }
 
@@ -65,14 +100,15 @@ export function TabScrapeTest({ project, pageTemplates, parentForceUpdate }: { p
         <div>
             <div className="w-[500px] p-2 space-y-4">
                 <div className="space-y-1 flex flex-col rounded-lg border p-4">
-                    <Input type="text" id="url" placeholder="URL" value={url} onChange={handleUrlChange} />
+                    <Input type="text" id="url" placeholder="URL" value={url} onChange={handleUrlChange} className={error.url ? 'border-red-500' : ''}/>
+                    <div className="text-red-500 text-xs">{error.url}</div>
                 </div>
                 <div className="space-y-1 flex flex-col rounded-lg border p-4">
                     <Select value={pageTemplateId} onValueChange={handlePageTemplateChange}>
                         <SelectTrigger>
                             <SelectValue placeholder="Page Template" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className={error.pageTemplate ? 'border-red-500' : ''}>
                             {
                                 pageTemplates.map((pt, index) => (
                                     <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>
@@ -80,9 +116,10 @@ export function TabScrapeTest({ project, pageTemplates, parentForceUpdate }: { p
                             }
                         </SelectContent>
                     </Select>
+                    <div className="text-red-500 text-xs">{error.pageTemplate}</div>
                 </div>
                 <div className="flex justify-start">
-                    <Button className="w-28" onClick={handleScrapeTest} disabled={pendingScrape}>
+                    <Button className="w-28" onClick={handleScrapeTest} disabled={pendingScrape || hasErrors() || pageTemplateId.length == 0 || url.length == 0}>
                         {pendingScrape && <Loader2 className="animate-spin" />}
                         Test
                     </Button>

@@ -22,6 +22,7 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { useToken } from "@/app/lib/token";
+import validator from "validator";
 
 export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, parentForceUpdate }: { pageTemplate: PageTemplate | null, pageTemplates: PageTemplate[], project: Project, parentForceUpdate: any }) {
     const [name, setName] = useState(pageTemplate ? pageTemplate.name : '');
@@ -63,6 +64,11 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
     }
 
     function handleExampleUrlChange(e: any) {
+        if(validator.isURL(e.target.value)){
+            registerError("exampleUrl", null);
+        }else{
+            registerError("exampleUrl", "Invalid Url");
+        }
         setExampleUrl(e.target.value);
     }
 
@@ -218,7 +224,8 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
                     </div>
                     {scraper == 'AUTO_SCRAPER' && <div>
                         <Label>Example URL</Label>
-                        <Input type="text" value={exampleUrl} onChange={handleExampleUrlChange}></Input>
+                        <Input type="text" value={exampleUrl} onChange={handleExampleUrlChange} className={error.exampleUrl ? 'border-red-500' : ''}></Input>
+                        <div className="text-red-500 text-xs">{error.exampleUrl}</div>
                     </div>}
                     {scraper == 'AI_SCRAPER' && <div>
                         <Label>AI Prompt</Label>

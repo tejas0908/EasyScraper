@@ -2,6 +2,8 @@
 
 ![GitHub Release](https://img.shields.io/github/v/release/tejas0908/easyscraper)
 ![GitHub License](https://img.shields.io/github/license/tejas0908/easyscraper)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tejas0908/EasyScraper/docker-build-push.yaml)
+
 
 
 [![Static Badge](https://img.shields.io/badge/Dockerhub%20API%20image-blue?logo=docker&logoColor=white)](https://hub.docker.com/r/tejas0908/easyscraper-api)

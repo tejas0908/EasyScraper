@@ -51,7 +51,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ vars.DOCKERHUB_USERNAME }}/easyscraper-api
+          images: ${{ vars.DOCKERHUB_USERNAME }}/easyscraper-ui
           tags: |
             type=semver,pattern={{version}}
             type=sha

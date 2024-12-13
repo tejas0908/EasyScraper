@@ -34,6 +34,9 @@ async def create_seed_page(
     current_user: CurrentUserDep,
     session: SessionDep,
 ) -> SeedPage:
+    """
+    Creates a seed page from where the scraping will start
+    """
     check_if_project_belongs_to_user(project_id, current_user, session)
     seed_page_data = seed_page_create.model_dump(exclude_unset=True)
     seed_page_data["project_id"] = project_id

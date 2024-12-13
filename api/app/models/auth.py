@@ -34,7 +34,9 @@ class UserLogin(SQLModel):
 
 class UserAccessToken(SQLModel):
     username: str = Field(nullable=False)
-    token: str = Field(nullable=False)
+    token: str = Field(
+        nullable=False, title="Access Token", description="Used to access other apis"
+    )
 
 
 class UserOut(SQLModel):

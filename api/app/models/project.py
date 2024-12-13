@@ -20,15 +20,31 @@ class Project(SQLModel, table=True):
 class ProjectCreate(SQLModel):
     name: str = Field(nullable=False, min_length=3, max_length=100)
     sleep_seconds_between_page_scrape: int = Field(
-        nullable=False, default=3, ge=1, le=60
+        nullable=False,
+        default=3,
+        ge=1,
+        le=60,
+        description="Seconds to wait after scraping each page",
     )
-    ignore_scrape_failures: bool = Field(nullable=False, default=True)
+    ignore_scrape_failures: bool = Field(
+        nullable=False,
+        default=True,
+        description="Whether to ignore failures while scraping pages or to stop the whole scrape run",
+    )
 
 
 class ProjectUpdate(SQLModel):
     name: Optional[str] = Field(default=None, min_length=3, max_length=100)
-    sleep_seconds_between_page_scrape: Optional[int] = Field(default=None, ge=1, le=60)
-    ignore_scrape_failures: Optional[bool] = Field(default=None)
+    sleep_seconds_between_page_scrape: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=60,
+        description="Seconds to wait after scraping each page",
+    )
+    ignore_scrape_failures: Optional[bool] = Field(
+        default=None,
+        description="Whether to ignore failures while scraping pages or to stop the whole scrape run",
+    )
 
 
 class ProjectListResponse(SQLModel):

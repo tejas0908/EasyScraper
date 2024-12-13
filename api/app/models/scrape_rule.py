@@ -19,17 +19,45 @@ class ScrapeRule(SQLModel, table=True):
 
 
 class ScrapeRuleCreate(SQLModel):
-    alias: str = Field(nullable=False, min_length=3, max_length=100)
-    type: Literal["SINGLE", "MULTI"] = Field(nullable=False, sa_type=String)
-    value: str = Field(nullable=True, default=None, max_length=1000)
-    href: bool = Field(nullable=True, default=None)
+    alias: str = Field(
+        nullable=False, min_length=3, max_length=100, description="Field name to scrape"
+    )
+    type: Literal["SINGLE", "MULTI"] = Field(
+        nullable=False,
+        sa_type=String,
+        description="MULTI means its a list of values to be scraped",
+    )
+    value: str = Field(
+        nullable=True,
+        default=None,
+        max_length=1000,
+        description="can contain xpath, css selector, example value or null if its AI_SCRAPER",
+    )
+    href: bool = Field(
+        nullable=True,
+        default=None,
+        description="applicable to Xpath and Css selector only. indicates that value will resolve to a anchor tag with a href attribute",
+    )
 
 
 class ScrapeRuleUpdate(SQLModel):
-    alias: Optional[str] = Field(default=None, min_length=3, max_length=100)
-    type: Literal["SINGLE", "MULTI"] = Field(default=None)
-    value: Optional[str] = Field(default=None, max_length=1000)
-    href: bool = Field(nullable=True, default=None)
+    alias: Optional[str] = Field(
+        default=None, min_length=3, max_length=100, description="Field name to scrape"
+    )
+    type: Literal["SINGLE", "MULTI"] = Field(
+        default=None,
+        description="MULTI means its a list of values to be scraped",
+    )
+    value: Optional[str] = Field(
+        default=None,
+        max_length=1000,
+        description="can contain xpath, css selector, example value or null if its AI_SCRAPER",
+    )
+    href: bool = Field(
+        nullable=True,
+        default=None,
+        description="applicable to Xpath and Css selector only. indicates that value will resolve to a anchor tag with a href attribute",
+    )
 
 
 class ScrapeRuleListResponse(SQLModel):

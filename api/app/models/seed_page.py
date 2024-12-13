@@ -15,13 +15,21 @@ class SeedPage(SQLModel, table=True):
 
 
 class SeedPageCreate(SQLModel):
-    url: str = Field(nullable=False)
-    page_template_id: str = Field(nullable=False)
+    url: str = Field(
+        nullable=False, description="url of the seed page to start the scraping from"
+    )
+    page_template_id: str = Field(
+        nullable=False, description="page template of the url"
+    )
 
 
 class SeedPageUpdate(SQLModel):
-    url: str = Field(nullable=False)
-    page_template_id: str = Field(nullable=False)
+    url: str = Field(
+        nullable=False, description="url of the seed page to start the scraping from"
+    )
+    page_template_id: str = Field(
+        nullable=False, description="page template of the url"
+    )
 
 
 class SeedPageListResponse(SQLModel):

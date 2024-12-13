@@ -11,19 +11,23 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { BookCopy, ArrowLeftToLine, ArrowRightToLine } from "lucide-react"
+import { Rocket, ArrowLeftToLine, ArrowRightToLine, BookText } from "lucide-react"
 import { useSidebar } from "@/components/ui/sidebar"
 
 const items = [
   {
     title: "Projects",
     url: "/dashboard",
-    icon: BookCopy,
+    icon: Rocket,
   }
 ]
 
 export function AppSidebar() {
-  const { open, toggleSidebar } = useSidebar()
+  const { open, toggleSidebar } = useSidebar();
+
+  function openDocs(){
+    window.open(`${process.env.NEXT_PUBLIC_API_BASE_URL}/docs`, "_blank")
+  }
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
@@ -48,6 +52,12 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={openDocs}>
+              <BookText />
+              <span>API Documentation</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={toggleSidebar}>
               {open ? <ArrowLeftToLine /> : <ArrowRightToLine />}

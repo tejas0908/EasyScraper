@@ -21,6 +21,9 @@ auth_router = APIRouter()
     },
 )
 async def sign_up(user_signup: UserCreate, session: SessionDep) -> UserOut:
+    """
+    Signup for a new user account
+    """
     check_if_user_exists(user_signup.username, session)
     user = User.model_validate(user_signup)
     user.password = hash_password(user.password)
@@ -45,6 +48,9 @@ async def sign_up(user_signup: UserCreate, session: SessionDep) -> UserOut:
     },
 )
 async def login(user_login: UserLogin, session: SessionDep) -> UserAccessToken:
+    """
+    Login to an existing user account to get an access token
+    """
     statement = select(User).where(User.username == user_login.username)
     user = session.exec(statement).first()
     if user is None:

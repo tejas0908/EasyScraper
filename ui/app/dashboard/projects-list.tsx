@@ -32,6 +32,10 @@ import {
 } from "@/components/ui/pagination"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from 'sonner';
+import { Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 export function ProjectsList() {
     const [projects, setProjects] = useState<{ id: string, name: string }[]>([]);
@@ -41,6 +45,9 @@ export function ProjectsList() {
     const [fetchPending, setFetchPending] = useState(false);
     const getToken = useToken();
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
+    const [projectName, setProjectName] = useState('');
+    const [pendingCreateProject, setPendingCreateProject] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         setProjects([]);
@@ -79,9 +86,33 @@ export function ProjectsList() {
         setCurrentPage(page);
     }
 
+    function handleProjectNameChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setProjectName(e.target.value);
+    }
+
+    async function handleCreateProject() {
+        setPendingCreateProject(true);
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects`, {
+            method: "post",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": getToken()
+            } as HeadersInit,
+            body: JSON.stringify({
+                "name": projectName
+            })
+        });
+        if (data.status == 200) {
+            const response = await data.json();
+            toast.success(`Project '${projectName}' created`);
+            setProjectName('');
+            router.push(`/dashboard/projects/${response.id}/edit`);
+        }
+    }
+
     return (
         <div className='space-y-2'>
-            <div className='flex'>
+            <div className='flex space-x-2 items-center'>
                 <Pagination className='justify-end'>
                     <PaginationContent className='border rounded-md'>
                         <PaginationItem>
@@ -95,10 +126,32 @@ export function ProjectsList() {
                         </PaginationItem>
                     </PaginationContent>
                 </Pagination>
+                <Sheet>
+                    <SheetTrigger asChild><Button><Plus />Project</Button></SheetTrigger>
+                    <SheetContent>
+                        <SheetHeader>
+                            <SheetTitle>New Scraping Project</SheetTitle>
+                            <SheetDescription>
+                                Enter the project&apos;s name
+                            </SheetDescription>
+                        </SheetHeader>
+                        <div className="pt-4">
+                            <div>
+                                <Input type="text" id="name" value={projectName} onChange={handleProjectNameChange} placeholder="Project Name" />
+                            </div>
+                        </div>
+                        <SheetFooter className="pt-4">
+                            <Button onClick={handleCreateProject} disabled={pendingCreateProject}>
+                                {pendingCreateProject && <Loader2 className="animate-spin" />}
+                                Save changes
+                            </Button>
+                        </SheetFooter>
+                    </SheetContent>
+                </Sheet>
             </div>
             <div className='grid lg:grid-cols-3 xl:grid-cols-5 grid-cols-1 gap-2'>
                 {projects.length > 0 && projects.map((project,) => (
-                    <div key={project.id} className='rounded-sm border shadow-sm grid grid-cols-1 h-[60px] p-4'>
+                    <div key={project.id} className='rounded-sm border shadow-sm grid grid-cols-1 h-18 p-4'>
                         <div className='grid grid-cols-[20%,60%,20%] items-center'>
                             <Book />
                             <Link className="hover:underline truncate" href={`/dashboard/projects/${project.id}/edit`}>{project.name}</Link>

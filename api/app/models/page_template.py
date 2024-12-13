@@ -27,31 +27,78 @@ class PageTemplate(SQLModel, table=True):
 
 class PageTemplateCreate(SQLModel):
     name: str = Field(nullable=False, min_length=3, max_length=100)
-    output_type: Literal["PAGE_SOURCE", "LEAF"] = Field(nullable=False, sa_type=String)
+    output_type: Literal["PAGE_SOURCE", "LEAF"] = Field(
+        nullable=False,
+        sa_type=String,
+        description="PAGE_SOURCE indicates that this page will generate urls of other page templates. LEAF indicates that actual data will be scraped",
+    )
     scraper: Literal["XPATH_SELECTOR", "CSS_SELECTOR", "AUTO_SCRAPER", "AI_SCRAPER"] = (
-        Field(nullable=False, sa_type=String)
+        Field(
+            nullable=False,
+            sa_type=String,
+            description="XPATH_SELECTOR means that scrape rules will have xpath to scrape the field. CSS_SELECTOR means that scrape rules will have css selector to scrape the field. AUTO_SCRAPER means that the scrape rule will have the actual value to scrape from the example url. AI_SCRAPER will use LLMs to scrape the field only using the alias",
+        )
     )
-    example_url: str = Field(nullable=True, default=None, max_length=1000)
-    ai_prompt: str = Field(nullable=True, default=None, max_length=1000)
+    example_url: str = Field(
+        nullable=True,
+        default=None,
+        max_length=1000,
+        description="applicable for AUTO_SCRAPER only. Will have the url against which the scrape rule values are to be set",
+    )
+    ai_prompt: str = Field(
+        nullable=True,
+        default=None,
+        max_length=1000,
+        description="applicable to AI_SCRAPER only. The system prompt to send to the LLM to give it special instructions",
+    )
     ai_input: Literal["TEXT", "HTML"] = Field(
-        nullable=True, default=None, sa_type=String
+        nullable=True,
+        default=None,
+        sa_type=String,
+        description="applicable to AI_SCRAPER only. TEXT means only the text will be sent to the LLM. HTML means the whole html of the page is sent to the LLM. Html will be costlier",
     )
-    output_page_template_id: Optional[str] = Field(nullable=True, default=None)
+    output_page_template_id: Optional[str] = Field(
+        nullable=True,
+        default=None,
+        description="applicable for PAGE_SOURCE only. indicates which page template urls will be generated",
+    )
 
 
 class PageTemplateUpdate(SQLModel):
     name: str = Field(default=None, min_length=3, max_length=100)
-    output_type: Literal["PAGE_SOURCE", "LEAF"] = Field(default=None)
-    scraper: Literal["XPATH_SELECTOR", "CSS_SELECTOR", "AUTO_SCRAPER", "AI_SCRAPER"] = (
-        Field(default=None)
+    output_type: Literal["PAGE_SOURCE", "LEAF"] = Field(
+        default=None,
+        description="PAGE_SOURCE indicates that this page will generate urls of other page templates. LEAF indicates that actual data will be scraped",
     )
-    example_url: str = Field(nullable=True, default=None, max_length=1000)
-    ai_prompt: str = Field(nullable=True, default=None, max_length=1000)
+    scraper: Literal["XPATH_SELECTOR", "CSS_SELECTOR", "AUTO_SCRAPER", "AI_SCRAPER"] = (
+        Field(
+            default=None,
+            description="XPATH_SELECTOR means that scrape rules will have xpath to scrape the field. CSS_SELECTOR means that scrape rules will have css selector to scrape the field. AUTO_SCRAPER means that the scrape rule will have the actual value to scrape from the example url. AI_SCRAPER will use LLMs to scrape the field only using the alias",
+        )
+    )
+    example_url: str = Field(
+        nullable=True,
+        default=None,
+        max_length=1000,
+        description="applicable for AUTO_SCRAPER only. Will have the url against which the scrape rule values are to be set",
+    )
+    ai_prompt: str = Field(
+        nullable=True,
+        default=None,
+        max_length=1000,
+        description="applicable to AI_SCRAPER only. The system prompt to send to the LLM to give it special instructions",
+    )
     ai_input: Literal["TEXT", "HTML"] = Field(
-        nullable=True, default=None, sa_type=String
+        nullable=True,
+        default=None,
+        sa_type=String,
+        description="applicable to AI_SCRAPER only. TEXT means only the text will be sent to the LLM. HTML means the whole html of the page is sent to the LLM. Html will be costlier",
     )
     output_page_template_id: Optional[str] = Field(
-        nullable=True, default=None, foreign_key="page_template.id"
+        nullable=True,
+        default=None,
+        foreign_key="page_template.id",
+        description="applicable for PAGE_SOURCE only. indicates which page template urls will be generated",
     )
 
 

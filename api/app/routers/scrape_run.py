@@ -41,6 +41,9 @@ async def create_scrape_run(
     current_user: CurrentUserDep,
     session: SessionDep,
 ) -> ScrapeRunView:
+    """
+    Trigger a scrape run to start scraping
+    """
     check_if_project_belongs_to_user(project_id, current_user, session)
     scrape_run_data = {
         "started_on": int(time()),
@@ -165,6 +168,9 @@ async def scrape_test(
     current_user: CurrentUserDep,
     session: SessionDep,
 ) -> ScrapeTestResponse:
+    """
+    Test the scraping for a specific url given the page template
+    """
     check_if_project_belongs_to_user(project_id, current_user, session)
 
     scrape_result = scrape_page_for_test.delay(
@@ -189,6 +195,9 @@ async def download_scrape_run_output(
     current_user: CurrentUserDep,
     session: SessionDep,
 ):
+    """
+    Download the scrape output file
+    """
     check_if_project_belongs_to_user(project_id, current_user, session)
     scrape_run_output = session.exec(
         select(ScrapeRunOutput)

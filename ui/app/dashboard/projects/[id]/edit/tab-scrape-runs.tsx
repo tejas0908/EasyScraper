@@ -1,12 +1,8 @@
-import { Project, PageTemplate, ScrapeRun } from "@/app/lib/types";
-import { Input } from "@/components/ui/input"
+import { Project, ScrapeRun } from "@/app/lib/types";
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch"
-import { Slider } from "@/components/ui/slider"
-import { useState, useEffect, useReducer } from "react";
+import { useState, useEffect, DispatchWithoutAction } from "react";
 import { useToken } from "@/app/lib/token";
-import { Dot, Loader, Play, RefreshCw } from "lucide-react"
+import { Loader, Play, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import moment from 'moment'
 import {
@@ -27,9 +23,8 @@ import {
 import { Progress } from "@/components/ui/progress"
 
 
-export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project, parentForceUpdate: any }) {
+export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project, parentForceUpdate: DispatchWithoutAction }) {
     const [scrapeRuns, setScrapeRuns] = useState<ScrapeRun[]>([]);
-    const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [currentPage, setCurrentPage] = useState(0);
     const [nextPage, setNextPage] = useState(false);
     const limit = 10;
@@ -50,11 +45,11 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
             return res.json();
         }).then((data) => {
             data.scrape_runs.forEach((sr: ScrapeRun) => {
-                let dt1 = moment(Date.parse(sr.started_on)).add(-timezoneOffset, 'm').format();
+                const dt1 = moment(Date.parse(sr.started_on)).add(-timezoneOffset, 'm').format();
                 sr.started_on = dt1;
 
                 if (sr.ended_on != null) {
-                    let dt2 = moment(Date.parse(sr.ended_on)).add(-timezoneOffset, 'm').format();
+                    const dt2 = moment(Date.parse(sr.ended_on)).add(-timezoneOffset, 'm').format();
                     sr.ended_on = dt2;
                 }
 
@@ -62,7 +57,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
                 if (sr.ended_on != null) {
                     t2 = new Date(sr.ended_on).getTime();
                 }
-                let t1 = new Date(sr.started_on).getTime();
+                const t1 = new Date(sr.started_on).getTime();
                 sr.run_time = (t2 - t1) / 1000;
                 if (["LEAF_SCRAPING", "OUTPUT", "COMPLETED"].includes(sr.stage)) {
                     sr.progress = ((sr.total_failed_scraped_pages + sr.total_successful_scraped_pages) / sr.total_discovered_pages) * 100;
@@ -84,7 +79,8 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
             refreshScrapeRuns();
         }, 10000);
         return () => clearInterval(interval);
-    }, [ignored, currentPage]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentPage]);
 
     async function handlePageChange(page: number) {
         setCurrentPage(page);
@@ -92,7 +88,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
 
     async function triggerScrape() {
         setPendingTrigger(true);
-        let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/scrape_runs`, {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/scrape_runs`, {
             method: "post",
             headers: {
                 "Content-Type": "application/json",
@@ -113,27 +109,27 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
 
     function secondsToHms(d: number) {
         d = Number(d);
-        var h = Math.floor(d / 3600);
-        var m = Math.floor(d % 3600 / 60);
-        var s = Math.floor(d % 3600 % 60);
+        const h = Math.floor(d / 3600);
+        const m = Math.floor(d % 3600 / 60);
+        const s = Math.floor(d % 3600 % 60);
 
-        var hDisplay = h > 0 ? h + "h " : "";
-        var mDisplay = m > 0 ? m + "m " : "";
-        var sDisplay = s >= 0 ? s + "s" : "";
+        const hDisplay = h > 0 ? h + "h " : "";
+        const mDisplay = m > 0 ? m + "m " : "";
+        const sDisplay = s >= 0 ? s + "s" : "";
         return hDisplay + mDisplay + sDisplay;
     }
 
     async function downloadOutputFile(scrapeRunId: string, outputFileId: string, format: string) {
-        let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/scrape_runs/${scrapeRunId}/outputs/${outputFileId}/download`, {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/scrape_runs/${scrapeRunId}/outputs/${outputFileId}/download`, {
             method: "get",
             headers: {
                 "Authorization": getToken()
             }
         });
         if (data.status == 200) {
-            let blob = await data.blob();
-            var url = window.URL.createObjectURL(blob);
-            var a = document.createElement('a');
+            const blob = await data.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
             a.href = url;
             a.download = `${scrapeRunId}_${outputFileId}.${format.toLowerCase()}`;
             document.body.appendChild(a);
@@ -197,7 +193,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
                         </PaginationItem>
                     </PaginationContent>
                 </Pagination>}
-                <Button onClick={triggerScrape}>
+                <Button onClick={triggerScrape} disabled={pendingTrigger}>
                     <Play className="dark:fill-black" />
                     Trigger Scrape
                 </Button>
@@ -207,7 +203,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
             </div>
             {scrapeRuns.length > 0 &&
                 <Accordion type="single" collapsible>
-                    {scrapeRuns.map((scrapeRun, index) => (
+                    {scrapeRuns.map((scrapeRun,) => (
                         <AccordionItem key={scrapeRun.id} value={scrapeRun.id} className="border rounded-md my-2 px-2">
                             <AccordionTrigger className="hover:no-underline">
                                 <div className="w-full space-y-2">
@@ -251,7 +247,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
                                         <div className="flex flex-col border rounded-lg p-2 w-[300px]">
                                             <div className="font-bold border-b">Output</div>
                                             <div className="flex flex-col space-y-2 p-2">
-                                                {scrapeRun.outputs.map((output, index) => (
+                                                {scrapeRun.outputs.map((output,) => (
                                                     <div onClick={() => downloadOutputFile(scrapeRun.id, output.id, output.format)} key={output.id} className="underline cursor-pointer">Download {output.format} file</div>
                                                 ))}
                                             </div>

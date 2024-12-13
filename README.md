@@ -45,3 +45,10 @@ FLYWAY_DB_URL=jdbc:postgresql://postgres:5432/postgres
 5. Create and Configure a project
 6. Execute a scrape
 7. Download Scrape output file
+
+## Linting
+```bash
+uv run pylint --recursive=y app
+uv run flake8 app
+uv run mypy app
+```

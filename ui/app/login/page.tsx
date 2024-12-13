@@ -24,7 +24,7 @@ export default function Login() {
         password: null,
         server: null
     });
-    const [cookies, setCookie] = useCookies(['token']);
+    const [, setCookie] = useCookies(['token']);
     const [pendingLogin, setPendingLogin] = useState(false);
 
     function registerError(field: string, message: string | null) {
@@ -36,7 +36,7 @@ export default function Login() {
 
     function hasErrors() {
         let hasError = false;
-        for (let k in error) {
+        for (const k in error) {
             if (error[k] != null) {
                 hasError = true;
             }
@@ -44,7 +44,7 @@ export default function Login() {
         return hasError;
     }
 
-    function handleUsernameChange(e: any) {
+    function handleUsernameChange(e: React.ChangeEvent<HTMLInputElement>) {
         const uname = e.target.value;
         if (uname.length >= 6 && uname.length <= 20) {
             registerError("username", null);
@@ -54,7 +54,7 @@ export default function Login() {
         setUsername(uname);
     }
 
-    function handlePasswordChange(e: any) {
+    function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>) {
         const pass = e.target.value;
         if (pass.length >= 6 && pass.length <= 500) {
             registerError("password", null);
@@ -66,7 +66,7 @@ export default function Login() {
 
     async function handleLogin() {
         setPendingLogin(true);
-        let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/login`, {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/login`, {
             method: "post",
             headers: {
                 "Content-Type": "application/json"
@@ -76,7 +76,7 @@ export default function Login() {
                 "password": password
             })
         });
-        let response = await data.json();
+        const response = await data.json();
         if (data.status != 200) {
             if (Array.isArray(response.detail)) {
                 const temp = response.detail.map((x: { msg: string; }) => x.msg).join('\n');
@@ -104,12 +104,12 @@ export default function Login() {
                 <div className="text-sm pb-4">Enter your username and password below</div>
 
                 <div className="w-64">
-                    <Input type="text" id="username" value={username} onChange={handleUsernameChange} placeholder="Username" className={error.username ? 'border-red-500' : ''}/>
+                    <Input type="text" id="username" value={username} onChange={handleUsernameChange} placeholder="Username" className={error.username ? 'border-red-500' : ''} />
                     <div className="text-red-500 text-xs">{error.username}</div>
                 </div>
 
                 <div className="w-64">
-                    <Input type="password" id="password" value={password} onChange={handlePasswordChange} placeholder="Password" className={error.password ? 'border-red-500' : ''}/>
+                    <Input type="password" id="password" value={password} onChange={handlePasswordChange} placeholder="Password" className={error.password ? 'border-red-500' : ''} />
                     <div className="text-red-500 text-xs">{error.password}</div>
                 </div>
                 {error.server ? (

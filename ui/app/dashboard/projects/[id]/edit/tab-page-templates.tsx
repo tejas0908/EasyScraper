@@ -1,13 +1,8 @@
 import { Project, PageTemplate } from "@/app/lib/types";
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch"
-import { Slider } from "@/components/ui/slider"
-import { useState, useEffect, useReducer } from "react";
+import { useState, useEffect, useReducer, DispatchWithoutAction } from "react";
 import { useToken } from "@/app/lib/token";
-import { Loader2, Edit } from "lucide-react"
-import { toast } from "sonner"
 import {
     Accordion,
     AccordionContent,
@@ -33,7 +28,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination"
 
-export function TabPageTemplates({ project, parentForceUpdate }: { project: Project, parentForceUpdate: any }) {
+export function TabPageTemplates({ project, parentForceUpdate }: { project: Project, parentForceUpdate: DispatchWithoutAction }) {
     const [pageTemplates, setPageTemplates] = useState<PageTemplate[]>([]);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [currentPage, setCurrentPage] = useState(0);
@@ -55,6 +50,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
             setNextPage(data.paging.next_page);
             parentForceUpdate();
         });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ignored, currentPage]);
 
     async function handlePageChange(page: number) {
@@ -81,7 +77,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
             </div>
             {pageTemplates.length > 0 &&
                 <Accordion type="single" collapsible>
-                    {pageTemplates.map((pageTemplate, index) => (
+                    {pageTemplates.map((pageTemplate,) => (
                         <AccordionItem key={pageTemplate.id} value={pageTemplate.id} className="border rounded-md my-2 px-2">
                             <AccordionTrigger>
                                 <div className="flex flex-row justify-between w-full">
@@ -133,7 +129,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {
-                                                    pageTemplates.map((pt, index) => (
+                                                    pageTemplates.map((pt,) => (
                                                         <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>
                                                     ))
                                                 }
@@ -142,7 +138,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
                                     </div>}
                                 </div>
                                 <div className="border">
-                                    <ScrapeRulesList pageTemplate={pageTemplate} parentForceUpdate={forceUpdate} />
+                                    <ScrapeRulesList pageTemplate={pageTemplate} />
                                 </div>
                             </AccordionContent>
                         </AccordionItem>

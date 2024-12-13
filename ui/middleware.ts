@@ -3,12 +3,12 @@ import type { NextRequest } from 'next/server'
 import { jwtDecode } from "jwt-decode";
 
 export function middleware(request: NextRequest) {
-    let token = request.cookies.get("token")?.value;
+    const token = request.cookies.get("token")?.value;
     let decoded = null;
     let validToken = false;
     if (token) {
         decoded = jwtDecode(token);
-        let exp = decoded.exp;
+        const exp = decoded.exp;
         if (exp && Date.now() < exp * 1000) {
             validToken = true;
         }

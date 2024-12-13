@@ -11,7 +11,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination"
 
-export function ScrapeRulesList({ pageTemplate, parentForceUpdate }: { pageTemplate: PageTemplate, parentForceUpdate: any }) {
+export function ScrapeRulesList({ pageTemplate }: { pageTemplate: PageTemplate }) {
     const [scrapeRules, setScrapeRules] = useState<ScrapeRule[]>([]);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [currentPage, setCurrentPage] = useState(0);
@@ -32,6 +32,7 @@ export function ScrapeRulesList({ pageTemplate, parentForceUpdate }: { pageTempl
             setScrapeRules(data.scrape_rules);
             setNextPage(data.paging.next_page);
         });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ignored, currentPage]);
 
     async function handlePageChange(page: number) {
@@ -57,7 +58,7 @@ export function ScrapeRulesList({ pageTemplate, parentForceUpdate }: { pageTempl
                 <EditScrapeRuleSheet scrapeRule={null} pageTemplate={pageTemplate} scrapeRules={scrapeRules} parentForceUpdate={forceUpdate} />
             </div>
             <div className="grid grid-cols-5 gap-4 p-4">
-                {scrapeRules && scrapeRules.map((scrapeRule, index) => (
+                {scrapeRules && scrapeRules.map((scrapeRule,) => (
                     <div key={scrapeRule.id} className="border flex flex-row rounded-md p-2 items-center justify-between shadow hover:bg-slate-100 transition duration-300">
                         <div className="truncate">
                             {scrapeRule.alias}

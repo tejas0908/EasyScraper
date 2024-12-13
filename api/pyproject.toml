@@ -22,4 +22,7 @@ dependencies = [
     "redis>=5.2.0",
     "sqlmodel>=0.0.22",
     "xlsxwriter>=3.2.0",
+    "flake8>=7.1.1",
+    "mypy>=1.13.0",
+    "pylint>=3.3.2"
 ]

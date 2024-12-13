@@ -1,6 +1,6 @@
 'use client';
 
-import { ProjectsList } from "@/components/app/projects-list";
+import { ProjectsList } from "@/app/dashboard/projects-list";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -21,18 +21,17 @@ import { useToken } from "@/app/lib/token";
 
 export default function Dashboard() {
     const [projectName, setProjectName] = useState('');
-    const [lastRender, setLastRender] = useState(Date.now());
     const router = useRouter();
     const [pendingCreateProject, setPendingCreateProject] = useState(false);
     const getToken = useToken();
 
-    function handleProjectNameChange(e: any) {
+    function handleProjectNameChange(e: React.ChangeEvent<HTMLInputElement>) {
         setProjectName(e.target.value);
     }
 
     async function handleCreateProject() {
         setPendingCreateProject(true);
-        let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects`, {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects`, {
             method: "post",
             headers: {
                 "Content-Type": "application/json",
@@ -43,7 +42,7 @@ export default function Dashboard() {
             })
         });
         if (data.status == 200) {
-            let response = await data.json();
+            const response = await data.json();
             toast.success(`Project '${projectName}' created`);
             setProjectName('');
             router.push(`/dashboard/projects/${response.id}/edit`);
@@ -59,7 +58,7 @@ export default function Dashboard() {
                         <SheetHeader>
                             <SheetTitle>New Scraping Project</SheetTitle>
                             <SheetDescription>
-                                Enter the project's name
+                                Enter the project&apos;s name
                             </SheetDescription>
                         </SheetHeader>
                         <div className="pt-4">
@@ -77,7 +76,7 @@ export default function Dashboard() {
                 </Sheet>
             </div>
             <div className="">
-                <ProjectsList lastRender={lastRender} />
+                <ProjectsList />
             </div>
         </div>
     );

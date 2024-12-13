@@ -19,11 +19,11 @@ import {
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input"
-import { useState } from "react";
+import { DispatchWithoutAction, useState } from "react";
 import validator from "validator";
 import { toast } from "sonner"
 
-export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForceUpdate }: { seedPage: SeedPage | null, project: Project, pageTemplates: PageTemplate[], parentForceUpdate: any }) {
+export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForceUpdate }: { seedPage: SeedPage | null, project: Project, pageTemplates: PageTemplate[], parentForceUpdate: DispatchWithoutAction }) {
     const [open, setOpen] = useState(false);
     const [error, setError] = useState<{ [key: string]: string | null }>({
         url: null,
@@ -46,7 +46,7 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
 
     function hasErrors() {
         let hasError = false;
-        for (let k in error) {
+        for (const k in error) {
             if (error[k] != null) {
                 hasError = true;
             }
@@ -54,22 +54,22 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
         return hasError;
     }
 
-    function handleUrlChange(e: any) {
-        let turl = e.target.value;
+    function handleUrlChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const turl = e.target.value;
         if (turl.length > 0) {
-            if(validator.isURL(turl)){
+            if (validator.isURL(turl)) {
                 registerError("url", null);
-            }else{
+            } else {
                 registerError("url", "Invalid Url");
             }
-            
+
         } else {
             registerError("url", "URL is mandatory");
         }
         setUrl(turl);
     }
 
-    function handlePageTemplateChange(e: any) {
+    function handlePageTemplateChange(e: string) {
         setPageTemplateId(e);
     }
 
@@ -81,11 +81,11 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
             turl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/seed_pages/${id}`
             method = "put"
         }
-        let body: any = {
+        const body: Record<string, string> = {
             "url": url,
             "page_template_id": pageTemplateId
         }
-        let data = await fetch(turl, {
+        const data = await fetch(turl, {
             method: method,
             headers: {
                 "Content-Type": "application/json",
@@ -103,7 +103,7 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
 
     async function handleDeleteSeedPage() {
         setPendingDelete(true);
-        let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/seed_pages/${id}`, {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/seed_pages/${id}`, {
             method: "delete",
             headers: {
                 "Content-Type": "application/json",
@@ -148,7 +148,7 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
                                 <SelectValue placeholder="Page Template" />
                             </SelectTrigger>
                             <SelectContent>
-                                {pageTemplates.map((pt, index) => (
+                                {pageTemplates.map((pt,) => (
                                     <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>
                                 ))}
                             </SelectContent>

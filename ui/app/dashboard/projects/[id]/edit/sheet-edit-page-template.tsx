@@ -18,13 +18,13 @@ import {
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input"
-import { useState } from "react";
+import { DispatchWithoutAction, useState } from "react";
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { useToken } from "@/app/lib/token";
 import validator from "validator";
 
-export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, parentForceUpdate }: { pageTemplate: PageTemplate | null, pageTemplates: PageTemplate[], project: Project, parentForceUpdate: any }) {
+export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, parentForceUpdate }: { pageTemplate: PageTemplate | null, pageTemplates: PageTemplate[], project: Project, parentForceUpdate: DispatchWithoutAction }) {
     const [name, setName] = useState(pageTemplate ? pageTemplate.name : '');
     const id = pageTemplate ? pageTemplate.id : null;
     const [outputType, setOutputType] = useState(pageTemplate ? pageTemplate.output_type : 'LEAF');
@@ -53,8 +53,8 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
         });
     }
 
-    function handleNameOnChange(e: any) {
-        let tname = e.target.value;
+    function handleNameOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const tname = e.target.value;
         if (tname.length >= 3 && tname.length <= 100) {
             registerError("name", null);
         } else {
@@ -63,32 +63,32 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
         setName(tname);
     }
 
-    function handleExampleUrlChange(e: any) {
-        if(validator.isURL(e.target.value)){
+    function handleExampleUrlChange(e: React.ChangeEvent<HTMLInputElement>) {
+        if (validator.isURL(e.target.value)) {
             registerError("exampleUrl", null);
-        }else{
+        } else {
             registerError("exampleUrl", "Invalid Url");
         }
         setExampleUrl(e.target.value);
     }
 
-    function handleAIPromptChange(e: any) {
+    function handleAIPromptChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
         setAiPrompt(e.target.value);
     }
 
-    function handleAIInputChange(e: any) {
+    function handleAIInputChange(e: string) {
         setAiInput(e);
     }
 
-    function handleOutputTypeChange(e: any) {
+    function handleOutputTypeChange(e: string) {
         setOutputType(e);
     }
 
-    function handleScraperChange(e: any) {
+    function handleScraperChange(e: string) {
         setScraper(e);
     }
 
-    function handleOutputPageChange(e: any) {
+    function handleOutputPageChange(e: string) {
         if (e != null) {
             registerError("outputPageTemplate", null);
         } else {
@@ -105,7 +105,7 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
             url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/page_templates/${id}`
             method = "put"
         }
-        let body: any = {
+        const body: Record<string, string> = {
             "name": name,
             "output_type": outputType,
             "scraper": scraper
@@ -132,7 +132,7 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
             body["ai_input"] = aiInput
             body["ai_prompt"] = aiPrompt
         }
-        let data = await fetch(url, {
+        const data = await fetch(url, {
             method: method,
             headers: {
                 "Content-Type": "application/json",
@@ -150,7 +150,7 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
 
     async function handleDeletePageTemplate() {
         setPendingDelete(true);
-        let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/page_templates/${id}`, {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/page_templates/${id}`, {
             method: "delete",
             headers: {
                 "Content-Type": "application/json",
@@ -167,7 +167,7 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
 
     function hasErrors() {
         let hasError = false;
-        for (let k in error) {
+        for (const k in error) {
             if (error[k] != null) {
                 hasError = true;
             }
@@ -251,7 +251,7 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
                             </SelectTrigger>
                             <SelectContent className={error.outputPageTemplate ? 'border-red-500' : ''}>
                                 {
-                                    pageTemplates.map((pt, index) => (
+                                    pageTemplates.map((pt,) => (
                                         <SelectItem key={pt.id} value={pt.id} disabled={pageTemplate != null && pt.id == pageTemplate.id}>{pt.name}</SelectItem>
                                     ))
                                 }

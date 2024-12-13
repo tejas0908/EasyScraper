@@ -1,5 +1,5 @@
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app/app-sidebar"
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/app/dashboard/app-sidebar"
 import { cookies } from "next/headers"
 import { Header } from "./header"
 

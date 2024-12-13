@@ -28,7 +28,7 @@ export default function Signup() {
         confirmPassword: null,
         server: null
     });
-    const [cookies, setCookie] = useCookies(['token']);
+    const [, setCookie] = useCookies(['token']);
     const [pendingSignup, setPendingSignup] = useState(false);
 
     function registerError(field: string, message: string | null) {
@@ -40,7 +40,7 @@ export default function Signup() {
 
     function hasErrors() {
         let hasError = false;
-        for (let k in error) {
+        for (const k in error) {
             if (error[k] != null) {
                 hasError = true;
             }
@@ -48,7 +48,7 @@ export default function Signup() {
         return hasError;
     }
 
-    function handleFullNameChange(e: any) {
+    function handleFullNameChange(e: React.ChangeEvent<HTMLInputElement>) {
         const fname = e.target.value;
         if (fname.length >= 3 && fname.length <= 500) {
             registerError("fullName", null);
@@ -58,7 +58,7 @@ export default function Signup() {
         setFullName(fname);
     }
 
-    function handleUsernameChange(e: any) {
+    function handleUsernameChange(e: React.ChangeEvent<HTMLInputElement>) {
         const uname = e.target.value;
         if (uname.length >= 6 && uname.length <= 20) {
             registerError("username", null);
@@ -68,7 +68,7 @@ export default function Signup() {
         setUsername(uname);
     }
 
-    function handlePasswordChange(e: any) {
+    function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>) {
         const pass = e.target.value;
         if (pass.length >= 6 && pass.length <= 500) {
             registerError("password", null);
@@ -78,7 +78,7 @@ export default function Signup() {
         setPassword(pass);
     }
 
-    function handleConfirmPasswordChange(e: any) {
+    function handleConfirmPasswordChange(e: React.ChangeEvent<HTMLInputElement>) {
         const pass = e.target.value;
         if (pass.length >= 6 && pass.length <= 500) {
             if (pass != password) {
@@ -94,7 +94,7 @@ export default function Signup() {
 
     async function handleSignup() {
         setPendingSignup(true);
-        let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/signup`, {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/signup`, {
             method: "post",
             headers: {
                 "Content-Type": "application/json"
@@ -105,7 +105,7 @@ export default function Signup() {
                 "password": password
             })
         });
-        let response = await data.json();
+        const response = await data.json();
         if (data.status != 200) {
             if (Array.isArray(response.detail)) {
                 const temp = response.detail.map((x: { msg: string; }) => x.msg).join('\n');

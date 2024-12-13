@@ -12,7 +12,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination"
 
-export function TabSeedPages({ project, pageTemplates, parentForceUpdate }: { project: Project, pageTemplates: PageTemplate[], parentForceUpdate: any }) {
+export function TabSeedPages({ project, pageTemplates }: { project: Project, pageTemplates: PageTemplate[] }) {
     const [seedPages, setSeedPages] = useState<SeedPage[]>([]);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [currentPage, setCurrentPage] = useState(0);
@@ -30,7 +30,7 @@ export function TabSeedPages({ project, pageTemplates, parentForceUpdate }: { pr
         }).then((res) => {
             return res.json();
         }).then((data) => {
-            let tSeedPages: SeedPage[] = [];
+            const tSeedPages: SeedPage[] = [];
             data.seed_pages.forEach((sp: SeedPage) => {
                 pageTemplates.forEach((pt) => {
                     if (sp.page_template_id == pt.id) {
@@ -42,6 +42,7 @@ export function TabSeedPages({ project, pageTemplates, parentForceUpdate }: { pr
             setSeedPages(tSeedPages);
             setNextPage(data.paging.next_page);
         });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ignored, currentPage]);
 
     async function handlePageChange(page: number) {
@@ -66,7 +67,7 @@ export function TabSeedPages({ project, pageTemplates, parentForceUpdate }: { pr
                 </Pagination>}
                 <EditSeedPageSheet seedPage={null} project={project} pageTemplates={pageTemplates} parentForceUpdate={forceUpdate} />
             </div>
-            {seedPages.length > 0 && seedPages.map((seedPage, index) => (
+            {seedPages.length > 0 && seedPages.map((seedPage,) => (
                 <div key={seedPage.id} className="border flex flex-row items-center justify-between p-2 rounded-md">
                     <div className="text-xs">
                         {seedPage.url}

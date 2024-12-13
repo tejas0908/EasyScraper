@@ -1,12 +1,8 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useRouter } from 'next/navigation'
 import {
     Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -24,7 +20,6 @@ export default function ProjectEdit({
 }: {
     params: Promise<{ id: string }>
 }) {
-    const router = useRouter();
     const getToken = useToken();
     const projectId = use(params).id;
     const [project, setProject] = useState<Project | null>(null);
@@ -54,7 +49,8 @@ export default function ProjectEdit({
         }).then((data) => {
             setPageTemplates(data.page_templates);
         });
-    }, [ignored]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [projectId, ignored]);
 
     return (
         <div>
@@ -82,7 +78,7 @@ export default function ProjectEdit({
                         </TabsContent>
                         <TabsContent value="seed_pages">
                             <div>
-                                <TabSeedPages project={project} pageTemplates={pageTemplates} parentForceUpdate={forceUpdate} />
+                                <TabSeedPages project={project} pageTemplates={pageTemplates} />
                             </div>
                         </TabsContent>
                         <TabsContent value="scrape_test">

@@ -14,8 +14,8 @@ export function useToken() {
             invalidToken = true;
         }
         if (!invalidToken) {
-            let decoded = jwtDecode(cookieToken);
-            let exp = decoded.exp;
+            const decoded = jwtDecode(cookieToken);
+            const exp = decoded.exp;
             if (exp && Date.now() > exp * 1000) {
                 invalidToken = true;
             }

@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
-import { useState } from "react";
+import { DispatchWithoutAction, useState } from "react";
 import { useToken } from "@/app/lib/token";
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
-export function TabSettings({ project, parentForceUpdate }: { project: Project, parentForceUpdate: any }) {
+export function TabSettings({ project, parentForceUpdate }: { project: Project, parentForceUpdate: DispatchWithoutAction }) {
     const [projectName, setProjectName] = useState(project.name);
     const [ignoreScrapeFailures, setIgnoreScrapeFailures] = useState(project.ignore_scrape_failures);
     const [sleepSecondsBetweenPageScrapes, setSleepSecondsBetweenPageScrapes] = useState(project.sleep_seconds_between_page_scrape);
@@ -31,7 +31,7 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
 
     function hasErrors() {
         let hasError = false;
-        for (let k in error) {
+        for (const k in error) {
             if (error[k] != null) {
                 hasError = true;
             }
@@ -39,11 +39,11 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
         return hasError;
     }
 
-    function handleProjectNameChange(e: any) {
+    function handleProjectNameChange(e: React.ChangeEvent<HTMLInputElement>) {
         const pname = e.target.value;
-        if(pname.length >= 3 && pname.length <=100){
+        if (pname.length >= 3 && pname.length <= 100) {
             registerError("projectName", null);
-        }else{
+        } else {
             registerError("projectName", "Project Name should be between 3 and 100 characters")
         }
         setProjectName(pname);
@@ -59,7 +59,7 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
 
     async function handleProjectUpdate() {
         setPendingUpdate(true);
-        let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}`, {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}`, {
             method: "put",
             headers: {
                 "Content-Type": "application/json",
@@ -82,7 +82,7 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
         <div className="p-2 space-y-4 w-[500px]">
             <div className="space-y-1 flex flex-col rounded-lg border p-4">
                 <Label>Project Name</Label>
-                <Input type="text" id="project_name" placeholder="Project Name" value={projectName} onChange={handleProjectNameChange} className={error.projectName ? 'border-red-500' : ''}/>
+                <Input type="text" id="project_name" placeholder="Project Name" value={projectName} onChange={handleProjectNameChange} className={error.projectName ? 'border-red-500' : ''} />
                 <div className="text-red-500 text-xs">{error.projectName}</div>
             </div>
             <div className="space-y-1 flex flex-row items-center justify-between rounded-lg border p-4">

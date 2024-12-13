@@ -1,4 +1,4 @@
-import { Project, PageTemplate, ScrapeRule } from "@/app/lib/types";
+import { PageTemplate, ScrapeRule } from "@/app/lib/types";
 import {
     Sheet,
     SheetContent,
@@ -18,12 +18,11 @@ import {
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input"
-import { useEffect, useState } from "react";
-import { Textarea } from "@/components/ui/textarea"
+import { DispatchWithoutAction, useEffect, useState } from "react";
 import { toast } from "sonner"
 import { useToken } from "@/app/lib/token";
 
-export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, parentForceUpdate }: { scrapeRule: ScrapeRule | null, pageTemplate: PageTemplate, scrapeRules: ScrapeRule[], parentForceUpdate: any }) {
+export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, parentForceUpdate }: { scrapeRule: ScrapeRule | null, pageTemplate: PageTemplate, scrapeRules: ScrapeRule[], parentForceUpdate: DispatchWithoutAction }) {
     const [open, setOpen] = useState(false);
     const [error, setError] = useState<{ [key: string]: string | null }>({
         alias: null,
@@ -43,6 +42,7 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
             setAlias("urls");
             setType("MULTI");
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     function registerError(field: string, message: string | null) {
@@ -54,7 +54,7 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
 
     function hasErrors() {
         let hasError = false;
-        for (let k in error) {
+        for (const k in error) {
             if (error[k] != null) {
                 hasError = true;
             }
@@ -62,8 +62,8 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
         return hasError;
     }
 
-    function handleAliasChange(e: any) {
-        let talias = e.target.value;
+    function handleAliasChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const talias = e.target.value;
         if (talias.length >= 3 && talias.length <= 100) {
             registerError("alias", null);
         } else {
@@ -72,16 +72,16 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
         setAlias(talias);
     }
 
-    function handleTypeChange(e: any) {
+    function handleTypeChange(e: string) {
         setType(e);
     }
 
-    function handleHrefChange(e: any) {
+    function handleHrefChange(e: string) {
         setHref(e);
     }
 
-    function handleValueChange(e: any) {
-        let tvalue = e.target.value;
+    function handleValueChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const tvalue = e.target.value;
         if (tvalue.length >= 3 && tvalue.length <= 100) {
             registerError("value", null);
         } else {
@@ -98,7 +98,7 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
             url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${pageTemplate.project_id}/page_templates/${pageTemplate.id}/scrape_rules/${id}`
             method = "put"
         }
-        let body: any = {
+        const body: Record<string, string | boolean> = {
             "alias": alias,
             "type": type,
             "value": value,
@@ -109,7 +109,7 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
             setPendingSave(false);
             return;
         }
-        let data = await fetch(url, {
+        const data = await fetch(url, {
             method: method,
             headers: {
                 "Content-Type": "application/json",
@@ -127,7 +127,7 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
 
     async function handleDeleteScrapeRule() {
         setPendingDelete(true);
-        let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${pageTemplate.project_id}/page_templates/${pageTemplate.id}/scrape_rules/${id}`, {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${pageTemplate.project_id}/page_templates/${pageTemplate.id}/scrape_rules/${id}`, {
             method: "delete",
             headers: {
                 "Content-Type": "application/json",

@@ -3,7 +3,7 @@
 import { Ellipsis } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useReducer } from 'react';
 import { useToken } from "@/app/lib/token";
 import { Book } from 'lucide-react';
 import {
@@ -33,18 +33,14 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from 'sonner';
 
-interface ProjectsTableProps {
-    lastRender: any;
-}
-
-export function ProjectsList({ lastRender }: ProjectsTableProps) {
+export function ProjectsList() {
     const [projects, setProjects] = useState<{ id: string, name: string }[]>([]);
-    const [localLastRender, setLocalLastRender] = useState(Date.now());
     const [currentPage, setCurrentPage] = useState(0);
     const [nextPage, setNextPage] = useState(false);
     const limit = 10;
     const [fetchPending, setFetchPending] = useState(false);
     const getToken = useToken();
+    const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
 
     useEffect(() => {
         setProjects([]);
@@ -62,10 +58,11 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
             setNextPage(data.paging.next_page);
             setFetchPending(false);
         });
-    }, [lastRender, localLastRender]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentPage, ignored]);
 
     async function handleDeleteProject(projectId: string) {
-        let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${projectId}`, {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${projectId}`, {
             method: "delete",
             headers: {
                 "Content-Type": "application/json",
@@ -74,13 +71,12 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
         });
         if (data.status == 200) {
             toast.success(`Project deleted`);
-            setLocalLastRender(Date.now());
+            forceUpdate();
         }
     }
 
     async function handlePageChange(page: number) {
         setCurrentPage(page);
-        setLocalLastRender(Date.now());
     }
 
     return (
@@ -101,7 +97,7 @@ export function ProjectsList({ lastRender }: ProjectsTableProps) {
                 </Pagination>
             </div>
             <div className='grid lg:grid-cols-3 xl:grid-cols-5 grid-cols-1 gap-2'>
-                {projects.length > 0 && projects.map((project, index) => (
+                {projects.length > 0 && projects.map((project,) => (
                     <div key={project.id} className='rounded-sm border shadow-sm grid grid-cols-1 h-[60px] p-4'>
                         <div className='grid grid-cols-[20%,60%,20%] items-center'>
                             <Book />

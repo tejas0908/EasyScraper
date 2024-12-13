@@ -20,7 +20,7 @@ export function Header() {
     const [dark, setDark] = useState(false);
     const token = Cookies.get("token");
     const [fullName, setFullName] = useState('');
-    const [cookies, setCookie, removeCookie] = useCookies(['token']);
+    const [, , removeCookie] = useCookies(['token']);
     const router = useRouter();
 
     async function handleToggleDarkMode() {
@@ -32,8 +32,8 @@ export function Header() {
                 theme = 'light';
             }
         }
-        let isDark = theme === 'dark';
-        let toggle = !isDark;
+        const isDark = theme === 'dark';
+        const toggle = !isDark;
         theme = toggle ? 'dark' : 'light';
         document.documentElement.classList.toggle(
             'dark',
@@ -57,18 +57,21 @@ export function Header() {
                 theme = 'light';
             }
         }
-        let isDark = theme === 'dark';
+        const isDark = theme === 'dark';
         document.documentElement.classList.toggle(
             'dark',
             isDark
         )
         localStorage.setItem('theme', theme);
         setDark(isDark);
+        interface MyToken {
+            full_name: string;
+        }
         if (token != null) {
-            let decoded: any = jwtDecode(token);
+            const decoded = jwtDecode<MyToken>(token);
             setFullName(decoded.full_name);
         }
-    }, []);
+    }, [token]);
 
     return (
         <header className="flex h-10 shrink-0 items-center gap-2 border-b px-4 justify-end">

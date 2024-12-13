@@ -1,11 +1,10 @@
-from fastapi import APIRouter, status, HTTPException
-from app.models.auth import UserCreate, User, UserOut, UserAccessToken, UserLogin
-from app.models.common import FastAPIError
-from app.db.engine import SessionDep
-from app.util import hash_password, verify_password, generate_access_token
-from sqlmodel import select
 from app.db.db_utils import check_if_user_exists
-
+from app.db.engine import SessionDep
+from app.models.auth import User, UserAccessToken, UserCreate, UserLogin, UserOut
+from app.models.common import FastAPIError
+from app.util import generate_access_token, hash_password, verify_password
+from fastapi import APIRouter, HTTPException, status
+from sqlmodel import select
 
 auth_router = APIRouter()
 
@@ -29,7 +28,8 @@ async def sign_up(user_signup: UserCreate, session: SessionDep) -> UserOut:
     session.commit()
     session.refresh(user)
     return UserAccessToken(
-        username=user.username, token=generate_access_token(user.id, user.username, user.full_name)
+        username=user.username,
+        token=generate_access_token(user.id, user.username, user.full_name),
     )
 
 

@@ -1,7 +1,8 @@
-from sqlmodel import Field, SQLModel, String
-from app.util import generate_ulid
-from typing import Literal, Optional, List
+from typing import List, Literal, Optional
+
 from app.models.common import PagingResponse
+from app.util import generate_ulid
+from sqlmodel import Field, SQLModel, String
 
 
 class PageTemplate(SQLModel, table=True):
@@ -15,7 +16,9 @@ class PageTemplate(SQLModel, table=True):
     )
     example_url: str = Field(nullable=True, default=None, max_length=1000)
     ai_prompt: str = Field(nullable=True, default=None, max_length=1000)
-    ai_input: Literal["TEXT", "HTML"] = Field(nullable=True, default=None, sa_type=String)
+    ai_input: Literal["TEXT", "HTML"] = Field(
+        nullable=True, default=None, sa_type=String
+    )
     output_page_template_id: Optional[str] = Field(
         nullable=True, default=None, foreign_key="pagetemplate.id"
     )
@@ -30,7 +33,9 @@ class PageTemplateCreate(SQLModel):
     )
     example_url: str = Field(nullable=True, default=None, max_length=1000)
     ai_prompt: str = Field(nullable=True, default=None, max_length=1000)
-    ai_input: Literal["TEXT", "HTML"] = Field(nullable=True, default=None, sa_type=String)
+    ai_input: Literal["TEXT", "HTML"] = Field(
+        nullable=True, default=None, sa_type=String
+    )
     output_page_template_id: Optional[str] = Field(nullable=True, default=None)
 
 
@@ -42,7 +47,9 @@ class PageTemplateUpdate(SQLModel):
     )
     example_url: str = Field(nullable=True, default=None, max_length=1000)
     ai_prompt: str = Field(nullable=True, default=None, max_length=1000)
-    ai_input: Literal["TEXT", "HTML"] = Field(nullable=True, default=None, sa_type=String)
+    ai_input: Literal["TEXT", "HTML"] = Field(
+        nullable=True, default=None, sa_type=String
+    )
     output_page_template_id: Optional[str] = Field(
         nullable=True, default=None, foreign_key="page_template.id"
     )

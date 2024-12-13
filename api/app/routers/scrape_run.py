@@ -1,32 +1,32 @@
-from fastapi import APIRouter, status, HTTPException, Depends
-from app.models.scrape_run import (
-    ScrapeRun,
-    ScrapeRunView,
-    ScrapeRunListResponse,
-    ScrapeRunOutput,
-    ScrapeRunPage,
-    ScrapeRunMiniView,
-    ScrapeTestRequest,
-    ScrapeTestResponse,
-    ScrapeRunOutputView,
-)
+import math
+from time import time
+from typing import Annotated
+
+from app.celery.tasks import scrape_master, scrape_page_for_test
 from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
-from sqlmodel import select, func, col
 from app.models.auth import CurrentUserDep
 from app.models.common import (
-    PagingResponse,
     FastAPIError,
+    PagingResponse,
     PagingWithSortRequest,
     paging_with_sort,
 )
-from time import time
-from app.celery.tasks import scrape_page_for_test, scrape_master
-from fastapi.responses import FileResponse
+from app.models.scrape_run import (
+    ScrapeRun,
+    ScrapeRunListResponse,
+    ScrapeRunMiniView,
+    ScrapeRunOutput,
+    ScrapeRunOutputView,
+    ScrapeRunPage,
+    ScrapeRunView,
+    ScrapeTestRequest,
+    ScrapeTestResponse,
+)
 from app.util import get_file_from_minio
-from typing import Annotated
-from sqlmodel import select, func, col
-import math
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import FileResponse
+from sqlmodel import col, func, select
 
 scrape_run_router = APIRouter()
 

@@ -1,11 +1,11 @@
-from fastapi import FastAPI
-from app.routers.auth import auth_router
-from app.routers.project import project_router
-from app.routers.page_template import page_template_router
-from app.routers.scrape_rule import scrape_rule_router
-from app.routers.seed_page import seed_page_router
-from app.routers.scrape_run import scrape_run_router
 import app.celery.celery
+from app.routers.auth import auth_router
+from app.routers.page_template import page_template_router
+from app.routers.project import project_router
+from app.routers.scrape_rule import scrape_rule_router
+from app.routers.scrape_run import scrape_run_router
+from app.routers.seed_page import seed_page_router
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 tags_metadata = [

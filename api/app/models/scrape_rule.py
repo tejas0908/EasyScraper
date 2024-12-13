@@ -1,7 +1,8 @@
-from sqlmodel import Field, SQLModel, String
-from app.util import generate_ulid
-from typing import Literal, Optional, List
+from typing import List, Literal, Optional
+
 from app.models.common import PagingResponse
+from app.util import generate_ulid
+from sqlmodel import Field, SQLModel, String
 
 
 class ScrapeRule(SQLModel, table=True):

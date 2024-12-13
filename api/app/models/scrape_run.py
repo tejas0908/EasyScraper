@@ -1,9 +1,10 @@
-from sqlmodel import Field, SQLModel, String
-from sqlalchemy import JSON, Column
-from app.util import generate_ulid
-from typing import Literal, Optional, List
-from app.models.common import PagingResponse
 from datetime import datetime
+from typing import List, Literal, Optional
+
+from app.models.common import PagingResponse
+from app.util import generate_ulid
+from sqlalchemy import JSON, Column
+from sqlmodel import Field, SQLModel, String
 
 
 class ScrapeRun(SQLModel, table=True):

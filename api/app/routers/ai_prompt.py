@@ -1,17 +1,13 @@
-from fastapi import APIRouter, status, HTTPException
-from app.models.ai_prompt import (
-    AIPrompt,
-    AIPromptCreate,
-    AIPromptUpdate,
-)
 from app.db.db_utils import (
     check_if_page_template_belongs_to_project,
     check_if_project_belongs_to_user,
 )
 from app.db.engine import SessionDep
-from sqlmodel import select
+from app.models.ai_prompt import AIPrompt, AIPromptCreate, AIPromptUpdate
 from app.models.auth import CurrentUserDep
-from app.models.common import Paging, IdResponse, FastAPIError
+from app.models.common import FastAPIError, IdResponse, Paging
+from fastapi import APIRouter, HTTPException, status
+from sqlmodel import select
 
 ai_prompt_router = APIRouter()
 

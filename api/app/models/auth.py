@@ -1,10 +1,11 @@
-from sqlmodel import Field, SQLModel
-from app.util import generate_ulid
+import os
 from typing import Annotated, Optional
+
+import jwt
+from app.util import generate_ulid
 from fastapi import Depends, HTTPException, status
 from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
-import jwt
-import os
+from sqlmodel import Field, SQLModel
 
 jwt_secret = os.environ["JWT_SECRET"]
 
@@ -13,7 +14,9 @@ class User(SQLModel, table=True):
     id: str = Field(
         default_factory=generate_ulid, primary_key=True, unique=True, nullable=False
     )
-    username: str = Field(nullable=False, unique=True, index=True, min_length=6, max_length=20)
+    username: str = Field(
+        nullable=False, unique=True, index=True, min_length=6, max_length=20
+    )
     password: str = Field(nullable=False, min_length=6, max_length=500)
     full_name: str = Field(nullable=True, min_length=3, max_length=500)
 

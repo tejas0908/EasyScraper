@@ -3,7 +3,7 @@ name = "api"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "argon2-cffi>=23.1.0",
     "autoscraper>=1.1.14",
@@ -24,5 +24,6 @@ dependencies = [
     "xlsxwriter>=3.2.0",
     "flake8>=7.1.1",
     "mypy>=1.13.0",
-    "pylint>=3.3.2"
+    "pylint>=3.3.2",
+    "flake8-bugbear>=24.12.12",
 ]

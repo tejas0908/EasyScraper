@@ -1,8 +1,8 @@
-from sqlmodel import select
-from app.models.project import Project
-from app.models.page_template import PageTemplate
 from app.models.auth import User
+from app.models.page_template import PageTemplate
+from app.models.project import Project
 from fastapi import HTTPException, status
+from sqlmodel import select
 
 
 def check_if_project_belongs_to_user(project_id, current_user, session):

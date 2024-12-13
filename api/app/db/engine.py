@@ -1,13 +1,14 @@
-from sqlmodel import create_engine, SQLModel, Session
 import os
-import app.models.auth
-import app.models.project
-import app.models.page_template
-import app.models.scrape_rule
-import app.models.seed_page
-import app.models.scrape_run
 from typing import Annotated
+
+import app.models.auth
+import app.models.page_template
+import app.models.project
+import app.models.scrape_rule
+import app.models.scrape_run
+import app.models.seed_page
 from fastapi import Depends
+from sqlmodel import Session, SQLModel, create_engine
 
 db_url = os.environ["DB_URL"]
 engine = create_engine(db_url, echo=True)

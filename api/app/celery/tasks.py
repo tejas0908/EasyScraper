@@ -1,28 +1,29 @@
-from app.celery.celery import celery_app
-from sqlmodel import Session, select, create_engine
-from app.models.project import Project
-from app.models.page_template import PageTemplate
-from app.models.scrape_rule import ScrapeRule
-from app.models.scrape_run import ScrapeRun, ScrapeRunPage, ScrapeRunOutput
-from app.models.seed_page import SeedPage
-from celery import group
-import time
-from autoscraper import AutoScraper
-import json
 import csv
-import xlsxwriter
-import boto3
-from botocore.exceptions import NoCredentialsError
+import json
 import os
-from pathlib import Path
-from sqlalchemy.pool import NullPool
-from datetime import datetime
-from lxml import html
-import requests
-from bs4 import BeautifulSoup
-from urllib.parse import urlparse
-from openai import OpenAI
+import time
 import traceback
+from datetime import datetime
+from pathlib import Path
+from urllib.parse import urlparse
+
+import boto3
+import requests
+import xlsxwriter
+from app.celery.celery import celery_app
+from app.models.page_template import PageTemplate
+from app.models.project import Project
+from app.models.scrape_rule import ScrapeRule
+from app.models.scrape_run import ScrapeRun, ScrapeRunOutput, ScrapeRunPage
+from app.models.seed_page import SeedPage
+from autoscraper import AutoScraper
+from botocore.exceptions import NoCredentialsError
+from bs4 import BeautifulSoup
+from celery import group
+from lxml import html
+from openai import OpenAI
+from sqlalchemy.pool import NullPool
+from sqlmodel import Session, create_engine, select
 
 db_url = os.environ["DB_URL"]
 engine = create_engine(db_url, echo=True, poolclass=NullPool)

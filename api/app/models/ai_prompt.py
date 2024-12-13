@@ -1,5 +1,5 @@
-from sqlmodel import Field, SQLModel
 from app.util import generate_ulid
+from sqlmodel import Field, SQLModel
 
 
 class AIPrompt(SQLModel, table=True):

@@ -1,24 +1,24 @@
-from fastapi import APIRouter, status, HTTPException, Depends
-from app.models.page_template import (
-    PageTemplate,
-    PageTemplateUpdate,
-    PageTemplateCreate,
-    PageTemplateListResponse,
-)
+import math
+from typing import Annotated
+
 from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
-from sqlmodel import select
 from app.models.auth import CurrentUserDep
 from app.models.common import (
-    PagingResponse,
     FastAPIError,
     IdResponse,
+    PagingResponse,
     PagingWithSortRequest,
     paging_with_sort,
 )
-from sqlmodel import select, func, col
-import math
-from typing import Annotated
+from app.models.page_template import (
+    PageTemplate,
+    PageTemplateCreate,
+    PageTemplateListResponse,
+    PageTemplateUpdate,
+)
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlmodel import col, func, select
 
 page_template_router = APIRouter()
 

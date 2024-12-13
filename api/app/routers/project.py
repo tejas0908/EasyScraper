@@ -1,10 +1,6 @@
-from fastapi import APIRouter, status, HTTPException, Depends
-from app.models.project import (
-    Project,
-    ProjectUpdate,
-    ProjectCreate,
-    ProjectListResponse,
-)
+import math
+from typing import Annotated
+
 from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
 from app.models.auth import CurrentUserDep
@@ -14,9 +10,14 @@ from app.models.common import (
     PagingWithSortRequest,
     paging_with_sort,
 )
-from typing import Annotated
-from sqlmodel import select, func, col
-import math
+from app.models.project import (
+    Project,
+    ProjectCreate,
+    ProjectListResponse,
+    ProjectUpdate,
+)
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlmodel import col, func, select
 
 project_router = APIRouter()
 

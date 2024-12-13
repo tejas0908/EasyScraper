@@ -1,7 +1,8 @@
-from sqlmodel import Field, SQLModel
-from app.util import generate_ulid
-from typing import Optional, List
+from typing import List, Optional
+
 from app.models.common import PagingResponse
+from app.util import generate_ulid
+from sqlmodel import Field, SQLModel
 
 
 class Project(SQLModel, table=True):
@@ -9,14 +10,18 @@ class Project(SQLModel, table=True):
         default_factory=generate_ulid, primary_key=True, unique=True, nullable=False
     )
     name: str = Field(nullable=False, min_length=3, max_length=100)
-    sleep_seconds_between_page_scrape: int = Field(nullable=False, default=3, ge=1, le=60)
+    sleep_seconds_between_page_scrape: int = Field(
+        nullable=False, default=3, ge=1, le=60
+    )
     ignore_scrape_failures: bool = Field(nullable=False, default=True)
     user_id: str = Field(nullable=False, foreign_key="user.id")
 
 
 class ProjectCreate(SQLModel):
     name: str = Field(nullable=False, min_length=3, max_length=100)
-    sleep_seconds_between_page_scrape: int = Field(nullable=False, default=3, ge=1, le=60)
+    sleep_seconds_between_page_scrape: int = Field(
+        nullable=False, default=3, ge=1, le=60
+    )
     ignore_scrape_failures: bool = Field(nullable=False, default=True)
 
 

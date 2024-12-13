@@ -1,27 +1,27 @@
-from fastapi import APIRouter, status, HTTPException, Depends
-from app.models.scrape_rule import (
-    ScrapeRule,
-    ScrapeRuleUpdate,
-    ScrapeRuleCreate,
-    ScrapeRuleListResponse,
-)
+import math
+from typing import Annotated
+
 from app.db.db_utils import (
     check_if_page_template_belongs_to_project,
     check_if_project_belongs_to_user,
 )
 from app.db.engine import SessionDep
-from sqlmodel import select
 from app.models.auth import CurrentUserDep
 from app.models.common import (
-    PagingResponse,
-    IdResponse,
     FastAPIError,
+    IdResponse,
+    PagingResponse,
     PagingWithSortRequest,
     paging_with_sort,
 )
-from typing import Annotated
-from sqlmodel import select, func, col
-import math
+from app.models.scrape_rule import (
+    ScrapeRule,
+    ScrapeRuleCreate,
+    ScrapeRuleListResponse,
+    ScrapeRuleUpdate,
+)
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlmodel import col, func, select
 
 scrape_rule_router = APIRouter()
 

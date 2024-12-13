@@ -6,5 +6,17 @@
     "plantuml.render": "PlantUMLServer",
     "plantuml.server": "http://localhost:8080/plantuml",
     "plantuml.lintDiagramNoName": false,
-    "python.analysis.typeCheckingMode": "off"
+    "python.analysis.typeCheckingMode": "off",
+    "flake8.args": [
+        "--max-line-length=88",
+        "--extend-select=B950",
+        "--extend-ignore=E203,E501,E701"
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true
+    },
+    "pylint.args": [
+        "--max-line-length=88"
+    ]
 }

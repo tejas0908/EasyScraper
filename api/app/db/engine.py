@@ -11,7 +11,7 @@ from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
 
 db_url = os.environ["DB_URL"]
-engine = create_engine(db_url, echo=True)
+engine = create_engine(db_url, echo=False)
 
 
 def get_session():

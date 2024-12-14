@@ -8,17 +8,20 @@ import { DispatchWithoutAction, useState } from "react";
 import { useToken } from "@/app/lib/token";
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import validator from "validator";
 
 export function TabSettings({ project, parentForceUpdate }: { project: Project, parentForceUpdate: DispatchWithoutAction }) {
     const [projectName, setProjectName] = useState(project.name);
     const [ignoreScrapeFailures, setIgnoreScrapeFailures] = useState(project.ignore_scrape_failures);
     const [sleepSecondsBetweenPageScrapes, setSleepSecondsBetweenPageScrapes] = useState(project.sleep_seconds_between_page_scrape);
+    const [websiteUrl, setWebsiteUrl] = useState(project.website_url || '');
     const [pendingUpdate, setPendingUpdate] = useState(false);
     const getToken = useToken();
     const [error, setError] = useState<{ [key: string]: string | null }>({
         projectName: null,
         ignoreScrapeFailures: null,
         sleepSecondsBetweenPageScrapes: null,
+        websiteUrl: null,
         server: null
     });
 
@@ -49,6 +52,20 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
         setProjectName(pname);
     }
 
+    function handleWebsiteUrlChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const url = e.target.value;
+        if (url.length > 0) {
+            if (validator.isURL(url)) {
+                registerError("websiteUrl", null);
+            } else {
+                registerError("websiteUrl", "Invalid URL");
+            }
+        } else {
+            registerError("websiteUrl", "URL is mandatory")
+        }
+        setWebsiteUrl(url);
+    }
+
     function handleIgnoreScrapeFailuresChange(e: boolean) {
         setIgnoreScrapeFailures(e);
     }
@@ -68,7 +85,8 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
             body: JSON.stringify({
                 "name": projectName,
                 "ignore_scrape_failures": ignoreScrapeFailures,
-                "sleep_seconds_between_page_scrape": sleepSecondsBetweenPageScrapes
+                "sleep_seconds_between_page_scrape": sleepSecondsBetweenPageScrapes,
+                "website_url": websiteUrl
             })
         });
         if (data.status == 200) {
@@ -85,6 +103,11 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
                 <Input type="text" id="project_name" placeholder="Project Name" value={projectName} onChange={handleProjectNameChange} className={error.projectName ? 'border-red-500' : ''} />
                 <div className="text-red-500 text-xs">{error.projectName}</div>
             </div>
+            <div className="space-y-1 flex flex-col rounded-lg border p-4">
+                <Label>Website Url</Label>
+                <Input type="text" id="website_url" placeholder="Website Url" value={websiteUrl} onChange={handleWebsiteUrlChange} className={error.websiteUrl ? 'border-red-500' : ''} />
+                <div className="text-red-500 text-xs">{error.websiteUrl}</div>
+            </div>
             <div className="space-y-1 flex flex-row items-center justify-between rounded-lg border p-4">
                 <Label>Ignore Scrape Failures</Label>
                 <Switch checked={ignoreScrapeFailures} onCheckedChange={handleIgnoreScrapeFailuresChange} />
@@ -97,7 +120,7 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
                 </div>
             </div>
             <div className="flex justify-start">
-                <Button className="w-28" onClick={handleProjectUpdate} disabled={pendingUpdate || hasErrors()}>
+                <Button className="w-28" onClick={handleProjectUpdate} disabled={pendingUpdate || hasErrors() || websiteUrl.length == 0}>
                     {pendingUpdate && <Loader2 className="animate-spin" />}
                     Save Changes
                 </Button>

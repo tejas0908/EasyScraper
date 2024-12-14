@@ -1,11 +1,16 @@
-FROM ghcr.io/astral-sh/uv:python3.13-alpine
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm
 
-RUN apk --no-cache add curl
-
-ADD . /app
+RUN apt install curl -y
 
 WORKDIR /app
 
-RUN uv sync --frozen
+ADD pyproject.toml /app
+ADD uv.lock /app
+
+RUN uv sync --frozen && \
+    uv run playwright install-deps firefox && \
+    uv run playwright install firefox
+
+ADD . /app
 
 CMD ["uv", "run", "fastapi", "run", "server.py", "--port", "8000"]

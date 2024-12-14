@@ -1,9 +1,11 @@
 import csv
 import json
 import os
+import re
 import time
 import traceback
 from datetime import datetime
+from io import BytesIO
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -20,13 +22,16 @@ from autoscraper import AutoScraper
 from botocore.exceptions import NoCredentialsError
 from bs4 import BeautifulSoup
 from celery import group
+from fake_useragent import UserAgent
 from lxml import html
 from openai import OpenAI
+from PIL import Image
+from playwright.sync_api import sync_playwright
 from sqlalchemy.pool import NullPool
 from sqlmodel import Session, create_engine, select
 
 db_url = os.environ["DB_URL"]
-engine = create_engine(db_url, echo=True, poolclass=NullPool)
+engine = create_engine(db_url, echo=False, poolclass=NullPool)
 session = Session(engine)
 
 openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -35,7 +40,7 @@ openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 def get_auto_scraper(scrape_run_id, url, wanted_dict):
     print(f"Building auto scraper for {scrape_run_id}")
     scraper = AutoScraper()
-    scraper.build(url, wanted_dict=wanted_dict)
+    res = scraper.build(url, wanted_dict=wanted_dict)
     return scraper
 
 
@@ -120,8 +125,8 @@ def get_href(href, root):
 
 def scrape_page_xpath_selector(scrape_run_id, page_template, scrape_rules, url):
     root = get_root_url(url)
-    response = requests.get(url)
-    tree = html.fromstring(response.content)
+    html_code = get_html(url)
+    tree = html.fromstring(html_code)
     scrape_result = {}
     for scrape_rule in scrape_rules:
         elements = tree.xpath(scrape_rule.value)
@@ -140,8 +145,8 @@ def scrape_page_xpath_selector(scrape_run_id, page_template, scrape_rules, url):
 
 def scrape_page_css_selector(scrape_run_id, page_template, scrape_rules, url):
     root = get_root_url(url)
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, "html.parser")
+    html_code = get_html(url)
+    soup = BeautifulSoup(html_code, "html.parser")
     scrape_result = {}
     for scrape_rule in scrape_rules:
         elements = soup.select(scrape_rule.value)
@@ -157,12 +162,12 @@ def scrape_page_css_selector(scrape_run_id, page_template, scrape_rules, url):
 
 
 def scrape_page_ai_scraper(scrape_run_id, page_template, scrape_rules, url):
-    url_response = requests.get(url)
+    html_code = get_html(url)
     ai_input = None
     if page_template.ai_input == "HTML":
-        ai_input = url_response.text
+        ai_input = html_code
     else:
-        soup = BeautifulSoup(url_response.text, "html.parser")
+        soup = BeautifulSoup(html_code, "html.parser")
         ai_input = soup.get_text()
     response_format = {
         "type": "json_schema",
@@ -509,3 +514,56 @@ def scrape_master(project_id, scrape_run_id, resume=False):
         session.add(scrape_run)
         session.commit()
     return
+
+
+def get_image_area(url):
+    try:
+        req = requests.get(url, headers={"User-Agent": UserAgent().firefox})
+        im = Image.open(BytesIO(req.content))
+        return im.size[0] * im.size[1]
+    except:
+        return 0
+
+
+def get_html(url):
+    html = None
+    with sync_playwright() as p:
+        browser = p.firefox.launch(headless=True)
+        ua = UserAgent()
+        page = browser.new_page(user_agent=ua.firefox)
+        page.goto(url, wait_until="domcontentloaded")
+        html = page.content()
+        browser.close()
+    return html
+
+
+@celery_app.task
+def set_favicon_url(project_id, website_url):
+    project = get_project(project_id)
+    favicons = []
+    try:
+        html_code = get_html(website_url)
+        soup = BeautifulSoup(html_code, features="lxml")
+        for item in soup.find_all(
+            "link", attrs={"rel": re.compile("^(shortcut icon|icon)$", re.I)}
+        ):
+            turl = item.get("href")
+            parsed_url = urlparse(website_url)
+            root = f"{parsed_url.scheme}://{parsed_url.netloc}"
+            if turl.startswith("http"):
+                turl = turl
+            elif turl.startswith("//"):
+                turl = f"{parsed_url.scheme}:{turl}"
+            elif turl.startswith("/"):
+                turl = f"{root}{turl}"
+            favicons.append(turl)
+    except:
+        print(traceback.format_exc())
+        pass
+    if len(favicons) > 0:
+        favicon_sizes = [get_image_area(x) for x in favicons]
+        website_favicon_url = favicons[favicon_sizes.index(max(favicon_sizes))]
+        project.website_favicon_url = website_favicon_url
+        session.add(project)
+        session.commit()
+        session.refresh(project)

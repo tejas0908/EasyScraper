@@ -1,6 +1,7 @@
 import math
 from typing import Annotated
 
+from app.celery.tasks import set_favicon_url
 from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
 from app.models.auth import CurrentUserDep
@@ -28,10 +29,12 @@ async def create_project(
 ) -> Project:
     project_data = project_create.model_dump(exclude_unset=True)
     project_data["user_id"] = current_user.id
+    project_data["website_favicon_url"] = None
     project = Project.model_validate(project_data)
     session.add(project)
     session.commit()
     session.refresh(project)
+    set_favicon_url.delay(project.id, project.website_url)
     return project
 
 
@@ -80,6 +83,7 @@ async def put_project(
         session.add(db_project)
         session.commit()
         session.refresh(db_project)
+        set_favicon_url.delay(db_project.id, db_project.website_url)
         return db_project
 
 

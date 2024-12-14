@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link'
 import { useState, useEffect, useReducer } from 'react';
 import { useToken } from "@/app/lib/token";
-import { Book } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,10 +34,13 @@ import { toast } from 'sonner';
 import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Book } from "lucide-react";
+import validator from "validator";
+import Image from 'next/image'
+import { Project } from '../lib/types';
 
 export function ProjectsList() {
-    const [projects, setProjects] = useState<{ id: string, name: string }[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [nextPage, setNextPage] = useState(false);
     const limit = 10;
@@ -46,8 +48,31 @@ export function ProjectsList() {
     const getToken = useToken();
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [projectName, setProjectName] = useState('');
+    const [websiteUrl, setWebsiteUrl] = useState('');
     const [pendingCreateProject, setPendingCreateProject] = useState(false);
     const router = useRouter();
+    const [error, setError] = useState<{ [key: string]: string | null }>({
+        projectName: null,
+        websiteUrl: null,
+        server: null
+    });
+
+    function registerError(field: string, message: string | null) {
+        setError({
+            ...error,
+            [field]: message
+        });
+    }
+
+    function hasErrors() {
+        let hasError = false;
+        for (const k in error) {
+            if (error[k] != null) {
+                hasError = true;
+            }
+        }
+        return hasError;
+    }
 
     useEffect(() => {
         setProjects([]);
@@ -87,7 +112,28 @@ export function ProjectsList() {
     }
 
     function handleProjectNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setProjectName(e.target.value);
+        const pname = e.target.value;
+        if (pname.length >= 3 && pname.length <= 100) {
+            registerError("projectName", null);
+        } else {
+            registerError("projectName", "Project name should be between 3 and 100 characters");
+        }
+        setProjectName(pname);
+    }
+
+    function handleWebsiteUrlChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const turl = e.target.value;
+        if (turl.length > 0) {
+            if (validator.isURL(turl)) {
+                registerError("websiteUrl", null);
+            } else {
+                registerError("websiteUrl", "Invalid Url");
+            }
+
+        } else {
+            registerError("websiteUrl", "URL is mandatory");
+        }
+        setWebsiteUrl(turl);
     }
 
     async function handleCreateProject() {
@@ -99,13 +145,15 @@ export function ProjectsList() {
                 "Authorization": getToken()
             } as HeadersInit,
             body: JSON.stringify({
-                "name": projectName
+                "name": projectName,
+                "website_url": websiteUrl
             })
         });
         if (data.status == 200) {
             const response = await data.json();
             toast.success(`Project '${projectName}' created`);
             setProjectName('');
+            setWebsiteUrl('');
             router.push(`/dashboard/projects/${response.id}/edit`);
         }
     }
@@ -135,13 +183,18 @@ export function ProjectsList() {
                                 Enter the project&apos;s name
                             </SheetDescription>
                         </SheetHeader>
-                        <div className="pt-4">
+                        <div className="pt-4 space-y-2">
                             <div>
-                                <Input type="text" id="name" value={projectName} onChange={handleProjectNameChange} placeholder="Project Name" />
+                                <Input type="text" id="name" value={projectName} onChange={handleProjectNameChange} placeholder="Project Name" className={error.projectName ? 'border-red-500' : ''} />
+                                <div className="text-red-500 text-xs">{error.projectName}</div>
+                            </div>
+                            <div>
+                                <Input type="text" id="name" value={websiteUrl} onChange={handleWebsiteUrlChange} placeholder="Website Url" className={error.websiteUrl ? 'border-red-500' : ''} />
+                                <div className="text-red-500 text-xs">{error.websiteUrl}</div>
                             </div>
                         </div>
                         <SheetFooter className="pt-4">
-                            <Button onClick={handleCreateProject} disabled={pendingCreateProject}>
+                            <Button onClick={handleCreateProject} disabled={pendingCreateProject || hasErrors() || projectName.length == 0 || websiteUrl.length == 0}>
                                 {pendingCreateProject && <Loader2 className="animate-spin" />}
                                 Save changes
                             </Button>
@@ -153,7 +206,13 @@ export function ProjectsList() {
                 {projects.length > 0 && projects.map((project,) => (
                     <div key={project.id} className='rounded-sm border shadow-sm grid grid-cols-1 h-18 p-4'>
                         <div className='grid grid-cols-[20%,60%,20%] items-center'>
-                            <Book />
+
+                            {project.website_favicon_url ? <Image
+                                src={project.website_favicon_url}
+                                width={32}
+                                height={32}
+                                alt=""
+                            /> : <Book />}
                             <Link className="hover:underline truncate" href={`/dashboard/projects/${project.id}/edit`}>{project.name}</Link>
                             <Sheet>
                                 <DropdownMenu>

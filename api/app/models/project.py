@@ -14,6 +14,8 @@ class Project(SQLModel, table=True):
         nullable=False, default=3, ge=1, le=60
     )
     ignore_scrape_failures: bool = Field(nullable=False, default=True)
+    website_url: str = Field(nullable=True)
+    website_favicon_url: Optional[str] = Field(nullable=True)
     user_id: str = Field(nullable=False, foreign_key="user.id")
 
 
@@ -31,6 +33,9 @@ class ProjectCreate(SQLModel):
         default=True,
         description="Whether to ignore failures while scraping pages or to stop the whole scrape run",
     )
+    website_url: str = Field(
+        nullable=True, description="Url of the website you wish to scrape"
+    )
 
 
 class ProjectUpdate(SQLModel):
@@ -44,6 +49,9 @@ class ProjectUpdate(SQLModel):
     ignore_scrape_failures: Optional[bool] = Field(
         default=None,
         description="Whether to ignore failures while scraping pages or to stop the whole scrape run",
+    )
+    website_url: str = Field(
+        nullable=True, description="Url of the website you wish to scrape"
     )
 
 

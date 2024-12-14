@@ -4,6 +4,8 @@ export interface Project {
     name: string;
     ignore_scrape_failures: boolean;
     sleep_seconds_between_page_scrape: number;
+    website_url: string;
+    website_favicon_url: string;
 }
 
 export interface PageTemplate {

@@ -24,6 +24,7 @@ from bs4 import BeautifulSoup
 from celery import group
 from fake_useragent import UserAgent
 from lxml import html
+from lxml_html_clean import Cleaner
 from openai import OpenAI
 from PIL import Image
 from playwright.sync_api import sync_playwright
@@ -35,6 +36,7 @@ engine = create_engine(db_url, echo=False, poolclass=NullPool)
 session = Session(engine)
 
 openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+cleaner = Cleaner(javascript=True, comments=True, scripts=True, style=True, meta=True)
 
 
 def get_auto_scraper(scrape_run_id, url, wanted_dict):
@@ -131,7 +133,11 @@ def scrape_page_xpath_selector(scrape_run_id, page_template, scrape_rules, url):
     for scrape_rule in scrape_rules:
         elements = tree.xpath(scrape_rule.value)
         elements = [
-            get_href(element.attrib["href"], root) if scrape_rule.href else element.text
+            (
+                get_href(element.attrib["href"], root)
+                if scrape_rule.href
+                else element.strip()
+            )
             for element in elements
         ]
         if scrape_rule.type == "SINGLE":
@@ -139,7 +145,7 @@ def scrape_page_xpath_selector(scrape_run_id, page_template, scrape_rules, url):
                 elements[0] if len(elements) > 0 else None
             )
         else:
-            scrape_result[scrape_rule.alias] = elements
+            scrape_result[scrape_rule.alias] = list(set(elements))
     return scrape_result
 
 
@@ -534,6 +540,7 @@ def get_html(url):
         page.goto(url, wait_until="domcontentloaded")
         html = page.content()
         browser.close()
+    html = cleaner.clean_html(html)
     return html
 
 

@@ -1,2 +1,3 @@
 .venv
 database
+test*.py

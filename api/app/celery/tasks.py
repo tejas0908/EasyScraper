@@ -574,3 +574,21 @@ def set_favicon_url(project_id, website_url):
         session.add(project)
         session.commit()
         session.refresh(project)
+
+
+@celery_app.task()
+def export_project_task(project_id):
+    data = {}
+    data["project"] = get_project(project_id).model_dump()
+    data["page_templates"] = [x.model_dump() for x in get_page_templates(project_id)]
+    scrape_rules = []
+    for page_template in get_page_templates(project_id):
+        scrape_rules += get_scrape_rules(page_template.id)
+    data["scrape_rules"] = [x.model_dump() for x in scrape_rules]
+    data["seed_pages"] = [x.model_dump() for x in get_seed_pages(project_id)]
+
+    data_file_path = f"{project_id}-{str(int(time.time()))}.json"
+    with open(data_file_path, "w") as f:
+        json.dump(data, f)
+    data_file_url = upload_to_minio(data_file_path)
+    return data_file_url

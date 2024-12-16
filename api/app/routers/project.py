@@ -2,7 +2,7 @@ import math
 from datetime import datetime
 from typing import Annotated
 
-from app.celery.tasks import set_favicon_url
+from app.celery.tasks import export_project_task, set_favicon_url
 from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
 from app.models.auth import CurrentUserDep
@@ -18,7 +18,9 @@ from app.models.project import (
     ProjectListResponse,
     ProjectUpdate,
 )
+from app.util import get_file_from_minio
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import FileResponse
 from sqlmodel import col, func, select
 
 project_router = APIRouter()
@@ -149,3 +151,18 @@ async def delete_project(
         session.delete(project)
         session.commit()
         return IdResponse(id=project_id)
+
+
+@project_router.post(
+    "/projects/{project_id}/export", response_class=FileResponse, tags=["projects"]
+)
+async def export_project(project_id, current_user: CurrentUserDep, session: SessionDep):
+    check_if_project_belongs_to_user(project_id, current_user, session)
+
+    file_url = export_project_task.delay(project_id).get()
+    file_name = file_url.split("/")[-1]
+    file_path = get_file_from_minio(file_url)
+
+    return FileResponse(
+        file_path, media_type="application/octet-stream", filename=file_name
+    )

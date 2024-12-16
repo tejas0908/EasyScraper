@@ -3,6 +3,7 @@ from typing import List
 
 from app.models.common import PagingResponse
 from app.util import generate_ulid
+from pydantic import field_serializer
 from sqlmodel import Field, SQLModel
 
 
@@ -17,6 +18,14 @@ class SeedPage(SQLModel, table=True):
     modified_on: datetime = Field(nullable=False, default_factory=datetime.now)
     created_by: str = Field(nullable=False)
     modified_by: str = Field(nullable=False)
+
+    @field_serializer("created_on")
+    def serialize_created_on(self, created_on: datetime, _info):
+        return str(created_on)
+
+    @field_serializer("modified_on")
+    def serialize_modified_on(self, modified_on: datetime, _info):
+        return str(modified_on)
 
 
 class SeedPageCreate(SQLModel):

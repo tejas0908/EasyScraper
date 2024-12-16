@@ -17,7 +17,6 @@ from app.models.scrape_run import (
     ScrapeRunListResponse,
     ScrapeRunMiniView,
     ScrapeRunOutput,
-    ScrapeRunOutputView,
     ScrapeRunPage,
     ScrapeRunView,
     ScrapeTestRequest,
@@ -27,7 +26,6 @@ from app.util import get_file_from_minio
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 from sqlmodel import col, func, select
-from datetime import datetime
 
 scrape_run_router = APIRouter()
 

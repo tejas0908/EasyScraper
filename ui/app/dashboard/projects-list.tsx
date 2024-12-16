@@ -1,16 +1,9 @@
 'use client';
 
-import { Ellipsis } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link'
-import { useState, useEffect, useReducer } from 'react';
+import { useState, useEffect } from 'react';
 import { useToken } from "@/app/lib/token";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
     Sheet,
     SheetContent,
@@ -18,8 +11,7 @@ import {
     SheetHeader,
     SheetTitle,
     SheetTrigger,
-    SheetFooter,
-    SheetClose
+    SheetFooter
 } from "@/components/ui/sheet"
 import {
     Pagination,
@@ -46,7 +38,6 @@ export function ProjectsList() {
     const limit = 10;
     const [fetchPending, setFetchPending] = useState(false);
     const getToken = useToken();
-    const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [projectName, setProjectName] = useState('');
     const [websiteUrl, setWebsiteUrl] = useState('');
     const [pendingCreateProject, setPendingCreateProject] = useState(false);
@@ -91,21 +82,7 @@ export function ProjectsList() {
             setFetchPending(false);
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentPage, ignored]);
-
-    async function handleDeleteProject(projectId: string) {
-        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${projectId}`, {
-            method: "delete",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": getToken()
-            } as HeadersInit
-        });
-        if (data.status == 200) {
-            toast.success(`Project deleted`);
-            forceUpdate();
-        }
-    }
+    }, [currentPage]);
 
     async function handlePageChange(page: number) {
         setCurrentPage(page);
@@ -214,30 +191,6 @@ export function ProjectsList() {
                                 alt=""
                             /> : <Book />}
                             <Link className="hover:underline truncate" href={`/dashboard/projects/${project.id}/edit`}>{project.name}</Link>
-                            <Sheet>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon"><Ellipsis /></Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <SheetTrigger asChild><DropdownMenuItem className='text-red-700'>Delete</DropdownMenuItem></SheetTrigger>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                <SheetContent>
-                                    <SheetHeader>
-                                        <SheetTitle>Delete Project</SheetTitle>
-                                        <SheetDescription>
-                                            Are you sure you want to delete this project?
-                                        </SheetDescription>
-                                    </SheetHeader>
-
-                                    <SheetFooter className='pt-4'>
-                                        <SheetClose asChild>
-                                            <Button onClick={() => handleDeleteProject(project.id)} variant="destructive">Delete Project</Button>
-                                        </SheetClose>
-                                    </SheetFooter>
-                                </SheetContent>
-                            </Sheet>
                         </div>
                     </div>
                 ))}

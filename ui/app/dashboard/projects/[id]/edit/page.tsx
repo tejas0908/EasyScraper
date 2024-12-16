@@ -1,11 +1,6 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
 import { useEffect, useState, use, useReducer } from "react";
 import { TabSettings } from "./tab-settings";
 import { TabPageTemplates } from "./tab-page-templates";
@@ -14,6 +9,21 @@ import { TabScrapeTest } from "./tab-scrape-test";
 import { TabScrapeRuns } from "./tab-scrape-runs";
 import { Project, PageTemplate } from "@/app/lib/types";
 import { useToken } from "@/app/lib/token";
+import { Button } from "@/components/ui/button"
+import Image from 'next/image'
+import { Book } from "lucide-react";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+    SheetFooter,
+    SheetClose
+} from "@/components/ui/sheet"
+import { toast } from 'sonner';
+import { useRouter } from "next/navigation";
 
 export default function ProjectEdit({
     params,
@@ -25,6 +35,7 @@ export default function ProjectEdit({
     const [project, setProject] = useState<Project | null>(null);
     const [pageTemplates, setPageTemplates] = useState<PageTemplate[]>([]);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
+    const router = useRouter();
 
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${projectId}`, {
@@ -52,15 +63,79 @@ export default function ProjectEdit({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId, ignored]);
 
+    async function handleDeleteProject(projectId: string) {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${projectId}`, {
+            method: "delete",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": getToken()
+            } as HeadersInit
+        });
+        if (data.status == 200) {
+            toast.success(`Project deleted`);
+            forceUpdate();
+            router.push(`/dashboard`);
+        }
+    }
+
+    async function handleExportProject() {
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${projectId}/export`, {
+            method: "post",
+            headers: {
+                "Authorization": getToken()
+            }
+        });
+        if (data.status == 200) {
+            const blob = await data.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            if (project != null) {
+                a.download = `${project.name}.json`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            }
+        }
+    }
+
     return (
         <div>
-            <div className="p-2">
-                {project && <Card>
-                    <CardHeader>
-                        <CardTitle>{project.name}</CardTitle>
-                    </CardHeader>
-                </Card>}
-            </div>
+            {project && <div className="p-2 m-2 border rounded-md flex justify-between">
+                <div className="flex items-center space-x-2">
+                    {project.website_favicon_url ? <Image
+                        src={project.website_favicon_url}
+                        width={32}
+                        height={32}
+                        alt=""
+                    /> : <Book />}
+                    <div>{project.name}</div>
+                </div>
+                <div className="flex space-x-2">
+                    <div className="">
+                        <Button onClick={handleExportProject} variant="outline">Export</Button>
+                    </div>
+                    <div className="">
+                        <Sheet>
+                            <SheetTrigger asChild><Button variant="outline" className="border-red-500">Delete</Button></SheetTrigger>
+                            <SheetContent>
+                                <SheetHeader>
+                                    <SheetTitle>Delete Project</SheetTitle>
+                                    <SheetDescription>
+                                        Are you sure you want to delete this project?
+                                    </SheetDescription>
+                                </SheetHeader>
+
+                                <SheetFooter className='pt-4'>
+                                    <SheetClose asChild>
+                                        <Button onClick={() => handleDeleteProject(project.id)} variant="destructive">Delete Project</Button>
+                                    </SheetClose>
+                                </SheetFooter>
+                            </SheetContent>
+                        </Sheet>
+                    </div>
+                </div>
+            </div>}
             <div className="p-2">
                 {project &&
                     <Tabs defaultValue="page_templates">

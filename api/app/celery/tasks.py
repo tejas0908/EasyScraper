@@ -7,9 +7,9 @@ import traceback
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
+from typing import List
 from urllib.parse import urlparse
 
-import boto3
 import requests
 import xlsxwriter
 from app.celery.celery import celery_app
@@ -18,8 +18,8 @@ from app.models.project import Project
 from app.models.scrape_rule import ScrapeRule
 from app.models.scrape_run import ScrapeRun, ScrapeRunOutput, ScrapeRunPage
 from app.models.seed_page import SeedPage
+from app.util import get_file_from_minio, upload_to_minio
 from autoscraper import AutoScraper
-from botocore.exceptions import NoCredentialsError
 from bs4 import BeautifulSoup
 from celery import group
 from fake_useragent import UserAgent
@@ -341,31 +341,6 @@ def write_to_xlsx_file(scrape_run_pages, scrape_run_id, page_template_id):
     return output_file_path
 
 
-def upload_to_minio(local_file_path):
-    minio_host_url = os.environ.get("MINIO_URL")
-    minio_client = boto3.client(
-        "s3",
-        endpoint_url=minio_host_url,
-        aws_access_key_id=os.environ.get("MINIO_ACCESS_KEY"),
-        aws_secret_access_key=os.environ.get("MINIO_SECRET_KEY"),
-        region_name="us-east-1",
-    )
-    bucket_name = os.environ.get("MINIO_DEFAULT_BUCKET")
-
-    object_name = local_file_path.split("/")[-1]
-
-    try:
-        minio_client.upload_file(local_file_path, bucket_name, object_name)
-        minio_url = f"{minio_host_url}/{bucket_name}/{object_name}"
-        return minio_url
-    except FileNotFoundError:
-        print("The file was not found")
-        return None
-    except NoCredentialsError:
-        print("Credentials not available")
-        return None
-
-
 def update_stage(stage, scrape_run_id, project_id):
     scrape_run = get_scrape_run(scrape_run_id, project_id)
     scrape_run.stage = stage
@@ -592,3 +567,63 @@ def export_project_task(project_id):
         json.dump(data, f)
     data_file_url = upload_to_minio(data_file_path)
     return data_file_url
+
+
+@celery_app.task()
+def import_project_task(data_file_url):
+    data = None
+    file_path = get_file_from_minio(data_file_url)
+    with open(file_path) as f:
+        data = json.load(f)
+
+    def remove_id(obj):
+        id = obj["id"]
+        del obj["id"]
+        return obj, id
+
+    def save(obj):
+        session.add(obj)
+        session.commit()
+        session.refresh(obj)
+        return obj
+
+    id_map = {}
+
+    # create project
+    project, project_id_old = remove_id(data["project"])
+    project = save(Project.model_validate(project))
+    id_map[project_id_old] = project.id
+
+    page_templates: List[PageTemplate] = []
+    output_ptids = []
+    # create page templates pass 1
+    for page_template in data["page_templates"]:
+        page_template, page_template_id_old = remove_id(page_template)
+        page_template["project_id"] = id_map[page_template["project_id"]]
+        output_ptids.append(page_template["output_page_template_id"])
+        page_template["output_page_template_id"] = None
+        page_template = save(PageTemplate.model_validate(page_template))
+        id_map[page_template_id_old] = page_template.id
+        page_templates.append(page_template)
+    # create page templates pass 2
+    for i, page_template in enumerate(page_templates):
+        if output_ptids[i] is not None:
+            page_template.output_page_template_id = id_map[output_ptids[i]]
+            save(page_template)
+
+    # create scrape rules
+    for scrape_rule in data["scrape_rules"]:
+        scrape_rule, scrape_rule_id_old = remove_id(scrape_rule)
+        scrape_rule["page_template_id"] = id_map[scrape_rule["page_template_id"]]
+        scrape_rule = save(ScrapeRule.model_validate(scrape_rule))
+        id_map[scrape_rule_id_old] = scrape_rule.id
+
+    # create seed pages
+    for seed_page in data["seed_pages"]:
+        seed_page, seed_page_id_old = remove_id(seed_page)
+        seed_page["project_id"] = id_map[seed_page["project_id"]]
+        seed_page["page_template_id"] = id_map[seed_page["page_template_id"]]
+        seed_page = save(SeedPage.model_validate(seed_page))
+        id_map[seed_page_id_old] = seed_page.id
+
+    return project.id

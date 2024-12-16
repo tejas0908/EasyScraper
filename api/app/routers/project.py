@@ -1,8 +1,10 @@
+import json
 import math
+import time
 from datetime import datetime
 from typing import Annotated
 
-from app.celery.tasks import export_project_task, set_favicon_url
+from app.celery.tasks import export_project_task, set_favicon_url, import_project_task
 from app.db.db_utils import check_if_project_belongs_to_user
 from app.db.engine import SessionDep
 from app.models.auth import CurrentUserDep
@@ -18,8 +20,8 @@ from app.models.project import (
     ProjectListResponse,
     ProjectUpdate,
 )
-from app.util import get_file_from_minio
-from fastapi import APIRouter, Depends, HTTPException, status
+from app.util import get_file_from_minio, upload_to_minio
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlmodel import col, func, select
 
@@ -166,3 +168,17 @@ async def export_project(project_id, current_user: CurrentUserDep, session: Sess
     return FileResponse(
         file_path, media_type="application/octet-stream", filename=file_name
     )
+
+
+@project_router.post("/project-import", response_model=None, tags=["projects"])
+async def import_project(
+    file: UploadFile, current_user: CurrentUserDep, session: SessionDep
+):
+    contents = await file.read()
+    data = json.loads(contents.decode("utf-8"))
+    data_file_path = f"import-{str(int(time.time()))}.json"
+    with open(data_file_path, "w") as f:
+        json.dump(data, f)
+    data_file_url = upload_to_minio(data_file_path)
+    project_id = import_project_task.delay(data_file_url).get()
+    return IdResponse(id=project_id)

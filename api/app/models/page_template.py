@@ -17,8 +17,8 @@ class PageTemplate(SQLModel, table=True):
         Field(nullable=False, sa_type=String)
     )
     example_url: str = Field(nullable=True, default=None, max_length=1000)
-    ai_prompt: str = Field(nullable=True, default=None, max_length=1000)
-    ai_input: Literal["TEXT", "HTML"] = Field(
+    ai_prompt: Optional[str] = Field(nullable=True, default=None, max_length=1000)
+    ai_input: Optional[Literal["TEXT", "HTML"]] = Field(
         nullable=True, default=None, sa_type=String
     )
     output_page_template_id: Optional[str] = Field(

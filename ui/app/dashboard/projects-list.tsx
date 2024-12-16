@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useReducer } from 'react';
 import { useToken } from "@/app/lib/token";
 import {
     Sheet,
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/pagination"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from 'sonner';
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { Loader2, Book } from "lucide-react";
@@ -40,8 +40,13 @@ export function ProjectsList() {
     const getToken = useToken();
     const [projectName, setProjectName] = useState('');
     const [websiteUrl, setWebsiteUrl] = useState('');
+    const [projectFileBlob, setProjectFileBlob] = useState<Blob>();
+    const [projectFile, setProjectFile] = useState<File>();
     const [pendingCreateProject, setPendingCreateProject] = useState(false);
+    const [pendingImportProject, setPendingImportProject] = useState(false);
+    const [importSheetOpen, setImportSheetOpen] = useState(false);
     const router = useRouter();
+    const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [error, setError] = useState<{ [key: string]: string | null }>({
         projectName: null,
         websiteUrl: null,
@@ -82,7 +87,7 @@ export function ProjectsList() {
             setFetchPending(false);
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentPage]);
+    }, [currentPage, ignored]);
 
     async function handlePageChange(page: number) {
         setCurrentPage(page);
@@ -113,6 +118,13 @@ export function ProjectsList() {
         setWebsiteUrl(turl);
     }
 
+    function handleProjectFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        if (e.target.files != null) {
+            setProjectFile(e.target.files[0]);
+            setProjectFileBlob(e.target.files[0]);
+        }
+    }
+
     async function handleCreateProject() {
         setPendingCreateProject(true);
         const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects`, {
@@ -133,6 +145,33 @@ export function ProjectsList() {
             setWebsiteUrl('');
             router.push(`/dashboard/projects/${response.id}/edit`);
         }
+    }
+
+    async function handleImportProject() {
+        setPendingImportProject(true);
+        const body = new FormData();
+        if (projectFileBlob != null && projectFile != null) {
+            console.log(projectFileBlob);
+            body.append('file', projectFileBlob, projectFile.name);
+        }
+        const data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/project-import`, {
+            method: "post",
+            headers: {
+                "Authorization": getToken()
+            } as HeadersInit,
+            body: body
+        });
+        if (data.status == 200) {
+            await data.json();
+            toast.success(`Project imported successfully`);
+            setPendingImportProject(false);
+            forceUpdate();
+            setImportSheetOpen(false);
+        }
+    }
+
+    function openImportSheet() {
+        setImportSheetOpen(true);
     }
 
     return (
@@ -174,6 +213,27 @@ export function ProjectsList() {
                             <Button onClick={handleCreateProject} disabled={pendingCreateProject || hasErrors() || projectName.length == 0 || websiteUrl.length == 0}>
                                 {pendingCreateProject && <Loader2 className="animate-spin" />}
                                 Save changes
+                            </Button>
+                        </SheetFooter>
+                    </SheetContent>
+                </Sheet>
+
+                <Sheet open={importSheetOpen} onOpenChange={setImportSheetOpen}>
+                    <SheetTrigger asChild><Button onClick={openImportSheet} variant="outline"><Upload />Import</Button></SheetTrigger>
+                    <SheetContent>
+                        <SheetHeader>
+                            <SheetTitle>Import Scraping Project</SheetTitle>
+                            <SheetDescription>
+                                Upload a previously exported project file
+                            </SheetDescription>
+                        </SheetHeader>
+                        <div className="mt-4 h-10">
+                            <Input className="py-2" type="file" id="project_file" onChange={handleProjectFileChange}/>
+                        </div>
+                        <SheetFooter className="pt-4">
+                            <Button onClick={handleImportProject} disabled={pendingImportProject || projectFile == null}>
+                                {pendingImportProject && <Loader2 className="animate-spin" />}
+                                Import
                             </Button>
                         </SheetFooter>
                     </SheetContent>

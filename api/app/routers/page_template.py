@@ -1,4 +1,5 @@
 import math
+from datetime import datetime
 from typing import Annotated
 
 from app.db.db_utils import check_if_project_belongs_to_user
@@ -37,6 +38,8 @@ async def create_page_template(
     check_if_project_belongs_to_user(project_id, current_user, session)
     page_template_data = page_template_create.model_dump(exclude_unset=True)
     page_template_data["project_id"] = project_id
+    page_template_data["created_by"] = current_user.id
+    page_template_data["modified_by"] = current_user.id
     page_template = PageTemplate.model_validate(page_template_data)
     session.add(page_template)
     session.commit()
@@ -83,6 +86,8 @@ async def put_page_template(
 ) -> PageTemplate:
     check_if_project_belongs_to_user(project_id, current_user, session)
     page_template_data = page_template.model_dump(exclude_unset=True)
+    page_template_data["modified_by"] = current_user.id
+    page_template_data["modified_on"] = datetime.now()
     statement = (
         select(PageTemplate)
         .where(PageTemplate.id == page_template_id)

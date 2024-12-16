@@ -127,7 +127,7 @@ def get_href(href, root):
 
 def scrape_page_xpath_selector(scrape_run_id, page_template, scrape_rules, url):
     root = get_root_url(url)
-    html_code = get_html(url)
+    html_code = get_html(url, clean=False)
     tree = html.fromstring(html_code)
     scrape_result = {}
     for scrape_rule in scrape_rules:
@@ -151,7 +151,7 @@ def scrape_page_xpath_selector(scrape_run_id, page_template, scrape_rules, url):
 
 def scrape_page_css_selector(scrape_run_id, page_template, scrape_rules, url):
     root = get_root_url(url)
-    html_code = get_html(url)
+    html_code = get_html(url, clean=False)
     soup = BeautifulSoup(html_code, "html.parser")
     scrape_result = {}
     for scrape_rule in scrape_rules:
@@ -168,7 +168,7 @@ def scrape_page_css_selector(scrape_run_id, page_template, scrape_rules, url):
 
 
 def scrape_page_ai_scraper(scrape_run_id, page_template, scrape_rules, url):
-    html_code = get_html(url)
+    html_code = get_html(url, clean=True)
     ai_input = None
     if page_template.ai_input == "HTML":
         ai_input = html_code
@@ -531,7 +531,7 @@ def get_image_area(url):
         return 0
 
 
-def get_html(url):
+def get_html(url, clean=True):
     html = None
     with sync_playwright() as p:
         browser = p.firefox.launch(headless=True)
@@ -540,7 +540,7 @@ def get_html(url):
         page.goto(url, wait_until="domcontentloaded")
         html = page.content()
         browser.close()
-    html = cleaner.clean_html(html)
+    html = cleaner.clean_html(html) if clean else html
     return html
 
 
@@ -549,7 +549,7 @@ def set_favicon_url(project_id, website_url):
     project = get_project(project_id)
     favicons = []
     try:
-        html_code = get_html(website_url)
+        html_code = get_html(website_url, clean=False)
         soup = BeautifulSoup(html_code, features="lxml")
         for item in soup.find_all(
             "link", attrs={"rel": re.compile("^(shortcut icon|icon)$", re.I)}

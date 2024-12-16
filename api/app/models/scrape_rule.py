@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Literal, Optional
 
 from app.models.common import PagingResponse
@@ -16,6 +17,10 @@ class ScrapeRule(SQLModel, table=True):
     page_template_id: str = Field(
         nullable=True, default=None, foreign_key="pagetemplate.id"
     )
+    created_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    modified_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    created_by: str = Field(nullable=False)
+    modified_by: str = Field(nullable=False)
 
 
 class ScrapeRuleCreate(SQLModel):

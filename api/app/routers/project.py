@@ -1,4 +1,5 @@
 import math
+from datetime import datetime
 from typing import Annotated
 
 from app.celery.tasks import set_favicon_url
@@ -30,6 +31,8 @@ async def create_project(
     project_data = project_create.model_dump(exclude_unset=True)
     project_data["user_id"] = current_user.id
     project_data["website_favicon_url"] = None
+    project_data["created_by"] = current_user.id
+    project_data["modified_by"] = current_user.id
     project = Project.model_validate(project_data)
     session.add(project)
     session.commit()
@@ -67,6 +70,8 @@ async def put_project(
 ) -> Project:
     check_if_project_belongs_to_user(project_id, current_user, session)
     project_data = project.model_dump(exclude_unset=True)
+    project_data["modified_by"] = current_user.id
+    project_data["modified_on"] = datetime.now()
     statement = (
         select(Project)
         .where(Project.id == project_id)
@@ -87,7 +92,7 @@ async def put_project(
         return db_project
 
 
-@project_router.get("/projects", response_model=None, tags=["projects"])
+@project_router.get("/projects", response_model=ProjectListResponse, tags=["projects"])
 async def list_projects(
     current_user: CurrentUserDep,
     session: SessionDep,
@@ -122,7 +127,9 @@ async def list_projects(
     )
 
 
-@project_router.delete("/projects/{project_id}", response_model=None, tags=["projects"])
+@project_router.delete(
+    "/projects/{project_id}", response_model=IdResponse, tags=["projects"]
+)
 async def delete_project(
     project_id, current_user: CurrentUserDep, session: SessionDep
 ) -> Project:

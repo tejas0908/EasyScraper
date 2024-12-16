@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from app.models.common import PagingResponse
@@ -12,6 +13,10 @@ class SeedPage(SQLModel, table=True):
     url: str = Field(nullable=False)
     page_template_id: str = Field(nullable=False, foreign_key="pagetemplate.id")
     project_id: str = Field(nullable=False, foreign_key="project.id")
+    created_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    modified_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    created_by: str = Field(nullable=False)
+    modified_by: str = Field(nullable=False)
 
 
 class SeedPageCreate(SQLModel):

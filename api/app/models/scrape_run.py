@@ -20,6 +20,10 @@ class ScrapeRun(SQLModel, table=True):
         "CREATED", "STARTED", "PAGE_GENERATION", "LEAF_SCRAPING", "OUTPUT", "COMPLETED"
     ] = Field(nullable=False, sa_type=String)
     project_id: str = Field(nullable=False, foreign_key="project.id")
+    created_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    modified_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    created_by: str = Field(nullable=False)
+    modified_by: str = Field(nullable=False)
 
 
 class ScrapeRunOutput(SQLModel, table=True):
@@ -29,6 +33,10 @@ class ScrapeRunOutput(SQLModel, table=True):
     format: Literal["JSONL", "CSV", "XLSX"] = Field(nullable=False, sa_type=String)
     file_url: str = Field(nullable=False)
     scrape_run_id: str = Field(nullable=False, foreign_key="scraperun.id")
+    created_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    modified_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    created_by: str = Field(nullable=False)
+    modified_by: str = Field(nullable=False)
 
 
 class ScrapeRunOutputView(SQLModel):
@@ -48,6 +56,10 @@ class ScrapeRunPage(SQLModel, table=True):
     output_type: Literal["PAGE_SOURCE", "LEAF"] = Field(nullable=False, sa_type=String)
     page_template_id: str = Field(nullable=False, foreign_key="pagetemplate.id")
     scrape_run_id: str = Field(nullable=False, foreign_key="scraperun.id")
+    created_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    modified_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    created_by: str = Field(nullable=False)
+    modified_by: str = Field(nullable=False)
 
 
 class ScrapeRunView(SQLModel):

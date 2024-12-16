@@ -22,6 +22,7 @@ from app.models.scrape_rule import (
 )
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import col, func, select
+from datetime import datetime
 
 scrape_rule_router = APIRouter()
 
@@ -42,6 +43,8 @@ async def create_scrape_rule(
     check_if_page_template_belongs_to_project(page_template_id, project_id, session)
     scrape_rule_data = scrape_rule_create.model_dump(exclude_unset=True)
     scrape_rule_data["page_template_id"] = page_template_id
+    scrape_rule_data["created_by"] = current_user.id
+    scrape_rule_data["modified_by"] = current_user.id
     scrape_rule = ScrapeRule.model_validate(scrape_rule_data)
     session.add(scrape_rule)
     session.commit()
@@ -95,6 +98,8 @@ async def update_scrape_rule(
     check_if_project_belongs_to_user(project_id, current_user, session)
     check_if_page_template_belongs_to_project(page_template_id, project_id, session)
     scrape_rule_data = scrape_rule.model_dump(exclude_unset=True)
+    scrape_rule_data["modified_by"] = current_user.id
+    scrape_rule_data["modified_on"] = datetime.now()
     statement = (
         select(ScrapeRule)
         .where(ScrapeRule.id == scrape_rule_id)

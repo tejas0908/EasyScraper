@@ -3,6 +3,7 @@ from typing import List, Optional
 from app.models.common import PagingResponse
 from app.util import generate_ulid
 from sqlmodel import Field, SQLModel
+from datetime import datetime
 
 
 class Project(SQLModel, table=True):
@@ -17,6 +18,10 @@ class Project(SQLModel, table=True):
     website_url: str = Field(nullable=True)
     website_favicon_url: Optional[str] = Field(nullable=True)
     user_id: str = Field(nullable=False, foreign_key="user.id")
+    created_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    modified_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    created_by: str = Field(nullable=False)
+    modified_by: str = Field(nullable=False)
 
 
 class ProjectCreate(SQLModel):

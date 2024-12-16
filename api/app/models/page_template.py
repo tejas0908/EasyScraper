@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Literal, Optional
 
 from app.models.common import PagingResponse
@@ -23,6 +24,10 @@ class PageTemplate(SQLModel, table=True):
         nullable=True, default=None, foreign_key="pagetemplate.id"
     )
     project_id: str = Field(nullable=False, foreign_key="project.id")
+    created_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    modified_on: datetime = Field(nullable=False, default_factory=datetime.now)
+    created_by: str = Field(nullable=False)
+    modified_by: str = Field(nullable=False)
 
 
 class PageTemplateCreate(SQLModel):

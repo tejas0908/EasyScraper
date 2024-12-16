@@ -1,4 +1,5 @@
 import math
+from datetime import datetime
 from typing import Annotated
 
 from app.db.db_utils import check_if_project_belongs_to_user
@@ -40,6 +41,8 @@ async def create_seed_page(
     check_if_project_belongs_to_user(project_id, current_user, session)
     seed_page_data = seed_page_create.model_dump(exclude_unset=True)
     seed_page_data["project_id"] = project_id
+    seed_page_data["created_by"] = current_user.id
+    seed_page_data["modified_by"] = current_user.id
     seed_page = SeedPage.model_validate(seed_page_data)
     session.add(seed_page)
     session.commit()
@@ -86,6 +89,8 @@ async def put_seed_page(
 ) -> SeedPage:
     check_if_project_belongs_to_user(project_id, current_user, session)
     seed_page_data = seed_page_update.model_dump(exclude_unset=True)
+    seed_page_data["modified_by"] = current_user.id
+    seed_page_data["modified_on"] = datetime.now()
     statement = (
         select(SeedPage)
         .where(SeedPage.id == seed_page_id)

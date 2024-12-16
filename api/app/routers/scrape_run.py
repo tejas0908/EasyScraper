@@ -27,6 +27,7 @@ from app.util import get_file_from_minio
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 from sqlmodel import col, func, select
+from datetime import datetime
 
 scrape_run_router = APIRouter()
 
@@ -50,6 +51,8 @@ async def create_scrape_run(
         "status": "STARTED",
         "project_id": project_id,
         "stage": "CREATED",
+        "created_by": current_user.id,
+        "modified_by": current_user.id,
     }
     scrape_run = ScrapeRun.model_validate(scrape_run_data)
     session.add(scrape_run)

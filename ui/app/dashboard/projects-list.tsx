@@ -30,13 +30,14 @@ import { Loader2, Book } from "lucide-react";
 import validator from "validator";
 import Image from 'next/image'
 import { Project } from '../lib/types';
+import EmptyProjects from '../../public/undraw_blank-canvas_a6x5.svg';
 
 export function ProjectsList() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [nextPage, setNextPage] = useState(false);
     const limit = 10;
-    const [fetchPending, setFetchPending] = useState(false);
+    const [fetchPending, setFetchPending] = useState(true);
     const getToken = useToken();
     const [projectName, setProjectName] = useState('');
     const [websiteUrl, setWebsiteUrl] = useState('');
@@ -196,7 +197,7 @@ export function ProjectsList() {
                         <SheetHeader>
                             <SheetTitle>New Scraping Project</SheetTitle>
                             <SheetDescription>
-                                Enter the project&apos;s name
+                                Enter the project&apos;s name and website URL
                             </SheetDescription>
                         </SheetHeader>
                         <div className="pt-4 space-y-2">
@@ -228,7 +229,7 @@ export function ProjectsList() {
                             </SheetDescription>
                         </SheetHeader>
                         <div className="mt-4 h-10">
-                            <Input className="py-2" type="file" id="project_file" onChange={handleProjectFileChange}/>
+                            <Input className="py-2" type="file" id="project_file" onChange={handleProjectFileChange} />
                         </div>
                         <SheetFooter className="pt-4">
                             <Button onClick={handleImportProject} disabled={pendingImportProject || projectFile == null}>
@@ -263,6 +264,13 @@ export function ProjectsList() {
                     </div>
                 ))}
             </div>
+            {projects.length == 0 && !fetchPending && <div className='grid grid-cols-3 grid-rows-[20%,50%,30%]'>
+                <div className='col-start-2 row-start-2 space-y-2'>
+                    <Image src={EmptyProjects} alt="" className='' />
+                    <div className='text-center font-bold text-lg'>No Projects Yet</div>
+                    <div className='text-center text-sm'>Start by creating a new project</div>
+                </div>
+            </div>}
         </div>
     );
 }

@@ -8,7 +8,7 @@ import {
     SheetFooter
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { Loader2, Edit, Plus } from "lucide-react"
+import { Loader2, Edit, Plus, CircleHelp } from "lucide-react"
 import {
     Select,
     SelectContent,
@@ -186,7 +186,7 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
                 <Button className="col-start-3"><Plus />Page Template</Button>
             </SheetTrigger>}
 
-            <SheetContent>
+            <SheetContent className="overflow-scroll">
                 <SheetHeader>
                     <SheetTitle>Page Template</SheetTitle>
                 </SheetHeader>
@@ -207,6 +207,13 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
                                 <SelectItem value="LEAF">Leaf</SelectItem>
                             </SelectContent>
                         </Select>
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                            <CircleHelp className="h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-700"><b>Page Source</b> = scraping this page results in urls of further pages to be scraped</span>
+                                <span className="text-xs text-slate-700"><b>Leaf</b> = scraping this page results in actual data</span>
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <Label>Scraper</Label>
@@ -221,15 +228,35 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
                                 <SelectItem value="AI_SCRAPER">AI Scraper</SelectItem>
                             </SelectContent>
                         </Select>
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                            <CircleHelp className="h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-700"><b>Xpath Selector</b> = use xpaths to scrape</span>
+                                <span className="text-xs text-slate-700"><b>CSS Selector</b> = use css selectors to scrape</span>
+                                <span className="text-xs text-slate-700"><b>AI Scraper</b> = LLMs are used to scrape </span>
+                            </div>
+                        </div>
                     </div>
                     {scraper == 'AUTO_SCRAPER' && <div>
                         <Label>Example URL</Label>
                         <Input type="text" value={exampleUrl} onChange={handleExampleUrlChange} className={error.exampleUrl ? 'border-red-500' : ''}></Input>
                         <div className="text-red-500 text-xs">{error.exampleUrl}</div>
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                            <CircleHelp className="h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-700">An example url of this page template</span>
+                            </div>
+                        </div>
                     </div>}
                     {scraper == 'AI_SCRAPER' && <div>
                         <Label>AI Prompt</Label>
                         <Textarea value={aiPrompt} onChange={handleAIPromptChange}></Textarea>
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                            <CircleHelp className="h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-700">The system prompt which will be sent to the LLM while scraping the page</span>
+                            </div>
+                        </div>
                     </div>}
                     {scraper == 'AI_SCRAPER' && <div>
                         <Label>AI Input</Label>
@@ -242,6 +269,13 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
                                 <SelectItem value="TEXT">Text</SelectItem>
                             </SelectContent>
                         </Select>
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                            <CircleHelp className="h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-700"><b>Html</b> = The full html will be sent to the LLM (costly)</span>
+                                <span className="text-xs text-slate-700"><b>Text</b> = Only the text content of the page is sent to the LLM (cheaper)</span>
+                            </div>
+                        </div>
                     </div>}
                     {outputType == 'PAGE_SOURCE' && <div>
                         <Label>Output Page Template</Label>
@@ -258,11 +292,17 @@ export function EditPageTemplateSheet({ pageTemplate, pageTemplates, project, pa
                             </SelectContent>
                         </Select>
                         <div className="text-red-500 text-xs">{error.outputPageTemplate}</div>
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                            <CircleHelp className="h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-700">Which page template is produced by scraping this page?</span>
+                            </div>
+                        </div>
                     </div>}
                 </div>
 
                 <SheetFooter className='pt-4 px-2'>
-                    <Button onClick={handleSavePageTemplate} disabled={pendingSave || hasErrors()}>
+                    <Button onClick={handleSavePageTemplate} disabled={pendingSave || hasErrors() || name.length == 0}>
                         {pendingSave && <Loader2 className="animate-spin" />}
                         Save
                     </Button>

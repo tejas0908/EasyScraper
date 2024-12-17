@@ -97,39 +97,41 @@ export function TabScrapeTest({ project, pageTemplates, parentForceUpdate }: { p
     }
 
     return (
-        <div>
-            <div className="w-[500px] p-2 space-y-4">
-                <div className="space-y-1 flex flex-col rounded-lg border p-4">
-                    <Input type="text" id="url" placeholder="URL" value={url} onChange={handleUrlChange} className={error.url ? 'border-red-500' : ''} />
-                    <div className="text-red-500 text-xs">{error.url}</div>
-                </div>
-                <div className="space-y-1 flex flex-col rounded-lg border p-4">
-                    <Select value={pageTemplateId} onValueChange={handlePageTemplateChange}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Page Template" />
-                        </SelectTrigger>
-                        <SelectContent className={error.pageTemplate ? 'border-red-500' : ''}>
-                            {
-                                pageTemplates.map((pt,) => (
-                                    <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>
-                                ))
-                            }
-                        </SelectContent>
-                    </Select>
-                    <div className="text-red-500 text-xs">{error.pageTemplate}</div>
-                </div>
-                <div className="flex justify-start">
-                    <Button className="w-28" onClick={handleScrapeTest} disabled={pendingScrape || hasErrors() || pageTemplateId.length == 0 || url.length == 0}>
-                        {pendingScrape && <Loader2 className="animate-spin" />}
-                        Test
-                    </Button>
+        <div className="p-1">
+            <div className="w-[800px] space-y-1 border rounded-md">
+                <div className="w-[500px]">
+                    <div className="flex flex-col rounded-lg p-4">
+                        <Input type="text" id="url" placeholder="URL" value={url} onChange={handleUrlChange} className={error.url ? 'border-red-500' : ''} />
+                        <div className="text-red-500 text-xs">{error.url}</div>
+                    </div>
+                    <div className="flex flex-col rounded-lg p-4">
+                        <Select value={pageTemplateId} onValueChange={handlePageTemplateChange}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Page Template" />
+                            </SelectTrigger>
+                            <SelectContent className={error.pageTemplate ? 'border-red-500' : ''}>
+                                {
+                                    pageTemplates.map((pt,) => (
+                                        <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>
+                                    ))
+                                }
+                            </SelectContent>
+                        </Select>
+                        <div className="text-red-500 text-xs">{error.pageTemplate}</div>
+                    </div>
+                    <div className="flex justify-start p-4">
+                        <Button className="w-20" onClick={handleScrapeTest} disabled={pendingScrape || hasErrors() || pageTemplateId.length == 0 || url.length == 0}>
+                            {pendingScrape && <Loader2 className="animate-spin" />}
+                            Test
+                        </Button>
+                    </div>
                 </div>
             </div>
-            <div className="p-2 space-y-2">
+            <div className="mt-2 space-y-2">
                 {scrapeTestOutput.map((output) => (
-                    <div key={output.field} className="border grid grid-cols-[10%,90%] rounded-md p-2">
+                    <div key={output.field} className="border grid grid-cols-[10%,90%] rounded-md p-2 divide-x-2">
                         <div>{output.field}</div>
-                        <div className="line-clamp-5">{JSON.stringify(output.value)}</div>
+                        <div className="line-clamp-5 pl-2">{JSON.stringify(output.value)}</div>
                     </div>
                 ))}
             </div>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label";
 import { DispatchWithoutAction, useState } from "react";
 import { useToken } from "@/app/lib/token";
-import { Loader2 } from "lucide-react"
+import { Loader2, CircleHelp } from "lucide-react"
 import { toast } from "sonner"
 import validator from "validator";
 import {
@@ -125,7 +125,7 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
                     <div className="basis-1/3">
                         <Input value={rateCount} onChange={handleRateCountChange} type="text" className={error.rateCount ? 'border-red-500' : ''} />
                     </div>
-                    <span className="text-sm basis-1/3">requests per</span>
+                    <span className="text-sm basis-1/3">scrapes per</span>
                     <Select value={rateTimeUnit} onValueChange={handleRateTimeUnitChange}>
                         <SelectTrigger>
                             <SelectValue placeholder="Time Unit" />
@@ -135,6 +135,12 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
                             <SelectItem value="MINUTE">minute</SelectItem>
                         </SelectContent>
                     </Select>
+                </div>
+                <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                    <CircleHelp className="h-4" />
+                    <div className="flex flex-col">
+                        <span className="text-xs text-slate-700">Define how fast the pages need to be scraped. This is useful to avoid getting blocked or to avoid LLM rate limits</span>
+                    </div>
                 </div>
             </div>
             <div className="flex justify-start">

@@ -21,6 +21,8 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination"
 import { Progress } from "@/components/ui/progress"
+import EmptyScrapeRuns from '../../../../../public/undraw_runner-start_585j.svg';
+import Image from 'next/image'
 
 
 export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project, parentForceUpdate: DispatchWithoutAction }) {
@@ -29,7 +31,7 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
     const [nextPage, setNextPage] = useState(false);
     const limit = 10;
     const [pendingTrigger, setPendingTrigger] = useState(false);
-    const [pendingRefresh, setPendingRefresh] = useState(false);
+    const [pendingRefresh, setPendingRefresh] = useState(true);
     const timezoneOffset = (new Date()).getTimezoneOffset();
     const getToken = useToken();
 
@@ -258,6 +260,13 @@ export function TabScrapeRuns({ project, parentForceUpdate }: { project: Project
                         </AccordionItem>
                     ))}
                 </Accordion>}
+                {scrapeRuns.length == 0 && !pendingRefresh && <div className='grid grid-cols-3 grid-rows-[30%,50%,20%]'>
+                <div className='col-start-2 row-start-2 space-y-2'>
+                    <Image src={EmptyScrapeRuns} alt="" className='' />
+                    <div className='text-center font-bold text-lg'>No Scrape Runs Yet</div>
+                    <div className='text-center text-sm'>Start by triggering a new scrape run</div>
+                </div>
+            </div>}
         </div>
     );
 }

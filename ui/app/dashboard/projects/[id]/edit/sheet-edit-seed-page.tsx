@@ -9,7 +9,7 @@ import {
     SheetFooter
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { Loader2, Edit, Plus } from "lucide-react"
+import { Loader2, Edit, Plus, CircleHelp } from "lucide-react"
 import {
     Select,
     SelectContent,
@@ -138,6 +138,12 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
                         <Label>Url</Label>
                         <Input type="text" value={url} onChange={handleUrlChange} className={error.url ? 'border-red-500' : ''}></Input>
                         <div className="text-red-500 text-xs">{error.url}</div>
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                            <CircleHelp className="h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-700">URL of the page used to start the scraping</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="p-2 space-y-2">
@@ -154,6 +160,12 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
                             </SelectContent>
                         </Select>
                         <div className="text-red-500 text-xs">{error.pageTemplate}</div>
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                            <CircleHelp className="h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-700">Page template of the above URL</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

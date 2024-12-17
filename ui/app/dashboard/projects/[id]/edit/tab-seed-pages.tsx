@@ -11,9 +11,12 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
+import EmptySeedPages from '../../../../../public/undraw_add-notes_9xls.svg';
+import Image from 'next/image'
 
 export function TabSeedPages({ project, pageTemplates }: { project: Project, pageTemplates: PageTemplate[] }) {
     const [seedPages, setSeedPages] = useState<SeedPage[]>([]);
+    const [fetchPending, setFetchPending] = useState(true);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [currentPage, setCurrentPage] = useState(0);
     const [nextPage, setNextPage] = useState(false);
@@ -21,6 +24,7 @@ export function TabSeedPages({ project, pageTemplates }: { project: Project, pag
     const getToken = useToken();
 
     useEffect(() => {
+        setFetchPending(true);
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/seed_pages?` + new URLSearchParams({ page: String(currentPage), limit: String(limit), sort_field: 'id', sort_direction: 'asc' }).toString(), {
             method: "get",
             headers: {
@@ -41,6 +45,7 @@ export function TabSeedPages({ project, pageTemplates }: { project: Project, pag
             });
             setSeedPages(tSeedPages);
             setNextPage(data.paging.next_page);
+            setFetchPending(false);
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ignored, currentPage]);
@@ -78,6 +83,13 @@ export function TabSeedPages({ project, pageTemplates }: { project: Project, pag
                     </div>
                 </div>
             ))}
+            {seedPages.length == 0 && !fetchPending && <div className='grid grid-cols-3 grid-rows-[20%,50%,30%]'>
+                <div className='col-start-2 row-start-2 space-y-2'>
+                    <Image src={EmptySeedPages} alt="" className='' />
+                    <div className='text-center font-bold text-lg'>No Seed Pages Yet</div>
+                    <div className='text-center text-sm'>Start by creating a new seed page</div>
+                </div>
+            </div>}
         </div>
     );
 }

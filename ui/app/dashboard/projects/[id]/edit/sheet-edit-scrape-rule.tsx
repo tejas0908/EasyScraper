@@ -8,7 +8,7 @@ import {
     SheetFooter
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { Loader2, Edit, Plus } from "lucide-react"
+import { Loader2, Edit, Plus, CircleHelp } from "lucide-react"
 import {
     Select,
     SelectContent,
@@ -162,6 +162,12 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
                         <Label>Alias</Label>
                         <Input disabled={pageTemplate.output_type == "PAGE_SOURCE"} type="text" value={alias} onChange={handleAliasChange} className={error.alias ? 'border-red-500' : ''}></Input>
                         <div className="text-red-500 text-xs">{error.alias}</div>
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                            <CircleHelp className="h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-700">Name of the field to scrape. Will be the column name in the output files. Also used by LLM during scraping</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="p-2 space-y-2">
@@ -177,6 +183,13 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
                             </SelectContent>
                         </Select>
                         <div className="text-red-500 text-xs">{error.type}</div>
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                            <CircleHelp className="h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-700"><b>Single</b> = The value which is scraped is a single value</span>
+                                <span className="text-xs text-slate-700"><b>Multi</b> = The value which is scraped is a list of values</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {pageTemplate.scraper != "AI_SCRAPER" && <div className="p-2 space-y-2">
@@ -184,6 +197,12 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
                         <Label>Value</Label>
                         <Input type="text" value={value} onChange={handleValueChange} className={error.value ? 'border-red-500' : ''}></Input>
                         <div className="text-red-500 text-xs">{error.value}</div>
+                    </div>
+                    <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                        <CircleHelp className="h-4" />
+                        <div className="flex flex-col">
+                            <span className="text-xs text-slate-700">This is either the xpath or the css selector</span>
+                        </div>
                     </div>
                 </div>}
                 {pageTemplate.scraper != "AI_SCRAPER" && <div className="p-2 space-y-2">
@@ -199,11 +218,17 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
                             </SelectContent>
                         </Select>
                         <div className="text-red-500 text-xs">{error.href}</div>
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                            <CircleHelp className="h-4" />
+                            <div className="flex flex-col">
+                                <span className="text-xs text-slate-700">Does the xpath or css selector result in an anchor tag whose href needs to be scraped?</span>
+                            </div>
+                        </div>
                     </div>
                 </div>}
 
                 <SheetFooter className='pt-4 px-2'>
-                    <Button onClick={handleSaveScrapeRule} disabled={pendingSave || hasErrors()}>
+                    <Button onClick={handleSaveScrapeRule} disabled={pendingSave || hasErrors() || alias.length == 0}>
                         {pendingSave && <Loader2 className="animate-spin" />}
                         Save
                     </Button>

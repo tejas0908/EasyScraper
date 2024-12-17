@@ -27,9 +27,12 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
+import EmptyPageTemplates from '../../../../../public/undraw_void_wez2.svg';
+import Image from 'next/image'
 
 export function TabPageTemplates({ project, parentForceUpdate }: { project: Project, parentForceUpdate: DispatchWithoutAction }) {
     const [pageTemplates, setPageTemplates] = useState<PageTemplate[]>([]);
+    const [fetchPending, setFetchPending] = useState(true);
     const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
     const [currentPage, setCurrentPage] = useState(0);
     const [nextPage, setNextPage] = useState(false);
@@ -37,6 +40,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
     const getToken = useToken();
 
     useEffect(() => {
+        setFetchPending(true);
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/page_templates?` + new URLSearchParams({ page: String(currentPage), limit: String(limit), sort_field: 'name', sort_direction: 'asc' }).toString(), {
             method: "get",
             headers: {
@@ -48,6 +52,7 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
         }).then((data) => {
             setPageTemplates(data.page_templates);
             setNextPage(data.paging.next_page);
+            setFetchPending(false);
             parentForceUpdate();
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,6 +149,13 @@ export function TabPageTemplates({ project, parentForceUpdate }: { project: Proj
                         </AccordionItem>
                     ))}
                 </Accordion>}
+                {pageTemplates.length == 0 && !fetchPending && <div className='grid grid-cols-3 grid-rows-[20%,50%,30%]'>
+                <div className='col-start-2 row-start-2 space-y-2'>
+                    <Image src={EmptyPageTemplates} alt="" className='' />
+                    <div className='text-center font-bold text-lg'>No Page Templates Yet</div>
+                    <div className='text-center text-sm'>Start by creating a new page template</div>
+                </div>
+            </div>}
         </div>
     );
 }

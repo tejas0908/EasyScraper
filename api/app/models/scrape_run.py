@@ -50,7 +50,7 @@ class ScrapeRunPage(SQLModel, table=True):
     )
     url: str = Field(nullable=False, sa_type=String)
     scrape_output: dict = Field(sa_column=Column(JSON), default={})
-    status: Literal["STARTED", "COMPLETED", "FAILED"] = Field(
+    status: Literal["PENDING", "STARTED", "COMPLETED", "FAILED"] = Field(
         nullable=False, sa_type=String
     )
     output_type: Literal["PAGE_SOURCE", "LEAF"] = Field(nullable=False, sa_type=String)

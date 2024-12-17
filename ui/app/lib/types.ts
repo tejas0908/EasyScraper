@@ -2,10 +2,10 @@
 export interface Project {
     id: string;
     name: string;
-    ignore_scrape_failures: boolean;
-    sleep_seconds_between_page_scrape: number;
     website_url: string;
     website_favicon_url: string;
+    rate_count: number;
+    rate_time_unit: string;
 }
 
 export interface PageTemplate {

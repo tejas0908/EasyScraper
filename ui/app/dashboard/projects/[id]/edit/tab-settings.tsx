@@ -2,25 +2,30 @@ import { Project } from "@/app/lib/types";
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch"
-import { Slider } from "@/components/ui/slider"
 import { DispatchWithoutAction, useState } from "react";
 import { useToken } from "@/app/lib/token";
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import validator from "validator";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 export function TabSettings({ project, parentForceUpdate }: { project: Project, parentForceUpdate: DispatchWithoutAction }) {
     const [projectName, setProjectName] = useState(project.name);
-    const [ignoreScrapeFailures, setIgnoreScrapeFailures] = useState(project.ignore_scrape_failures);
-    const [sleepSecondsBetweenPageScrapes, setSleepSecondsBetweenPageScrapes] = useState(project.sleep_seconds_between_page_scrape);
     const [websiteUrl, setWebsiteUrl] = useState(project.website_url || '');
+    const [rateCount, setRateCount] = useState(project.rate_count.toString());
+    const [rateTimeUnit, setRateTimeUnit] = useState(project.rate_time_unit);
     const [pendingUpdate, setPendingUpdate] = useState(false);
     const getToken = useToken();
     const [error, setError] = useState<{ [key: string]: string | null }>({
         projectName: null,
-        ignoreScrapeFailures: null,
-        sleepSecondsBetweenPageScrapes: null,
+        rateCount: null,
+        rateTimeUnit: null,
         websiteUrl: null,
         server: null
     });
@@ -66,12 +71,18 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
         setWebsiteUrl(url);
     }
 
-    function handleIgnoreScrapeFailuresChange(e: boolean) {
-        setIgnoreScrapeFailures(e);
+    function handleRateCountChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const rc = e.target.value;
+        if (validator.isInt(rc) && parseInt(rc) > 0) {
+            registerError("rateCount", null);
+        } else {
+            registerError("rateCount", "Rate count should be a number > 0")
+        }
+        setRateCount(rc);
     }
 
-    function handleSleepChange(e: number[]) {
-        setSleepSecondsBetweenPageScrapes(e[0]);
+    function handleRateTimeUnitChange(e: string) {
+        setRateTimeUnit(e);
     }
 
     async function handleProjectUpdate() {
@@ -84,9 +95,9 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
             },
             body: JSON.stringify({
                 "name": projectName,
-                "ignore_scrape_failures": ignoreScrapeFailures,
-                "sleep_seconds_between_page_scrape": sleepSecondsBetweenPageScrapes,
-                "website_url": websiteUrl
+                "website_url": websiteUrl,
+                "rate_count": parseInt(rateCount),
+                "rate_time_unit": rateTimeUnit
             })
         });
         if (data.status == 200) {
@@ -108,15 +119,22 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
                 <Input type="text" id="website_url" placeholder="Website Url" value={websiteUrl} onChange={handleWebsiteUrlChange} className={error.websiteUrl ? 'border-red-500' : ''} />
                 <div className="text-red-500 text-xs">{error.websiteUrl}</div>
             </div>
-            <div className="space-y-1 flex flex-row items-center justify-between rounded-lg border p-4">
-                <Label>Ignore Scrape Failures</Label>
-                <Switch checked={ignoreScrapeFailures} onCheckedChange={handleIgnoreScrapeFailuresChange} />
-            </div>
             <div className="space-y-4 flex flex-col rounded-lg border p-4">
-                <Label>Sleep Seconds Between Page Scrapes</Label>
-                <div className="flex space-x-4">
-                    <Slider className="basis-10/12" min={1} max={10} step={1} value={[sleepSecondsBetweenPageScrapes]} onValueChange={handleSleepChange} />
-                    <Input className="basis-2/12" type="text" id="sleep_seconds" readOnly disabled value={sleepSecondsBetweenPageScrapes} />
+                <Label>Rate Limit</Label>
+                <div className="flex space-x-4 items-center justify-start">
+                    <div className="basis-1/3">
+                        <Input value={rateCount} onChange={handleRateCountChange} type="text" className={error.rateCount ? 'border-red-500' : ''} />
+                    </div>
+                    <span className="text-sm basis-1/3">requests per</span>
+                    <Select value={rateTimeUnit} onValueChange={handleRateTimeUnitChange}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Time Unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="SECOND">second</SelectItem>
+                            <SelectItem value="MINUTE">minute</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
             <div className="flex justify-start">

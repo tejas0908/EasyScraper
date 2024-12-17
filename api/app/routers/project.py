@@ -180,5 +180,5 @@ async def import_project(
     with open(data_file_path, "w") as f:
         json.dump(data, f)
     data_file_url = upload_to_minio(data_file_path)
-    project_id = import_project_task.delay(data_file_url).get()
+    project_id = import_project_task.delay(data_file_url, current_user.id).get()
     return IdResponse(id=project_id)

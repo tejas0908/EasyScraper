@@ -30,6 +30,8 @@ from PIL import Image
 from playwright.sync_api import sync_playwright
 from sqlalchemy.pool import NullPool
 from sqlmodel import Session, create_engine, select
+from token_throttler import TokenBucket, TokenThrottler
+from token_throttler.storage import RuntimeStorage
 
 db_url = os.environ["DB_URL"]
 engine = create_engine(db_url, echo=False, poolclass=NullPool)
@@ -240,7 +242,6 @@ def scrape_page(scrape_run_id, page_template, scrape_rules, url):
 
 @celery_app.task(time_limit=60)
 def scrape_page_for_run(project_id, scrape_run_id, scrape_run_page_id):
-    project = get_project(project_id)
     scrape_run_page = get_scrape_run_page(scrape_run_page_id)
     scrape_result = {}
     try:
@@ -251,12 +252,31 @@ def scrape_page_for_run(project_id, scrape_run_id, scrape_run_page_id):
         scrape_result = scrape_page(scrape_run_id, page_template, scrape_rules, url)
         scrape_run_page.status = "COMPLETED"
         scrape_run_page.scrape_output = scrape_result
+
+        # if new pages are generated, save them
+        if (
+            scrape_run_page.output_type == "PAGE_SOURCE"
+            and "urls" in scrape_result
+            and len(scrape_result["urls"]) > 0
+        ):
+            output_page_template = get_page_template(
+                page_template.output_page_template_id, project_id
+            )
+            for url in scrape_result["urls"]:
+                scrape_run_page = ScrapeRunPage(
+                    url=url,
+                    output_type=output_page_template.output_type,
+                    page_template_id=output_page_template.id,
+                    scrape_run_id=scrape_run_id,
+                    status="PENDING",
+                )
+                session.add(scrape_run_page)
+            session.commit()
     except:
         scrape_run_page.status = "FAILED"
     finally:
         session.add(scrape_run_page)
         session.commit()
-    time.sleep(project.sleep_seconds_between_page_scrape)
     return scrape_result, page_template.output_page_template_id
 
 
@@ -352,6 +372,7 @@ def update_stage(stage, scrape_run_id, project_id):
 @celery_app.task
 def scrape_master(project_id, scrape_run_id, resume=False):
     try:
+        project = get_project(project_id)
         scrape_run = get_scrape_run(scrape_run_id, project_id)
         update_stage("STARTED", scrape_run_id, project_id)
 
@@ -367,68 +388,82 @@ def scrape_master(project_id, scrape_run_id, resume=False):
                     output_type=page_template.output_type,
                     page_template_id=seed_page.page_template_id,
                     scrape_run_id=scrape_run_id,
-                    status="STARTED",
+                    status="PENDING",
                 )
                 session.add(scrape_run_page)
                 session.commit()
 
+        # setup rate limiter
+        def get_rate_config():
+            req, time = project.rate_count, project.rate_time_unit
+            time = 60 if time == "MINUTE" else 1
+            ratio = req / time
+            cost = round(ratio) if ratio >= 1 else 1
+            sleep_time = int(time / req)
+            sleep_time = sleep_time if sleep_time >= 1 else 1
+            return req, time, cost, sleep_time
+
+        max_tokens, replenish_time, cost, sleep_time = get_rate_config()
+        throttler: TokenThrottler = TokenThrottler(cost, RuntimeStorage())
+        throttler.add_bucket(
+            "rate", TokenBucket(replenish_time=replenish_time, max_tokens=max_tokens)
+        )
+
         update_stage("PAGE_GENERATION", scrape_run_id, project_id)
         # while there are page generators in STARTED status, scrape pages, then add more pages to scrape run pages
+        group_promises = []
         while True:
             scrape_run_pages = get_scrape_run_pages_by_status(
-                scrape_run_id, "STARTED", "PAGE_SOURCE"
+                scrape_run_id, "PENDING", "PAGE_SOURCE"
             )
             if len(scrape_run_pages) == 0:
                 break
             scrape_page_tasks = []
-            for scrape_run_page in scrape_run_pages:
+            for scrape_run_page in scrape_run_pages[:cost]:
+                scrape_run_page.status = "STARTED"
+                session.add(scrape_run_page)
                 scrape_page_task = scrape_page_for_run.s(
                     project_id, scrape_run_id, scrape_run_page.id
                 )
                 scrape_page_tasks.append(scrape_page_task)
-            group_promise = group(scrape_page_tasks)()
-            while not group_promise.ready():
-                print(
-                    "page generator scraping complete => ",
-                    group_promise.completed_count(),
-                )
-                time.sleep(10)
-            group_results = group_promise.get(disable_sync_subtasks=False)
-            for group_result in group_results:
-                urls = group_result[0]["urls"]
-                output_page_template_id = group_result[1]
-                output_page_template = get_page_template(
-                    output_page_template_id, project_id
-                )
-                for url in urls:
-                    scrape_run_page = ScrapeRunPage(
-                        url=url,
-                        output_type=output_page_template.output_type,
-                        page_template_id=output_page_template_id,
-                        scrape_run_id=scrape_run_id,
-                        status="STARTED",
-                    )
-                    session.add(scrape_run_page)
-                    session.commit()
+            session.commit()
+            if throttler.consume("rate"):
+                group_promise = group(scrape_page_tasks)()
+                group_promises.append(group_promise)
+            time.sleep(sleep_time)
+
+        while True:
+            if all([p.ready() for p in group_promises]):
+                break
+            time.sleep(10)
 
         update_stage("LEAF_SCRAPING", scrape_run_id, project_id)
         # while there are leafs in STARTED status, scrape pages
+        group_promises = []
         while True:
             scrape_run_pages = get_scrape_run_pages_by_status(
-                scrape_run_id, "STARTED", "LEAF"
+                scrape_run_id, "PENDING", "LEAF"
             )
             if len(scrape_run_pages) == 0:
                 break
             scrape_page_tasks = []
-            for scrape_run_page in scrape_run_pages:
+            for scrape_run_page in scrape_run_pages[:cost]:
+                scrape_run_page.status = "STARTED"
+                session.add(scrape_run_page)
                 scrape_page_task = scrape_page_for_run.s(
                     project_id, scrape_run_id, scrape_run_page.id
                 )
                 scrape_page_tasks.append(scrape_page_task)
-            group_promise = group(scrape_page_tasks)()
-            while not group_promise.ready():
-                print("leaf scraping complete => ", group_promise.completed_count())
-                time.sleep(10)
+            session.commit()
+            if throttler.consume("rate"):
+                group_promise = group(scrape_page_tasks)()
+                group_promises.append(group_promise)
+            time.sleep(sleep_time)
+
+        while True:
+            if all([p.ready() for p in group_promises]):
+                break
+            time.sleep(10)
 
         update_stage("OUTPUT", scrape_run_id, project_id)
         # create scrape output files and upload to minio, add scrape run outputs to db
@@ -570,7 +605,7 @@ def export_project_task(project_id):
 
 
 @celery_app.task()
-def import_project_task(data_file_url):
+def import_project_task(data_file_url, user_id):
     data = None
     file_path = get_file_from_minio(data_file_url)
     with open(file_path) as f:
@@ -587,11 +622,17 @@ def import_project_task(data_file_url):
         session.refresh(obj)
         return obj
 
+    def audit(obj):
+        obj["created_by"] = user_id
+        obj["modified_by"] = user_id
+        return obj
+
     id_map = {}
 
     # create project
     project, project_id_old = remove_id(data["project"])
-    project = save(Project.model_validate(project))
+    project["user_id"] = user_id
+    project = save(Project.model_validate(audit(project)))
     id_map[project_id_old] = project.id
 
     page_templates: List[PageTemplate] = []
@@ -602,7 +643,7 @@ def import_project_task(data_file_url):
         page_template["project_id"] = id_map[page_template["project_id"]]
         output_ptids.append(page_template["output_page_template_id"])
         page_template["output_page_template_id"] = None
-        page_template = save(PageTemplate.model_validate(page_template))
+        page_template = save(PageTemplate.model_validate(audit(page_template)))
         id_map[page_template_id_old] = page_template.id
         page_templates.append(page_template)
     # create page templates pass 2
@@ -615,7 +656,7 @@ def import_project_task(data_file_url):
     for scrape_rule in data["scrape_rules"]:
         scrape_rule, scrape_rule_id_old = remove_id(scrape_rule)
         scrape_rule["page_template_id"] = id_map[scrape_rule["page_template_id"]]
-        scrape_rule = save(ScrapeRule.model_validate(scrape_rule))
+        scrape_rule = save(ScrapeRule.model_validate(audit(scrape_rule)))
         id_map[scrape_rule_id_old] = scrape_rule.id
 
     # create seed pages
@@ -623,7 +664,7 @@ def import_project_task(data_file_url):
         seed_page, seed_page_id_old = remove_id(seed_page)
         seed_page["project_id"] = id_map[seed_page["project_id"]]
         seed_page["page_template_id"] = id_map[seed_page["page_template_id"]]
-        seed_page = save(SeedPage.model_validate(seed_page))
+        seed_page = save(SeedPage.model_validate(audit(seed_page)))
         id_map[seed_page_id_old] = seed_page.id
 
     return project.id

@@ -129,7 +129,7 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
                 <Button className="col-start-3"><Plus />Seed Page</Button>
             </SheetTrigger>}
 
-            <SheetContent>
+            <SheetContent className="overflow-y-auto">
                 <SheetHeader>
                     <SheetTitle>Seed Page</SheetTitle>
                 </SheetHeader>
@@ -138,10 +138,10 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
                         <Label>Url</Label>
                         <Input type="text" value={url} onChange={handleUrlChange} className={error.url ? 'border-red-500' : ''}></Input>
                         <div className="text-red-500 text-xs">{error.url}</div>
-                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 dark:bg-slate-500 mt-2">
                             <CircleHelp className="h-4" />
                             <div className="flex flex-col">
-                                <span className="text-xs text-slate-700">URL of the page used to start the scraping</span>
+                                <span className="text-xs text-slate-700 dark:text-white">URL of the page used to start the scraping</span>
                             </div>
                         </div>
                     </div>
@@ -160,10 +160,10 @@ export function EditSeedPageSheet({ seedPage, project, pageTemplates, parentForc
                             </SelectContent>
                         </Select>
                         <div className="text-red-500 text-xs">{error.pageTemplate}</div>
-                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 dark:bg-slate-500 mt-2">
                             <CircleHelp className="h-4" />
                             <div className="flex flex-col">
-                                <span className="text-xs text-slate-700">Page template of the above URL</span>
+                                <span className="text-xs text-slate-700 dark:text-white">Page template of the above URL</span>
                             </div>
                         </div>
                     </div>

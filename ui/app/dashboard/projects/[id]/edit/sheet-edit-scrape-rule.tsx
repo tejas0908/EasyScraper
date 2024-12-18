@@ -162,10 +162,10 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
                         <Label>Alias</Label>
                         <Input disabled={pageTemplate.output_type == "PAGE_SOURCE"} type="text" value={alias} onChange={handleAliasChange} className={error.alias ? 'border-red-500' : ''}></Input>
                         <div className="text-red-500 text-xs">{error.alias}</div>
-                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 dark:bg-slate-500 mt-2">
                             <CircleHelp className="h-4" />
                             <div className="flex flex-col">
-                                <span className="text-xs text-slate-700">Name of the field to scrape. Will be the column name in the output files. Also used by LLM during scraping</span>
+                                <span className="text-xs text-slate-700 dark:text-white">Name of the field to scrape. Will be the column name in the output files. Also used by LLM during scraping</span>
                             </div>
                         </div>
                     </div>
@@ -183,11 +183,11 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
                             </SelectContent>
                         </Select>
                         <div className="text-red-500 text-xs">{error.type}</div>
-                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 dark:bg-slate-500 mt-2">
                             <CircleHelp className="h-4" />
                             <div className="flex flex-col">
-                                <span className="text-xs text-slate-700"><b>Single</b> = The value which is scraped is a single value</span>
-                                <span className="text-xs text-slate-700"><b>Multi</b> = The value which is scraped is a list of values</span>
+                                <span className="text-xs text-slate-700 dark:text-white"><b>Single</b> = The value which is scraped is a single value</span>
+                                <span className="text-xs text-slate-700 dark:text-white"><b>Multi</b> = The value which is scraped is a list of values</span>
                             </div>
                         </div>
                     </div>
@@ -198,10 +198,10 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
                         <Input type="text" value={value} onChange={handleValueChange} className={error.value ? 'border-red-500' : ''}></Input>
                         <div className="text-red-500 text-xs">{error.value}</div>
                     </div>
-                    <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                    <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 dark:bg-slate-500 mt-2">
                         <CircleHelp className="h-4" />
                         <div className="flex flex-col">
-                            <span className="text-xs text-slate-700">This is either the xpath or the css selector</span>
+                            <span className="text-xs text-slate-700 dark:text-white">This is either the xpath or the css selector</span>
                         </div>
                     </div>
                 </div>}
@@ -218,10 +218,10 @@ export function EditScrapeRuleSheet({ scrapeRule, pageTemplate, scrapeRules, par
                             </SelectContent>
                         </Select>
                         <div className="text-red-500 text-xs">{error.href}</div>
-                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                        <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 dark:bg-slate-500 mt-2">
                             <CircleHelp className="h-4" />
                             <div className="flex flex-col">
-                                <span className="text-xs text-slate-700">Does the xpath or css selector result in an anchor tag whose href needs to be scraped?</span>
+                                <span className="text-xs text-slate-700 dark:text-white">Does the xpath or css selector result in an anchor tag whose href needs to be scraped?</span>
                             </div>
                         </div>
                     </div>

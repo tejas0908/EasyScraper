@@ -136,10 +136,10 @@ export function TabSettings({ project, parentForceUpdate }: { project: Project, 
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 mt-2">
+                <div className="p-2 flex items-center space-x-2 border rounded-lg bg-slate-100 dark:bg-slate-500 mt-2">
                     <CircleHelp className="h-4" />
                     <div className="flex flex-col">
-                        <span className="text-xs text-slate-700">Define how fast the pages need to be scraped. This is useful to avoid getting blocked or to avoid LLM rate limits</span>
+                        <span className="text-xs text-slate-700 dark:text-white">Define how fast the pages need to be scraped. This is useful to avoid getting blocked or to avoid LLM rate limits</span>
                     </div>
                 </div>
             </div>

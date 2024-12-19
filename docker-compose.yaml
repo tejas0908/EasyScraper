@@ -18,7 +18,7 @@ services:
       start_period: 10s
       timeout: 10s
       retries: 5
-    scale: 1
+    scale: 0
     depends_on:
       api:
         condition: service_healthy
@@ -126,15 +126,6 @@ services:
       db-migration:
         condition: service_completed_successfully
   
-  celery-insights:
-    image: ghcr.io/danyi1212/celery-insights:latest
-    ports:
-      - 8555:8555
-    environment:
-      - BROKER_URL=${BROKER_URL}
-      - RESULT_BACKEND=${RESULT_BACKEND}
-    profiles: [dev]
-  
   minio:
     image: minio/minio
     command: server /data --console-address ":9001"
@@ -167,20 +158,6 @@ services:
       /usr/bin/mc mb --ignore-existing myminio/${MINIO_DEFAULT_BUCKET};
       exit 0;
       "
-
-  plantuml:
-    image: plantuml/plantuml-server:jetty
-    ports:
-      - 8080:8080
-    environment:
-      - BASE_URL=plantuml
-    healthcheck:
-      test: curl -f http://localhost:8080
-      interval: 30s
-      start_period: 10s
-      timeout: 10s
-      retries: 5
-    profiles: [dev]
 
 volumes:
   redis_volume:

@@ -6,11 +6,13 @@ services:
   #    context: ./ui
   #    args:
   #      - NEXT_PUBLIC_API_BASE_URL=${API_BASE_URL}
+  #      - NEXT_PUBLIC_GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
   #      - NEXT_TELEMETRY_DISABLED=1
   #  ports:
   #    - 3000:3000
   #  environment:
   #    - NEXT_PUBLIC_API_BASE_URL=${API_BASE_URL}
+  #    - NEXT_PUBLIC_GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
   #    - NEXT_TELEMETRY_DISABLED=1
   #  healthcheck:
   #    test: curl -f http://localhost:3000/api/health
@@ -39,6 +41,8 @@ services:
       - MINIO_DEFAULT_BUCKET=${MINIO_DEFAULT_BUCKET}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - TOKEN_EXPIRY_MINUTES=${TOKEN_EXPIRY_MINUTES}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
     healthcheck:
       test: curl -f http://localhost:8000/health
       interval: 30s
@@ -71,7 +75,7 @@ services:
       start_period: 10s
       timeout: 10s
       retries: 5
-  
+
   db-migration:
     image: flyway/flyway
     command: -X -url=${FLYWAY_DB_URL} -schemas=public -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -connectRetries=60 migrate
@@ -125,7 +129,7 @@ services:
         condition: service_healthy
       db-migration:
         condition: service_completed_successfully
-  
+
   minio:
     image: minio/minio
     command: server /data --console-address ":9001"

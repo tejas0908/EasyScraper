@@ -1,22 +1,10 @@
 {
-    "plantuml.exportFormat": "png",
-    "plantuml.diagramsRoot": "docs/plantuml/src",
-    "plantuml.exportOutDir": "docs/plantuml/output",
-    "plantuml.exportSubFolder": false,
-    "plantuml.render": "PlantUMLServer",
-    "plantuml.server": "http://localhost:8080/plantuml",
-    "plantuml.lintDiagramNoName": false,
     "python.analysis.typeCheckingMode": "off",
-    "flake8.args": [
-        "--max-line-length=88",
-        "--extend-select=B950",
-        "--extend-ignore=E203,E501,E701"
-    ],
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter",
-        "editor.formatOnSave": true
+        "editor.defaultFormatter": "ms-python.black-formatter"
     },
-    "pylint.args": [
-        "--max-line-length=88"
-    ]
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "editor.formatOnSave": true
 }

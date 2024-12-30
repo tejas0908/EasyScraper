@@ -51,7 +51,7 @@ export default function Login() {
     } else {
       registerError(
         "username",
-        "Username should be between 6 and 20 characters"
+        "Username should be between 6 and 20 characters",
       );
     }
     setUsername(uname);
@@ -64,7 +64,7 @@ export default function Login() {
     } else {
       registerError(
         "password",
-        "Password should be between 6 and 500 characters"
+        "Password should be between 6 and 500 characters",
       );
     }
     setPassword(pass);
@@ -83,7 +83,7 @@ export default function Login() {
           username: username,
           password: password,
         }),
-      }
+      },
     );
     const response = await data.json();
     if (data.status != 200) {
@@ -107,21 +107,21 @@ export default function Login() {
     setPendingGithubLogin(true);
     const scope = "user:email";
     redirect(
-      `https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID}&scope=${scope}`
+      `https://github.com/login/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID}&scope=${scope}`,
     );
   }
 
   return (
-    <div className="grid w-screen h-screen md:grid-cols-[50%,50%] grid-cols-1">
-      <div className="flex-col justify-between p-12 w-full h-full text-white md:flex hidden bg-gradient-to-r from-black via-slate-400 via-70%">
+    <div className="grid h-screen w-screen grid-cols-1 md:grid-cols-[50%,50%]">
+      <div className="hidden h-full w-full flex-col justify-between bg-gradient-to-r from-black via-slate-400 via-70% p-12 text-white md:flex">
         <div className="text-2xl">EasyScraper</div>
         <div className="text-xl">
           Scraping made easy. Scrape any website without writing code
         </div>
       </div>
-      <div className="flex flex-col justify-center items-center space-y-2">
+      <div className="flex flex-col items-center justify-center space-y-2">
         <div className="text-2xl font-bold">Login to EasyScraper</div>
-        <div className="text-sm pb-4">
+        <div className="pb-4 text-sm">
           Enter your username and password below
         </div>
 
@@ -134,7 +134,7 @@ export default function Login() {
             placeholder="Username"
             className={error.username ? "border-red-500" : ""}
           />
-          <div className="text-red-500 text-xs">{error.username}</div>
+          <div className="text-xs text-red-500">{error.username}</div>
         </div>
 
         <div className="w-64">
@@ -146,7 +146,7 @@ export default function Login() {
             placeholder="Password"
             className={error.password ? "border-red-500" : ""}
           />
-          <div className="text-red-500 text-xs">{error.password}</div>
+          <div className="text-xs text-red-500">{error.password}</div>
         </div>
         {error.server ? (
           <div>
@@ -164,12 +164,12 @@ export default function Login() {
             href="/signup"
             className={`${buttonVariants({
               variant: "outline",
-            })} hover:scale-105 transition duration-0`}
+            })} transition duration-0 hover:scale-105`}
           >
             Sign Up
           </Link>
           <Button
-            className="hover:scale-105 transition duration-0"
+            className="transition duration-0 hover:scale-105"
             onClick={handleLogin}
             disabled={
               hasErrors() ||

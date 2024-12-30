@@ -68,7 +68,7 @@ export function Header() {
   }, [token]);
 
   return (
-    <header className="flex h-10 shrink-0 items-center gap-2 border-b px-4 justify-end">
+    <header className="flex h-10 shrink-0 items-center justify-end gap-2 border-b px-4">
       <Button
         variant="ghost"
         size="icon"

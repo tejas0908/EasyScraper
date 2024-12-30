@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Sidebar,
@@ -10,23 +10,28 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { Rocket, ArrowLeftToLine, ArrowRightToLine, BookText } from "lucide-react"
-import { useSidebar } from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import {
+  Rocket,
+  ArrowLeftToLine,
+  ArrowRightToLine,
+  BookText,
+} from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
 
 const items = [
   {
     title: "Projects",
     url: "/dashboard",
     icon: Rocket,
-  }
-]
+  },
+];
 
 export function AppSidebar() {
   const { open, toggleSidebar } = useSidebar();
 
-  function openDocs(){
-    window.open(`${process.env.NEXT_PUBLIC_API_BASE_URL}/docs`, "_blank")
+  function openDocs() {
+    window.open(`${process.env.NEXT_PUBLIC_API_BASE_URL}/docs`, "_blank");
   }
 
   return (
@@ -67,5 +72,5 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

@@ -33,11 +33,11 @@ export default function GithubCallback() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
   return (
-    <div className="w-screen h-screen grid grid-cols-[1fr,1fr,1fr] grid-rows-[1fr,1fr,1fr]">
+    <div className="grid h-screen w-screen grid-cols-[1fr,1fr,1fr] grid-rows-[1fr,1fr,1fr]">
       <Image
         src={Loading}
         alt=""
-        className="animate-pulse col-start-2 row-start-2"
+        className="col-start-2 row-start-2 animate-pulse"
       />
     </div>
   );

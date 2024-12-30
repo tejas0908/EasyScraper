@@ -1,29 +1,29 @@
 name: easyscraper
 services:
-  #ui:
-  #  image: ui
-  #  build:
-  #    context: ./ui
-  #    args:
-  #      - NEXT_PUBLIC_API_BASE_URL=${API_BASE_URL}
-  #      - NEXT_PUBLIC_GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
-  #      - NEXT_TELEMETRY_DISABLED=1
-  #  ports:
-  #    - 3000:3000
-  #  environment:
-  #    - NEXT_PUBLIC_API_BASE_URL=${API_BASE_URL}
-  #    - NEXT_PUBLIC_GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
-  #    - NEXT_TELEMETRY_DISABLED=1
-  #  healthcheck:
-  #    test: curl -f http://localhost:3000/api/health
-  #    interval: 30s
-  #    start_period: 10s
-  #    timeout: 10s
-  #    retries: 5
-  #  scale: 0
-  #  depends_on:
-  #    api:
-  #      condition: service_healthy
+  ui:
+    image: ui
+    build:
+      context: ./ui
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=${API_BASE_URL}
+        - NEXT_PUBLIC_GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+        - NEXT_TELEMETRY_DISABLED=1
+    ports:
+      - 3000:3000
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=${API_BASE_URL}
+      - NEXT_PUBLIC_GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - NEXT_TELEMETRY_DISABLED=1
+    healthcheck:
+      test: curl -f http://localhost:3000/api/health
+      interval: 30s
+      start_period: 10s
+      timeout: 10s
+      retries: 5
+    scale: 0
+    depends_on:
+      api:
+        condition: service_healthy
 
   api:
     image: api

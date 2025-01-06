@@ -299,21 +299,21 @@ export function TabScrapeRuns({
                   <div className="flex flex-row space-x-2">
                     <div className="flex w-[150px] flex-col rounded-lg border p-2">
                       <div className="border-b font-bold">Pages</div>
-                      <div className="grid grid-cols-[10px,1fr,10px] items-center p-1">
+                      <div className="grid grid-cols-[10px,1fr,20px] items-center p-2">
                         <div className="h-3 w-full rounded-sm bg-blue-200 dark:bg-blue-400"></div>
                         <div className="pl-2">Discovered</div>
                         <div className="">
                           {scrapeRun.total_discovered_pages}
                         </div>
                       </div>
-                      <div className="grid grid-cols-[10px,1fr,10px] items-center p-1">
+                      <div className="grid grid-cols-[10px,1fr,20px] items-center p-2">
                         <div className="h-3 w-full rounded-sm bg-green-200 dark:bg-green-400"></div>
                         <div className="pl-2">Success</div>
                         <div className="">
                           {scrapeRun.total_successful_scraped_pages}
                         </div>
                       </div>
-                      <div className="grid grid-cols-[10px,1fr,10px] items-center p-1">
+                      <div className="grid grid-cols-[10px,1fr,20px] items-center p-2">
                         <div className="h-3 w-full rounded-sm bg-red-200 dark:bg-red-400"></div>
                         <div className="pl-2">Failed</div>
                         <div className="">

@@ -27,7 +27,6 @@ entity ScrapeRule {
     alias: String
     type: Enum[SINGLE, MULTI]
     value: String
-    href: Boolean
     {static} page_template_id: ULID : FK
 }
 entity SeedPage {

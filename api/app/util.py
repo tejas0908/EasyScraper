@@ -9,6 +9,9 @@ from argon2.exceptions import VerifyMismatchError
 from botocore.client import Config
 from botocore.exceptions import NoCredentialsError
 from ulid import ULID
+from playwright.sync_api import sync_playwright
+from fake_useragent import UserAgent
+from lxml_html_clean import Cleaner
 
 jwt_secret = os.environ["JWT_SECRET"]
 
@@ -82,3 +85,19 @@ def upload_to_minio(local_file_path):
     except NoCredentialsError:
         print("Credentials not available")
         return None
+
+
+cleaner = Cleaner(javascript=True, comments=True, scripts=True, style=True, meta=True)
+
+
+def get_html(url, clean=True):
+    html = None
+    with sync_playwright() as p:
+        browser = p.firefox.launch(headless=True)
+        ua = UserAgent()
+        page = browser.new_page(user_agent=ua.firefox)
+        page.goto(url, wait_until="domcontentloaded")
+        html = page.content()
+        browser.close()
+    html = cleaner.clean_html(html) if clean else html
+    return html

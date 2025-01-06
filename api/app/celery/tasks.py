@@ -123,8 +123,14 @@ def get_root_url(url):
     return f"{parsed_url.scheme}://{parsed_url.netloc}"
 
 
-def get_href(href, root):
-    return href if href.startswith("http") else f"{root}{href}"
+def process_page_source_url(candidate_url, page_template, root_url):
+    if page_template.output_type == "PAGE_SOURCE":
+        if candidate_url.startswith("http"):
+            return candidate_url.strip()
+        else:
+            return f"{root_url}{candidate_url}"
+    else:
+        return candidate_url.strip()
 
 
 def scrape_page_xpath_selector(scrape_run_id, page_template, scrape_rules, url):
@@ -134,12 +140,9 @@ def scrape_page_xpath_selector(scrape_run_id, page_template, scrape_rules, url):
     scrape_result = {}
     for scrape_rule in scrape_rules:
         elements = tree.xpath(scrape_rule.value)
+        print(elements)
         elements = [
-            (
-                get_href(element.attrib["href"], root)
-                if scrape_rule.href
-                else element.strip()
-            )
+            process_page_source_url(element, page_template, root)
             for element in elements
         ]
         if scrape_rule.type == "SINGLE":
@@ -159,7 +162,7 @@ def scrape_page_css_selector(scrape_run_id, page_template, scrape_rules, url):
     for scrape_rule in scrape_rules:
         elements = soup.select(scrape_rule.value)
         elements = [
-            get_href(element.get("href"), root) if scrape_rule.href else element.text
+            process_page_source_url(element.text, page_template, root)
             for element in elements
         ]
         if scrape_rule.type == "SINGLE":
@@ -215,7 +218,8 @@ def scrape_page_ai_scraper(scrape_run_id, page_template, scrape_rules, url):
         ],
         response_format=response_format,
     )
-    scrape_result = openai_response.choices[0].message.content
+    openai_result = openai_response.choices[0].message.content
+    scrape_result = json.loads(openai_result)
     return scrape_result
 
 
@@ -263,14 +267,14 @@ def scrape_page_for_run(project_id, scrape_run_id, scrape_run_page_id):
                 page_template.output_page_template_id, project_id
             )
             for url in scrape_result["urls"]:
-                scrape_run_page = ScrapeRunPage(
+                scrape_run_page_new = ScrapeRunPage(
                     url=url,
                     output_type=output_page_template.output_type,
                     page_template_id=output_page_template.id,
                     scrape_run_id=scrape_run_id,
                     status="PENDING",
                 )
-                session.add(scrape_run_page)
+                session.add(scrape_run_page_new)
             session.commit()
     except:
         scrape_run_page.status = "FAILED"
@@ -356,7 +360,7 @@ def write_to_xlsx_file(scrape_run_pages, scrape_run_id, page_template_id):
         output["scrape_url"] = scrape_run_page.url
         output["scrape_id"] = scrape_run_page.id
         for col_num, fieldname in enumerate(fieldnames):
-            worksheet.write(row_num, col_num, output.get(fieldname))
+            worksheet.write(row_num, col_num, str(output.get(fieldname)))
     workbook.close()
     return output_file_path
 
@@ -417,7 +421,11 @@ def scrape_master(project_id, scrape_run_id, resume=False):
                 scrape_run_id, "PENDING", "PAGE_SOURCE"
             )
             if len(scrape_run_pages) == 0:
-                break
+                started_srps = get_scrape_run_pages_by_status(
+                    scrape_run_id, "STARTED", "PAGE_SOURCE"
+                )
+                if len(started_srps) == 0:
+                    break
             scrape_page_tasks = []
             for scrape_run_page in scrape_run_pages[:cost]:
                 scrape_run_page.status = "STARTED"
@@ -542,6 +550,20 @@ def get_image_area(url):
 
 
 def get_html(url, clean=True):
+    html = None
+    with sync_playwright() as p:
+        browser = p.firefox.launch(headless=True)
+        ua = UserAgent()
+        page = browser.new_page(user_agent=ua.firefox)
+        page.goto(url, wait_until="domcontentloaded")
+        html = page.content()
+        browser.close()
+    html = cleaner.clean_html(html) if clean else html
+    return html
+
+
+@celery_app.task
+def get_html_task(url, clean=True):
     html = None
     with sync_playwright() as p:
         browser = p.firefox.launch(headless=True)

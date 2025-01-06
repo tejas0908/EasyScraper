@@ -95,7 +95,7 @@ export function ScrapeRulesList({
           parentForceUpdate={forceUpdate}
         />
       </div>
-      <div className="grid grid-cols-5 gap-4 p-4">
+      <div className="grid grid-cols-4 gap-4 p-4">
         {scrapeRules &&
           scrapeRules.map((scrapeRule) => (
             <div

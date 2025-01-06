@@ -12,9 +12,9 @@ class ScrapeRule(SQLModel, table=True):
         default_factory=generate_ulid, primary_key=True, unique=True, nullable=False
     )
     alias: str = Field(nullable=False, min_length=3, max_length=100)
+    description: str = Field(nullable=False, min_length=3, max_length=500)
     type: Literal["SINGLE", "MULTI"] = Field(nullable=False, sa_type=String)
     value: str = Field(nullable=True, default=None, max_length=1000)
-    href: bool = Field(nullable=True, default=None)
     page_template_id: str = Field(
         nullable=True, default=None, foreign_key="pagetemplate.id"
     )
@@ -36,6 +36,9 @@ class ScrapeRuleCreate(SQLModel):
     alias: str = Field(
         nullable=False, min_length=3, max_length=100, description="Field name to scrape"
     )
+    description: str = Field(
+        nullable=False, min_length=3, max_length=500, description="Field description"
+    )
     type: Literal["SINGLE", "MULTI"] = Field(
         nullable=False,
         sa_type=String,
@@ -47,16 +50,14 @@ class ScrapeRuleCreate(SQLModel):
         max_length=1000,
         description="can contain xpath, css selector, example value or null if its AI_SCRAPER",
     )
-    href: bool = Field(
-        nullable=True,
-        default=None,
-        description="applicable to Xpath and Css selector only. indicates that value will resolve to a anchor tag with a href attribute",
-    )
 
 
 class ScrapeRuleUpdate(SQLModel):
     alias: Optional[str] = Field(
         default=None, min_length=3, max_length=100, description="Field name to scrape"
+    )
+    description: Optional[str] = Field(
+        default=None, min_length=3, max_length=500, description="Field description"
     )
     type: Literal["SINGLE", "MULTI"] = Field(
         default=None,
@@ -67,13 +68,19 @@ class ScrapeRuleUpdate(SQLModel):
         max_length=1000,
         description="can contain xpath, css selector, example value or null if its AI_SCRAPER",
     )
-    href: bool = Field(
-        nullable=True,
-        default=None,
-        description="applicable to Xpath and Css selector only. indicates that value will resolve to a anchor tag with a href attribute",
-    )
 
 
 class ScrapeRuleListResponse(SQLModel):
     scrape_rules: List[ScrapeRule]
     paging: PagingResponse
+
+
+class ValueGenerationResponse(SQLModel):
+    value: str
+
+
+class ValueGenerationRequest(SQLModel):
+    url: str
+    alias: str
+    description: str
+    value_type: Literal["XPATH_SELECTOR", "CSS_SELECTOR"]

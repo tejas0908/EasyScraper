@@ -78,6 +78,7 @@ export function TabScrapeTest({
 
   async function handleScrapeTest() {
     setPendingScrape(true);
+    setScrapeTestOutput([]);
     const data = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${project.id}/scrape_test`,
       {
@@ -105,6 +106,8 @@ export function TabScrapeTest({
       parentForceUpdate();
       setPendingScrape(false);
       toast.success(`Scrape test done`);
+    }else{
+      toast.error(`Scrape test failed`);
     }
   }
 
@@ -164,9 +167,9 @@ export function TabScrapeTest({
         {scrapeTestOutput.map((output) => (
           <div
             key={output.field}
-            className="grid grid-cols-[10%,90%] divide-x-2 rounded-md border p-2"
+            className="grid grid-cols-[20%,80%] divide-x-2 rounded-md border p-2"
           >
-            <div>{output.field}</div>
+            <div className="truncate">{output.field}</div>
             <div className="line-clamp-5 pl-2">
               {JSON.stringify(output.value)}
             </div>

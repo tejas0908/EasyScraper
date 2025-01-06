@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { DispatchWithoutAction, useState } from "react";
+import { DispatchWithoutAction, useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useToken } from "@/app/lib/token";
@@ -74,6 +74,19 @@ export function EditPageTemplateSheet({
       [field]: message,
     });
   }
+
+  useEffect(() => {
+      if (id == null && open == true){
+        setName("");
+        setOutputType("LEAF");
+        setScraper("XPATH_SELECTOR");
+        setOutputPageTemplateId("");
+        setExampleUrl("");
+        setAiPrompt("");
+        setAiInput("");
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   function handleNameOnChange(e: React.ChangeEvent<HTMLInputElement>) {
     const tname = e.target.value;
@@ -153,9 +166,7 @@ export function EditPageTemplateSheet({
       }
       body["output_page_template_id"] = outputPageTemplateId;
     }
-    if (scraper == "AUTO_SCRAPER") {
-      body["example_url"] = exampleUrl;
-    }
+    body["example_url"] = exampleUrl;
     if (scraper == "AI_SCRAPER") {
       body["ai_input"] = aiInput;
       body["ai_prompt"] = aiPrompt;
@@ -273,8 +284,6 @@ export function EditPageTemplateSheet({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="XPATH_SELECTOR">Xpath Selector</SelectItem>
-                <SelectItem value="CSS_SELECTOR">CSS Selector</SelectItem>
-                <SelectItem value="AUTO_SCRAPER">Auto Scraper</SelectItem>
                 <SelectItem value="AI_SCRAPER">AI Scraper</SelectItem>
               </SelectContent>
             </Select>
@@ -293,26 +302,26 @@ export function EditPageTemplateSheet({
               </div>
             </div>
           </div>
-          {scraper == "AUTO_SCRAPER" && (
-            <div>
-              <Label>Example URL</Label>
-              <Input
-                type="text"
-                value={exampleUrl}
-                onChange={handleExampleUrlChange}
-                className={error.exampleUrl ? "border-red-500" : ""}
-              ></Input>
-              <div className="text-xs text-red-500">{error.exampleUrl}</div>
-              <div className="mt-2 flex items-center space-x-2 rounded-lg border bg-slate-100 p-2 dark:bg-slate-500">
-                <CircleHelp className="h-4" />
-                <div className="flex flex-col">
-                  <span className="text-xs text-slate-700 dark:text-white">
-                    An example url of this page template
-                  </span>
-                </div>
+
+          <div>
+            <Label>Example URL</Label>
+            <Input
+              type="text"
+              value={exampleUrl}
+              onChange={handleExampleUrlChange}
+              className={error.exampleUrl ? "border-red-500" : ""}
+            ></Input>
+            <div className="text-xs text-red-500">{error.exampleUrl}</div>
+            <div className="mt-2 flex items-center space-x-2 rounded-lg border bg-slate-100 p-2 dark:bg-slate-500">
+              <CircleHelp className="h-4" />
+              <div className="flex flex-col">
+                <span className="text-xs text-slate-700 dark:text-white">
+                  An example url of this page template
+                </span>
               </div>
             </div>
-          )}
+          </div>
+
           {scraper == "AI_SCRAPER" && (
             <div>
               <Label>AI Prompt</Label>

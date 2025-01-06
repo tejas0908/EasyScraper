@@ -22,9 +22,9 @@ export interface PageTemplate {
 export interface ScrapeRule {
   id: string;
   alias: string;
+  description: string;
   type: string;
   value: string;
-  href: boolean;
   page_template_id: string;
 }
 

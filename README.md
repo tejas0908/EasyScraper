@@ -4,14 +4,11 @@
 ![GitHub License](https://img.shields.io/github/license/tejas0908/easyscraper)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tejas0908/EasyScraper/push.yaml)
 
-
-
 [![Static Badge](https://img.shields.io/badge/Dockerhub%20API%20image-blue?logo=docker&logoColor=white)](https://hub.docker.com/r/tejas0908/easyscraper-api)
 ![Docker Pulls - API](https://img.shields.io/docker/pulls/tejas0908/easyscraper-api)
 
 [![Static Badge](https://img.shields.io/badge/Dockerhub%20UI%20image-blue?logo=docker&logoColor=white)](https://hub.docker.com/r/tejas0908/easyscraper-ui)
 ![Docker Pulls - UI](https://img.shields.io/docker/pulls/tejas0908/easyscraper-ui)
-
 
 ## Env format
 
@@ -39,14 +36,15 @@ FLYWAY_DB_URL=jdbc:postgresql://postgres:5432/postgres
 
 1. Create a `.env` file in the root of the repository with above format (Replace the xxx with real values)
 1. `docker compose up`
-2. Go to http://localhost:3000 on the browser
-3. Signup for a new account
-4. Login with username and password
-5. Create and Configure a project
-6. Execute a scrape
-7. Download Scrape output file
+1. Go to http://localhost:3000 on the browser
+1. Signup for a new account
+1. Login with username and password
+1. Create and Configure a project
+1. Execute a scrape
+1. Download Scrape output file
 
 ## Linting
+
 ```bash
 uv run pylint --recursive=y app
 uv run flake8 app

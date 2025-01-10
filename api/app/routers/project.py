@@ -20,7 +20,7 @@ from app.models.project import (
     ProjectListResponse,
     ProjectUpdate,
 )
-from app.util import get_file_from_minio, upload_to_minio
+from app.blob_store import blob_store
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlmodel import col, func, select
@@ -163,7 +163,7 @@ async def export_project(project_id, current_user: CurrentUserDep, session: Sess
 
     file_url = export_project_task.delay(project_id).get()
     file_name = file_url.split("/")[-1]
-    file_path = get_file_from_minio(file_url)
+    file_path = blob_store.download_file(file_url)
 
     return FileResponse(
         file_path, media_type="application/octet-stream", filename=file_name
@@ -179,6 +179,6 @@ async def import_project(
     data_file_path = f"import-{str(int(time.time()))}.json"
     with open(data_file_path, "w") as f:
         json.dump(data, f)
-    data_file_url = upload_to_minio(data_file_path)
+    data_file_url = blob_store.upload_file(data_file_path, data_file_path)
     project_id = import_project_task.delay(data_file_url, current_user.id).get()
     return IdResponse(id=project_id)

@@ -35,10 +35,13 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - BROKER_URL=${BROKER_URL}
       - RESULT_BACKEND=${RESULT_BACKEND}
-      - MINIO_URL=${MINIO_URL}
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
-      - MINIO_DEFAULT_BUCKET=${MINIO_DEFAULT_BUCKET}
+      - BLOB_STORE=${BLOB_STORE}
+      - S3_ENDPOINT_URL=${S3_ENDPOINT_URL}
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
+      - S3_BUCKET=${S3_BUCKET}
+      - S3_DEFAULT_REGION=${S3_DEFAULT_REGION}
+      - FS_PATH=${FS_PATH}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - TOKEN_EXPIRY_MINUTES=${TOKEN_EXPIRY_MINUTES}
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
@@ -53,10 +56,10 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      minio:
-        condition: service_healthy
       db-migration:
         condition: service_completed_successfully
+    volumes:
+      - blob_store_fs:/blob_store/data
 
   postgres:
     image: postgres:17-alpine
@@ -108,13 +111,17 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - BROKER_URL=${BROKER_URL}
       - RESULT_BACKEND=${RESULT_BACKEND}
-      - MINIO_URL=${MINIO_URL}
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
-      - MINIO_DEFAULT_BUCKET=${MINIO_DEFAULT_BUCKET}
+      - BLOB_STORE=${BLOB_STORE}
+      - S3_ENDPOINT_URL=${S3_ENDPOINT_URL}
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
+      - S3_BUCKET=${S3_BUCKET}
+      - S3_DEFAULT_REGION=${S3_DEFAULT_REGION}
+      - FS_PATH=${FS_PATH}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     volumes:
       - celery_file_data:/app/celery_file_data
+      - blob_store_fs:/blob_store/data
     healthcheck:
       test: uv run celery -A app.celery.celery inspect ping
       interval: 30s
@@ -139,17 +146,19 @@ services:
     volumes:
       - minio_data:/data
     environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
-      - MINIO_DEFAULT_BUCKETS=easyscraper
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_ROOT_USER=${S3_ACCESS_KEY_ID}
+      - MINIO_ROOT_PASSWORD=${S3_SECRET_ACCESS_KEY}
+      - MINIO_DEFAULT_BUCKETS=${S3_BUCKET}
+      - MINIO_ACCESS_KEY=${S3_ACCESS_KEY_ID}
+      - MINIO_SECRET_KEY=${S3_SECRET_ACCESS_KEY}
     healthcheck:
       test: curl -f http://localhost:9000/minio/health/live
       interval: 30s
       start_period: 10s
       timeout: 10s
       retries: 5
+    profiles:
+      - minio
 
   create-minio-bucket:
     image: minio/mc
@@ -158,13 +167,16 @@ services:
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
-      /usr/bin/mc mb --ignore-existing myminio/${MINIO_DEFAULT_BUCKET};
+      /usr/bin/mc alias set myminio ${S3_ENDPOINT_URL} ${S3_ACCESS_KEY_ID} ${S3_SECRET_ACCESS_KEY};
+      /usr/bin/mc mb --ignore-existing myminio/${S3_BUCKET};
       exit 0;
       "
+    profiles:
+      - minio
 
 volumes:
   redis_volume:
   minio_data:
   celery_file_data:
   postgres_volume:
+  blob_store_fs:

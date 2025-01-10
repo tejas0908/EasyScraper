@@ -22,7 +22,7 @@ from app.models.scrape_run import (
     ScrapeTestRequest,
     ScrapeTestResponse,
 )
-from app.util import get_file_from_minio
+from app.blob_store import blob_store
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 from sqlmodel import col, func, select
@@ -211,7 +211,7 @@ async def download_scrape_run_output(
         )
 
     file_name = scrape_run_output.file_url.split("/")[-1]
-    file_path = get_file_from_minio(scrape_run_output.file_url)
+    file_path = blob_store.download_file(scrape_run_output.file_url)
     if not file_path:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="File not found in MinIO"

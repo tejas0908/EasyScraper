@@ -18,7 +18,6 @@ from app.models.project import Project
 from app.models.scrape_rule import ScrapeRule
 from app.models.scrape_run import ScrapeRun, ScrapeRunOutput, ScrapeRunPage
 from app.models.seed_page import SeedPage
-from app.util import get_file_from_minio, upload_to_minio
 from autoscraper import AutoScraper
 from bs4 import BeautifulSoup
 from celery import group
@@ -32,6 +31,7 @@ from sqlalchemy.pool import NullPool
 from sqlmodel import Session, create_engine, select
 from token_throttler import TokenBucket, TokenThrottler
 from token_throttler.storage import RuntimeStorage
+from app.blob_store import blob_store
 
 db_url = os.environ["DB_URL"]
 engine = create_engine(db_url, echo=False, poolclass=NullPool)
@@ -500,9 +500,16 @@ def scrape_master(project_id, scrape_run_id, resume=False):
             xlsx_file_path = write_to_xlsx_file(
                 grouped_scrape_run_pages, scrape_run_id, page_template.id
             )
-            jsonl_file_url = upload_to_minio(jsonl_file_path)
-            csv_file_url = upload_to_minio(csv_file_path)
-            xlsx_file_url = upload_to_minio(xlsx_file_path)
+
+            jsonl_file_url = blob_store.upload_file(
+                jsonl_file_path, jsonl_file_path.split("/")[-1]
+            )
+            csv_file_url = blob_store.upload_file(
+                csv_file_path, csv_file_path.split("/")[-1]
+            )
+            xlsx_file_url = blob_store.upload_file(
+                xlsx_file_path, xlsx_file_path.split("/")[-1]
+            )
             jsonl_scrape_run_output = ScrapeRunOutput(
                 format="JSONL",
                 file_url=jsonl_file_url,
@@ -622,14 +629,14 @@ def export_project_task(project_id):
     data_file_path = f"{project_id}-{str(int(time.time()))}.json"
     with open(data_file_path, "w") as f:
         json.dump(data, f)
-    data_file_url = upload_to_minio(data_file_path)
+    data_file_url = blob_store.upload_file(data_file_path, data_file_path)
     return data_file_url
 
 
 @celery_app.task()
 def import_project_task(data_file_url, user_id):
     data = None
-    file_path = get_file_from_minio(data_file_url)
+    file_path = blob_store.download_file(data_file_url)
     with open(file_path) as f:
         data = json.load(f)
 

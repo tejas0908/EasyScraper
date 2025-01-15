@@ -15,6 +15,7 @@ class ScrapeRule(SQLModel, table=True):
     description: str = Field(nullable=False, min_length=3, max_length=500)
     type: Literal["SINGLE", "MULTI"] = Field(nullable=False, sa_type=String)
     value: str = Field(nullable=True, default=None, max_length=1000)
+    download_as_image: bool = Field(nullable=False, default=False)
     page_template_id: str = Field(
         nullable=True, default=None, foreign_key="pagetemplate.id"
     )
@@ -50,6 +51,11 @@ class ScrapeRuleCreate(SQLModel):
         max_length=1000,
         description="can contain xpath, css selector, example value or null if its AI_SCRAPER",
     )
+    download_as_image: bool = Field(
+        nullable=False,
+        default=False,
+        description="true if the scraped value is a URL which leads to an image and needs to be downloaded as part of the scraping process",
+    )
 
 
 class ScrapeRuleUpdate(SQLModel):
@@ -67,6 +73,11 @@ class ScrapeRuleUpdate(SQLModel):
         default=None,
         max_length=1000,
         description="can contain xpath, css selector, example value or null if its AI_SCRAPER",
+    )
+    download_as_image: bool = Field(
+        nullable=False,
+        default=False,
+        description="true if the scraped value is a URL which leads to an image and needs to be downloaded as part of the scraping process",
     )
 
 

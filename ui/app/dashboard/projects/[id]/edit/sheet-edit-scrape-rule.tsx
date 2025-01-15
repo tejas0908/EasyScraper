@@ -30,6 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch"
 
 export function EditScrapeRuleSheet({
   scrapeRule,
@@ -58,6 +59,7 @@ export function EditScrapeRuleSheet({
   );
   const [type, setType] = useState(scrapeRule ? scrapeRule.type : "SINGLE");
   const [value, setValue] = useState(scrapeRule ? scrapeRule.value : "");
+  const [downloadAsImage, setDownloadAsImage] = useState(scrapeRule ? scrapeRule.download_as_image : false);
   const [aiAlias, setAiAlias] = useState(scrapeRule ? scrapeRule.alias : "");
   const [aiDescription, setAiDescription] = useState(
     scrapeRule ? scrapeRule.description : "",
@@ -167,6 +169,10 @@ export function EditScrapeRuleSheet({
     setValue(tvalue);
   }
 
+  function handleDownloadAsImageChange(e: boolean){
+    setDownloadAsImage(e);
+  }
+
   async function handleSaveScrapeRule() {
     setPendingSave(true);
     let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/projects/${pageTemplate.project_id}/page_templates/${pageTemplate.id}/scrape_rules`;
@@ -180,6 +186,7 @@ export function EditScrapeRuleSheet({
       description: description,
       type: type,
       value: value,
+      download_as_image: downloadAsImage
     };
     if (alias.length < 3 || alias.length > 100) {
       registerError("alias", "Alias should be between 3 and 100 characters");
@@ -441,6 +448,24 @@ export function EditScrapeRuleSheet({
             </div>
           </div>
         )}
+
+        <div className="space-y-2 p-2">
+          <div>
+            <div className="flex flex-col space-y-2">
+              <Label>Download as Image?</Label>
+              <Switch checked={downloadAsImage} onCheckedChange={handleDownloadAsImageChange}/>
+            </div>
+            <div className="text-xs text-red-500">{error.type}</div>
+            <div className="mt-2 flex items-center space-x-2 rounded-lg border bg-slate-100 p-2 dark:bg-slate-500">
+              <CircleHelp className="h-4" />
+              <div className="flex flex-col">
+                <span className="text-xs text-slate-700 dark:text-white">
+                  Consider the scraped value as an image url and download during scraping
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <SheetFooter className="px-2 pt-4">
           <Button

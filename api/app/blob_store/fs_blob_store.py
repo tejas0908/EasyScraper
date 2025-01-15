@@ -1,7 +1,7 @@
 import os
 import shutil
 import tempfile
-import pathlib
+import uuid
 
 
 class FSBlobStore:
@@ -18,7 +18,11 @@ class FSBlobStore:
         return temp_path
 
     def download_folder(self, folder_url: str) -> str:
-        return None
+        object_name = str(uuid.uuid4())
+        temp_dir = tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, object_name)
+        shutil.copytree(f"{self.root_path}/{folder_url}", temp_path)
+        return temp_path
 
     def upload_file(self, local_file_path: str, remote_file_path: str) -> str:
         blob_file_path = f"{self.root_path}/{remote_file_path}"

@@ -178,12 +178,6 @@ export function TabPageTemplates({
                         <SelectItem value="XPATH_SELECTOR">
                           Xpath Selector
                         </SelectItem>
-                        <SelectItem value="CSS_SELECTOR">
-                          CSS Selector
-                        </SelectItem>
-                        <SelectItem value="AUTO_SCRAPER">
-                          Auto Scraper
-                        </SelectItem>
                         <SelectItem value="AI_SCRAPER">AI Scraper</SelectItem>
                       </SelectContent>
                     </Select>

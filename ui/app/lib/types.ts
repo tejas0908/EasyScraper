@@ -26,6 +26,7 @@ export interface ScrapeRule {
   type: string;
   value: string;
   page_template_id: string;
+  download_as_image: boolean;
 }
 
 export interface ScrapeRun {

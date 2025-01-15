@@ -18,7 +18,6 @@ from app.models.project import Project
 from app.models.scrape_rule import ScrapeRule
 from app.models.scrape_run import ScrapeRun, ScrapeRunOutput, ScrapeRunPage
 from app.models.seed_page import SeedPage
-from autoscraper import AutoScraper
 from bs4 import BeautifulSoup
 from celery import group
 from fake_useragent import UserAgent
@@ -32,6 +31,7 @@ from sqlmodel import Session, create_engine, select
 from token_throttler import TokenBucket, TokenThrottler
 from token_throttler.storage import RuntimeStorage
 from app.blob_store import blob_store
+from app.util import download_image, get_image_extension, create_zip
 
 db_url = os.environ["DB_URL"]
 engine = create_engine(db_url, echo=False, poolclass=NullPool)
@@ -39,13 +39,6 @@ session = Session(engine)
 
 openai_client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 cleaner = Cleaner(javascript=True, comments=True, scripts=True, style=True, meta=True)
-
-
-def get_auto_scraper(scrape_run_id, url, wanted_dict):
-    print(f"Building auto scraper for {scrape_run_id}")
-    scraper = AutoScraper()
-    res = scraper.build(url, wanted_dict=wanted_dict)
-    return scraper
 
 
 def get_project(project_id):
@@ -100,24 +93,6 @@ def get_seed_pages(project_id):
     return seed_pages
 
 
-def scrape_page_auto_scraper(scrape_run_id, page_template, scrape_rules, url):
-    wanted_dict = {}
-    for scrape_rule in scrape_rules:
-        wanted_dict[scrape_rule.alias] = [scrape_rule.value]
-    scraper = get_auto_scraper(scrape_run_id, page_template.example_url, wanted_dict)
-    scrape_result = scraper.get_result_similar(url, group_by_alias=True, unique=True)
-    for scrape_rule in scrape_rules:
-        if scrape_rule.type == "SINGLE":
-            if (
-                scrape_rule.alias in scrape_result
-                and len(scrape_result[scrape_rule.alias]) > 0
-            ):
-                scrape_result[scrape_rule.alias] = scrape_result[scrape_rule.alias][0]
-            else:
-                scrape_result[scrape_rule.alias] = None
-    return scrape_result
-
-
 def get_root_url(url):
     parsed_url = urlparse(url)
     return f"{parsed_url.scheme}://{parsed_url.netloc}"
@@ -151,24 +126,6 @@ def scrape_page_xpath_selector(scrape_run_id, page_template, scrape_rules, url):
             )
         else:
             scrape_result[scrape_rule.alias] = list(set(elements))
-    return scrape_result
-
-
-def scrape_page_css_selector(scrape_run_id, page_template, scrape_rules, url):
-    root = get_root_url(url)
-    html_code = get_html(url, clean=False)
-    soup = BeautifulSoup(html_code, "html.parser")
-    scrape_result = {}
-    for scrape_rule in scrape_rules:
-        elements = soup.select(scrape_rule.value)
-        elements = [
-            process_page_source_url(element.text, page_template, root)
-            for element in elements
-        ]
-        if scrape_rule.type == "SINGLE":
-            scrape_result[scrape_rule.alias] = elements[0] if elements else None
-        else:
-            scrape_result[scrape_rule.alias] = [element for element in elements]
     return scrape_result
 
 
@@ -225,16 +182,8 @@ def scrape_page_ai_scraper(scrape_run_id, page_template, scrape_rules, url):
 
 def scrape_page(scrape_run_id, page_template, scrape_rules, url):
     scrape_result = {}
-    if page_template.scraper == "AUTO_SCRAPER":
-        scrape_result = scrape_page_auto_scraper(
-            scrape_run_id, page_template, scrape_rules, url
-        )
     if page_template.scraper == "XPATH_SELECTOR":
         scrape_result = scrape_page_xpath_selector(
-            scrape_run_id, page_template, scrape_rules, url
-        )
-    if page_template.scraper == "CSS_SELECTOR":
-        scrape_result = scrape_page_css_selector(
             scrape_run_id, page_template, scrape_rules, url
         )
     if page_template.scraper == "AI_SCRAPER":
@@ -276,8 +225,28 @@ def scrape_page_for_run(project_id, scrape_run_id, scrape_run_page_id):
                 )
                 session.add(scrape_run_page_new)
             session.commit()
+
+        # if any images are to be downloaded
+        for scrape_rule in scrape_rules:
+            if scrape_rule.download_as_image is True:
+                if (
+                    scrape_rule.alias in scrape_result
+                    and scrape_result[scrape_rule.alias] is not None
+                ):
+                    image_urls = scrape_result[scrape_rule.alias]
+                    if isinstance(scrape_result[scrape_rule.alias], str):
+                        image_urls = [scrape_result[scrape_rule.alias]]
+                    for i, image_url in enumerate(image_urls):
+                        extension = get_image_extension(image_url)
+                        save_path = f"/app/celery_file_data/temp/{scrape_run_id}/{scrape_run_page_id}/{scrape_rule.alias}_{i+1}.{extension}"
+                        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                        download_image(image_url, save_path)
+                        remote_file_path = f"{scrape_run_id}/{scrape_run_page_id}/{scrape_rule.alias}_{i+1}.{extension}"
+                        blob_store.upload_file(save_path, remote_file_path)
+
     except:
         scrape_run_page.status = "FAILED"
+        print(traceback.format_exc())
     finally:
         session.add(scrape_run_page)
         session.commit()
@@ -528,6 +497,27 @@ def scrape_master(project_id, scrape_run_id, resume=False):
             session.add(jsonl_scrape_run_output)
             session.add(csv_scrape_run_output)
             session.add(xlsx_scrape_run_output)
+            session.commit()
+
+        # if download images are present, create a zip file
+        download_images_present = False
+        for pt in unique_page_templates:
+            srs = get_scrape_rules(pt.id)
+            if any([x.download_as_image for x in srs]) is True:
+                download_images_present = True
+
+        if download_images_present:
+            local_folder_path = blob_store.download_folder(scrape_run_id)
+            zip_path = f"/app/celery_file_data/temp/{scrape_run_id}"
+            os.makedirs(os.path.dirname(zip_path), exist_ok=True)
+            create_zip(local_folder_path, zip_path)
+            blob_store.upload_file(f"{zip_path}.zip", f"{scrape_run_id}.zip")
+            zip_scrape_run_output = ScrapeRunOutput(
+                format="ZIP",
+                file_url=f"{scrape_run_id}.zip",
+                scrape_run_id=scrape_run_id,
+            )
+            session.add(zip_scrape_run_output)
             session.commit()
 
         # update scrape run status as COMPLETED

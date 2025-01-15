@@ -13,8 +13,8 @@ class PageTemplate(SQLModel, table=True):
     )
     name: str = Field(nullable=False, min_length=3, max_length=100)
     output_type: Literal["PAGE_SOURCE", "LEAF"] = Field(nullable=False, sa_type=String)
-    scraper: Literal["XPATH_SELECTOR", "CSS_SELECTOR", "AUTO_SCRAPER", "AI_SCRAPER"] = (
-        Field(nullable=False, sa_type=String)
+    scraper: Literal["XPATH_SELECTOR", "AI_SCRAPER"] = Field(
+        nullable=False, sa_type=String
     )
     example_url: str = Field(nullable=True, default=None, max_length=1000)
     ai_prompt: Optional[str] = Field(nullable=True, default=None, max_length=1000)
@@ -46,18 +46,16 @@ class PageTemplateCreate(SQLModel):
         sa_type=String,
         description="PAGE_SOURCE indicates that this page will generate urls of other page templates. LEAF indicates that actual data will be scraped",
     )
-    scraper: Literal["XPATH_SELECTOR", "CSS_SELECTOR", "AUTO_SCRAPER", "AI_SCRAPER"] = (
-        Field(
-            nullable=False,
-            sa_type=String,
-            description="XPATH_SELECTOR means that scrape rules will have xpath to scrape the field. CSS_SELECTOR means that scrape rules will have css selector to scrape the field. AUTO_SCRAPER means that the scrape rule will have the actual value to scrape from the example url. AI_SCRAPER will use LLMs to scrape the field only using the alias",
-        )
+    scraper: Literal["XPATH_SELECTOR", "AI_SCRAPER"] = Field(
+        nullable=False,
+        sa_type=String,
+        description="XPATH_SELECTOR means that scrape rules will have xpath to scrape the field. AI_SCRAPER will use LLMs to scrape the field only using the alias",
     )
     example_url: str = Field(
         nullable=True,
         default=None,
         max_length=1000,
-        description="applicable for AUTO_SCRAPER only. Will have the url against which the scrape rule values are to be set",
+        description="Will have the url against which the scrape rule values are to be set",
     )
     ai_prompt: str = Field(
         nullable=True,
@@ -84,17 +82,15 @@ class PageTemplateUpdate(SQLModel):
         default=None,
         description="PAGE_SOURCE indicates that this page will generate urls of other page templates. LEAF indicates that actual data will be scraped",
     )
-    scraper: Literal["XPATH_SELECTOR", "CSS_SELECTOR", "AUTO_SCRAPER", "AI_SCRAPER"] = (
-        Field(
-            default=None,
-            description="XPATH_SELECTOR means that scrape rules will have xpath to scrape the field. CSS_SELECTOR means that scrape rules will have css selector to scrape the field. AUTO_SCRAPER means that the scrape rule will have the actual value to scrape from the example url. AI_SCRAPER will use LLMs to scrape the field only using the alias",
-        )
+    scraper: Literal["XPATH_SELECTOR", "AI_SCRAPER"] = Field(
+        default=None,
+        description="XPATH_SELECTOR means that scrape rules will have xpath to scrape the field. AI_SCRAPER will use LLMs to scrape the field only using the alias",
     )
     example_url: str = Field(
         nullable=True,
         default=None,
         max_length=1000,
-        description="applicable for AUTO_SCRAPER only. Will have the url against which the scrape rule values are to be set",
+        description="Will have the url against which the scrape rule values are to be set",
     )
     ai_prompt: str = Field(
         nullable=True,

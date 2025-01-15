@@ -4,6 +4,7 @@ import tempfile
 import boto3
 from botocore.client import Config
 from botocore.exceptions import NoCredentialsError
+import uuid
 
 
 class S3BlobStore:
@@ -29,7 +30,21 @@ class S3BlobStore:
         return temp_file.name
 
     def download_folder(self, folder_url: str) -> str:
-        return None
+        object_name = str(uuid.uuid4())
+        temp_dir = tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, object_name)
+        paginator = self.client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=self.bucket, Prefix=folder_url):
+            if "Contents" in page:
+                for obj in page["Contents"]:
+                    s3_file_path = obj["Key"]
+                    relative_path = os.path.relpath(s3_file_path, folder_url)
+                    local_file_path = os.path.join(temp_path, relative_path)
+                    os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
+                    self.client.download_file(
+                        self.bucket, s3_file_path, local_file_path
+                    )
+        return temp_path
 
     def upload_file(self, local_file_path: str, remote_file_path: str) -> str:
         try:

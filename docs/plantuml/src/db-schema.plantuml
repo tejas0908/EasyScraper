@@ -15,7 +15,7 @@ entity PageTemplate {
     {static} id: ULID : PK
     name: String
     output_type: Enum[PAGE_SOURCE, LEAF]
-    scraper: Enum[XPATH_SELECTOR, CSS_SELECTOR, AUTO_SCRAPER, AI_SCRAPER]
+    scraper: Enum[XPATH_SELECTOR, AI_SCRAPER]
     example_url: String
     ai_prompt: String
     ai_input: Enum[HTML, TEXT]

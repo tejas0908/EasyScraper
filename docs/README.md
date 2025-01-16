@@ -144,6 +144,7 @@ architecture-beta
 
 ```mermaid
 sequenceDiagram
+    title User Signup Sequence Diagram
     participant browser as browser
     participant ui as UI
     participant api as API
@@ -161,7 +162,28 @@ sequenceDiagram
     ui ->> browser : redirect to home page
 ```
 
-![User Login Sequence Diagram](plantuml/output/sequence-login.png)
+```mermaid
+sequenceDiagram
+    title User Login Sequence Diagram
+    participant browser as browser
+    participant ui as UI
+    participant api as API
+    participant db as Postgres
+
+    browser ->> ui : Home Page
+    ui ->> ui : check if token exists and valid
+    ui ->> browser : redirect to login page
+    browser ->> ui : User Login Page
+    ui ->> browser : login form
+    browser ->> ui : username + password
+    ui ->> api : POST /user/login
+    api ->> db : check if user exists
+    api ->> api : verify password using hash comparision
+    api ->> api : generate JWT token
+    api ->> ui : JWT token
+    ui ->> ui : save token
+    ui ->> browser : redirect to home page
+```
 
 ## API documentation
 

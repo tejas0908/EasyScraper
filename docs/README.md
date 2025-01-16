@@ -122,7 +122,38 @@ erDiagram
 
 ## Deployment View
 
-![Deployment View](plantuml/output/deployment.png)
+```mermaid
+architecture-beta
+    group dc(cloud)[Docker Compose]
+
+    service ui(server)[UI] in dc
+    service api(server)[API] in dc
+    service redis(database)[Redis] in dc
+    service minio(disk)[Minio] in dc
+    service postgres(database)[Postgres] in dc
+    service celery(server)[Celery Workers] in dc
+    junction junction1 in dc
+    junction junction2 in dc
+    junction junction3 in dc
+    junction junction4 in dc
+
+    service browser(internet)[Browser]
+    service ew(internet)[External Website]
+
+    browser:R --> L:ui
+    ui:R --> L:api
+    celery:R --> L:ew
+    api:R --> L:redis
+    redis:R <-- L:celery
+    api:T -- B:junction1
+    junction1:R --> L:minio
+    minio:R <-- L:junction2
+    junction2:B -- T:celery
+    api:B -- T:junction3
+    junction3:R --> L:postgres
+    celery:B -- T:junction4
+    junction4:L --> R:postgres
+```
 
 ## Sequence Diagrams
 

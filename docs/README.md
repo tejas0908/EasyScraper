@@ -3,6 +3,11 @@
 ## Tech Stack
 
 ```mermaid
+%%{
+    init: {
+        'theme': 'neutral'
+    }
+}%%
 mindmap
     Tech Stack
         UI

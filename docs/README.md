@@ -45,7 +45,80 @@ timeline
 
 ## Database Design
 
-![Database design](plantuml/output/db-schema.png)
+```mermaid
+%%{
+    init: {
+        'theme': 'neutral'
+    }
+}%%
+erDiagram
+    User{
+        ulid id PK
+        string username
+        hashed password
+    }
+    Project{
+        ulid id PK
+        string name
+        integer sleep_seconds_between_page_scrape
+        boolean ignore_scrape_failures
+        ulid user_id FK
+    }
+    PageTemplate{
+        ulid id PK
+        string name
+        Enum output_type "PAGE_SOURCE, LEAF"
+        Enum scraper "XPATH_SELECTOR, AI_SCRAPER"
+        string example_url
+        string ai_prompt
+        Enum ai_input "HTML, TEXT"
+        ulid output_page_template_id FK
+        ulid project_id FK
+    }
+    SeedPage{
+        ulid id PK
+        string url
+        ulid page_template_id FK
+        ulid project_id FK
+    }
+    ScrapeRule{
+        ulid id PK
+        string alias
+        Enum type "SINGLE, MULTI"
+        string value
+        ulid page_template_id FK
+    }
+    ScrapeRun{
+        ulid id PK
+        long started_on
+        long ended_on
+        Enum status "STARTED, COMPLETED, FAILED"
+        ulid project_id FK
+    }
+    ScrapeRunPage{
+        ulid id PK
+        string url
+        JSON scrape_output
+        Enum status "STARTED, COMPLETED, FAILED"
+        Enum output_type "PAGE_SOURCE, LEAF"
+        ulid page_template_id FK
+        ulid scrape_run_id FK
+    }
+    ScrapeRunOutput{
+        ulid id PK
+        Enum format "JSONL, CSV, XLSX"
+        string file_url
+        ulid scrape_run_id FK
+    }
+    User ||--|{ Project : has
+    Project ||--|{ SeedPage : has
+    Project ||--|{ PageTemplate: has
+    PageTemplate ||--|{ ScrapeRule: has
+    Project ||--|{ ScrapeRun : has
+    ScrapeRun ||--|{ ScrapeRunPage : has
+    ScrapeRun ||--|{ ScrapeRunOutput : has
+    SeedPage ||--|{ PageTemplate : has
+```
 
 ## Deployment View
 

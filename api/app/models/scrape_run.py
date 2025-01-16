@@ -30,7 +30,9 @@ class ScrapeRunOutput(SQLModel, table=True):
     id: str = Field(
         default_factory=generate_ulid, primary_key=True, unique=True, nullable=False
     )
-    format: Literal["JSONL", "CSV", "XLSX"] = Field(nullable=False, sa_type=String)
+    format: Literal["JSONL", "CSV", "XLSX", "ZIP"] = Field(
+        nullable=False, sa_type=String
+    )
     file_url: str = Field(nullable=False)
     scrape_run_id: str = Field(nullable=False, foreign_key="scraperun.id")
     created_on: datetime = Field(nullable=False, default_factory=datetime.now)
@@ -41,7 +43,7 @@ class ScrapeRunOutput(SQLModel, table=True):
 
 class ScrapeRunOutputView(SQLModel):
     id: str
-    format: Literal["JSONL", "CSV", "XLSX"]
+    format: Literal["JSONL", "CSV", "XLSX", "ZIP"]
 
 
 class ScrapeRunPage(SQLModel, table=True):

@@ -41,13 +41,22 @@ erDiagram
         ulid id PK
         string username
         hashed password
+        string full_name
+        string email
+        string avatar_url
     }
     Project{
         ulid id PK
         string name
-        integer sleep_seconds_between_page_scrape
-        boolean ignore_scrape_failures
+        string website_url
+        string website_favicon_url
+        integer rate_count
+        Enum rate_time_unit "SECOND, MINUTE"
         ulid user_id FK
+        datetime created_on
+        datetime modified_on
+        string created_by
+        string modified_by
     }
     PageTemplate{
         ulid id PK
@@ -59,41 +68,68 @@ erDiagram
         Enum ai_input "HTML, TEXT"
         ulid output_page_template_id FK
         ulid project_id FK
+        datetime created_on
+        datetime modified_on
+        string created_by
+        string modified_by
     }
     SeedPage{
         ulid id PK
         string url
         ulid page_template_id FK
         ulid project_id FK
+        datetime created_on
+        datetime modified_on
+        string created_by
+        string modified_by
     }
     ScrapeRule{
         ulid id PK
         string alias
+        string description
         Enum type "SINGLE, MULTI"
         string value
+        boolean download_as_image
         ulid page_template_id FK
+        datetime created_on
+        datetime modified_on
+        string created_by
+        string modified_by
     }
     ScrapeRun{
         ulid id PK
         long started_on
         long ended_on
         Enum status "STARTED, COMPLETED, FAILED"
+        Enum stage "CREATED, STARTED, PAGE_GENERATION, LEAF_SCRAPING, OUTPUT, COMPLETED"
         ulid project_id FK
+        datetime created_on
+        datetime modified_on
+        string created_by
+        string modified_by
     }
     ScrapeRunPage{
         ulid id PK
         string url
         JSON scrape_output
-        Enum status "STARTED, COMPLETED, FAILED"
+        Enum status "PENDING, STARTED, COMPLETED, FAILED"
         Enum output_type "PAGE_SOURCE, LEAF"
         ulid page_template_id FK
         ulid scrape_run_id FK
+        datetime created_on
+        datetime modified_on
+        string created_by
+        string modified_by
     }
     ScrapeRunOutput{
         ulid id PK
-        Enum format "JSONL, CSV, XLSX"
+        Enum format "JSONL, CSV, XLSX, ZIP"
         string file_url
         ulid scrape_run_id FK
+        datetime created_on
+        datetime modified_on
+        string created_by
+        string modified_by
     }
     User ||--|{ Project : has
     Project ||--|{ SeedPage : has

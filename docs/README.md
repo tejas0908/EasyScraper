@@ -1,4 +1,5 @@
 ## Backlog
+
 - [ ] Import / Export Project in JSON format
 - [ ] Kubernetes helm chart
 - [ ] Github actions for build and push to dockerhub
@@ -51,8 +52,14 @@
 https://tejas0908.github.io/EasyScraper/
 
 Re-build api documentation
+
 ```bash
 docker compose up -d --build
 wget http://localhost:8000/openapi.json -O docs/openapi.json
 npx @redocly/cli build-docs docs/openapi.json -o docs/index.html
+```
+
+```mermaid
+flowchart LR
+  A --> B
 ```

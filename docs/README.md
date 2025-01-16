@@ -28,7 +28,20 @@ mindmap
 
 ## Use Case Diagram
 
-![Use case diagram](plantuml/output/use-case-diagram.png)
+```mermaid
+%%{
+    init: {
+        'theme': 'neutral'
+    }
+}%%
+timeline
+    title User Journey
+    Authentication : User can signup for account : User can login to account
+    Project Creation : User can create a new project : User can import project from a file
+    Project Configuration : User can create or edit page template : User can create or update scrape rules : User can create or update seed pages : User can update project settings
+    Project Run : User executes scrape test : User triggers scrape runs : User views scrape run status : User downloads scrape output files
+    Others : User can export project as a file
+```
 
 ## Database Design
 

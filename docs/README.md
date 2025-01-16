@@ -3,11 +3,6 @@
 ## Tech Stack
 
 ```mermaid
-%%{
-    init: {
-        'theme': 'neutral'
-    }
-}%%
 mindmap
     Tech Stack
         UI
@@ -29,11 +24,6 @@ mindmap
 ## Use Case Diagram
 
 ```mermaid
-%%{
-    init: {
-        'theme': 'neutral'
-    }
-}%%
 timeline
     title User Journey
     Authentication : User can signup for account : User can login to account
@@ -46,11 +36,6 @@ timeline
 ## Database Design
 
 ```mermaid
-%%{
-    init: {
-        'theme': 'neutral'
-    }
-}%%
 erDiagram
     User{
         ulid id PK

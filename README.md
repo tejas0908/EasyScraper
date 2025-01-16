@@ -41,7 +41,7 @@ GITHUB_CLIENT_SECRET=xxx
 ## Instructions to Run
 
 1. Create a `.env` file in the root of the repository with above format (Replace the xxx with real values)
-2. `docker compose up`
+2. `docker compose --profile minio up -d --build`
 3. Go to http://localhost:3000 on the browser
 4. Signup for a new account
 5. Login with username and password

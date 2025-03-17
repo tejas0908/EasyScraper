@@ -82,11 +82,17 @@ services:
   db-migration:
     image: flyway/flyway
     command: -X -url=${FLYWAY_DB_URL} -schemas=public -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -connectRetries=60 migrate
+    #volumes:
+    #  - ./db:/flyway/sql
     volumes:
-      - ./db:/flyway/sql
+      - type: bind
+        source: ./db
+        target: /flyway/sql
+        is_directory: true
     depends_on:
       postgres:
         condition: service_healthy
+    exclude_from_hc: true
 
   redis:
     image: redis:7
@@ -166,11 +172,7 @@ services:
       minio:
         condition: service_healthy
     entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc alias set myminio ${S3_ENDPOINT_URL} ${S3_ACCESS_KEY_ID} ${S3_SECRET_ACCESS_KEY};
-      /usr/bin/mc mb --ignore-existing myminio/${S3_BUCKET};
-      exit 0;
-      "
+      /bin/sh -c " /usr/bin/mc alias set myminio ${S3_ENDPOINT_URL} ${S3_ACCESS_KEY_ID} ${S3_SECRET_ACCESS_KEY}; /usr/bin/mc mb --ignore-existing myminio/${S3_BUCKET}; exit 0; "
     profiles:
       - minio
 

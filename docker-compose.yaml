@@ -56,8 +56,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      #db-migration:
-      #  condition: service_completed_successfully
+      db-migration:
+        condition: service_completed_successfully
     volumes:
       - blob_store_fs:/blob_store/data
 
@@ -82,17 +82,11 @@ services:
   db-migration:
     image: flyway/flyway
     command: -X -url=${FLYWAY_DB_URL} -schemas=public -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -connectRetries=60 migrate
-    #volumes:
-    #  - ./db:/flyway/sql
     volumes:
-      - type: bind
-        source: ./db
-        target: /flyway/sql
-        is_directory: true
+      - ./db:/flyway/sql
     depends_on:
       postgres:
         condition: service_healthy
-    exclude_from_hc: true
 
   redis:
     image: redis:7
@@ -140,8 +134,8 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-      #db-migration:
-      #  condition: service_completed_successfully
+      db-migration:
+        condition: service_completed_successfully
 
   minio:
     image: minio/minio

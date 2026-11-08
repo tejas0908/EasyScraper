@@ -2,7 +2,6 @@
 
 ![GitHub Release](https://img.shields.io/github/v/release/tejas0908/easyscraper)
 ![GitHub License](https://img.shields.io/github/license/tejas0908/easyscraper)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tejas0908/EasyScraper/push.yaml)
 
 [![Static Badge](https://img.shields.io/badge/Dockerhub%20API%20image-blue?logo=docker&logoColor=white)](https://hub.docker.com/r/tejas0908/easyscraper-api)
 ![Docker Pulls - API](https://img.shields.io/docker/pulls/tejas0908/easyscraper-api)
@@ -48,3 +47,9 @@ GITHUB_CLIENT_SECRET=xxx
 6. Create and Configure a project
 7. Execute a scrape
 8. Download Scrape output file
+
+## Local validation
+
+With OrbStack running, run `./scripts/validate-local.sh`. It builds both Docker images using the `orbstack` Docker context and checks the UI and API health endpoints, login page, and unauthenticated dashboard redirect in isolated containers. The UI image build also runs Next.js lint and type checking. Set `DOCKER_VALIDATION_CONTEXT` to select another Docker context. The script does not use host ports, connect to external services, or run migrations. It does not test database, OAuth, or scraping integration.
+
+GitHub Actions and the former Docker Hub release workflow are disabled. Image builds here are local only and do not publish or deploy. This repository documents Docker Compose hosting; it does not include a Cloudflare Worker configuration. GitHub Pages documentation previously built from `main:/docs` may require a separate non-Actions publishing path.
